@@ -196,6 +196,7 @@ void setup() {
 
 void loop() {
   uint32_t vcc = 0, count = 20, ret = 0;
+  HTTPClient http;
 
   if (!good_to_go) {
     Serial.println("No config, going to sleep!");
@@ -212,9 +213,7 @@ void loop() {
   } else {
     Serial.println("");
     Serial.println("WiFi connected");
-    
-    WiFiClient cli;
-    HTTPClient http;
+
 #if 0
     for (count = 0; count < MAX_NUM_VCC_READS; count++) { 
       vcc += ESP.getVcc();
@@ -234,7 +233,7 @@ void loop() {
     sprintf(url,"http://192.168.1.30/logger/test.pl?voltage=%d", vcc);
     Serial.println(url);
 #if 1
-    if (http.begin(cli, url)) {
+    if (http.begin(url)) {
       int httpCode=http.GET();
       if (httpCode > 0) {
         if (httpCode == HTTP_CODE_OK) {
