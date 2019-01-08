@@ -11,6 +11,7 @@
 
 //#define MAX_NUM_VCC_READS    5
 #define ADS1015_PGA_DEFAULT       0b010
+#define ADS1015_PGA_4096          0b001
 #define ADS1015_PGA_SHIFT         1
 
 #define ADS101x_MODE_CONT         0b0
@@ -38,26 +39,17 @@
 #define ADS1015_CFG_REG_LSB_COMP(ccfg)        (ccfg << ADS1015_COMP_CFG_SHIFT)
 
 #define ADS101x_MAX_CODE                      0x7FF0
-float ads101x_pga_to_fs(uint32_t pga)
-{
-    switch(pga) {
-      case 0b000:
-        return 6144.0;
-      case 0b001:
-        return 4096.0;
-      case 0b010:
-        return 2048.0;
-      case 0b011:
-        return 1024.0;
-      case 0b100:
-        return 512.0;
-      case 0b101:
-      case 0b110:
-      case 0b111:
-        return 256.0;      
-    }
-}
-#define EXTERNAL_RES_DIV_COEF    2
+
+char ads101x_lsb_size[][2] = {
+  {3, 1}, /* 6144 */
+  {2, 1}, /* 4096 */
+  {1, 1}, /* 2048 */
+  {1, 2}, /* 1024 */
+  {1, 4}, /* 512 */
+  {1, 8}, /* 256 */
+  {1, 8}, /* 256 */
+  {1, 8}, /* 256 */
+};
 
 static char good_to_go = 0;
 
@@ -163,9 +155,9 @@ void setup() {
   Serial.printf("0x%02x\n", ADS101x_PTR_CFG_REG);
   Wire.write(ADS101x_PTR_CFG_REG);
 
-  Serial.printf("0x%02x\n", ADS1015_CFG_REG_MSB_PGA(ADS1015_PGA_DEFAULT) |
+  Serial.printf("0x%02x\n", ADS1015_CFG_REG_MSB_PGA(ADS1015_PGA_4096) |
              ADS101x_CFG_REG_MSB_MODE(ADS101x_MODE_CONT));
-  Wire.write(ADS1015_CFG_REG_MSB_PGA(ADS1015_PGA_DEFAULT) |
+  Wire.write(ADS1015_CFG_REG_MSB_PGA(ADS1015_PGA_4096) |
              ADS101x_CFG_REG_MSB_MODE(ADS101x_MODE_CONT));
 
   Serial.printf("0x%02x\n", ADS101x_CFG_REG_LSB_DR(ADS101x_DR_1K6_SPS) |
@@ -223,10 +215,10 @@ void loop() {
     vcc /= MAX_NUM_VCC_READS;
 #else
   Wire.requestFrom(ADS101x_ADDR_GND, ADS101x_CONV_LEN);
-  vcc = Wire.read() << 8;
-  vcc |= Wire.read();
+  vcc = Wire.read() << 4;
+  vcc |= Wire.read() >> 4;
   Serial.print("Raw voltage is: "); Serial.println(vcc);
-  vcc = vcc * ads101x_pga_to_fs(ADS1015_PGA_DEFAULT) / ADS101x_MAX_CODE * 2.0;
+  vcc = vcc * ads101x_lsb_size[ADS1015_PGA_4096][0] / ads101x_lsb_size[ADS1015_PGA_4096][1];
 #endif
     char url[255];
     
