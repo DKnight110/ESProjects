@@ -10,9 +10,14 @@
 #define CHAR_ARRAY_LEN        32
 
 //#define MAX_NUM_VCC_READS    5
-#define ADS1015_PGA_DEFAULT       0b010
+#define ADS1015_PGA_DEFAULT       ADS1015_PGA_2048
+#define ADS1015_PGA_6144          0b000
 #define ADS1015_PGA_4096          0b001
+#define ADS1015_PGA_2048          0b010
 #define ADS1015_PGA_SHIFT         1
+
+#define ADS101x_OS                0b1
+#define ADS101x_OS_SHIFT          7
 
 #define ADS101x_MODE_CONT         0b0
 #define ADS101x_MODE_ONESHOT      0b1
@@ -21,24 +26,46 @@
 #define ADS101x_DR_1K6_SPS        0b100 // default
 #define ADS101x_DR_SHIFT          5
 
+#define ADS1015_COMP_MODE_WIN     0b1
+#define ADS1015_COMP_MODE_LT      0b0
+#define ADS1015_COMP_MODE_SHIFT   4
+
+#define ADS1015_COMP_POL_HI       0b1
+#define ADS1015_COMP_POL_LO       0b0
+#define ADS1015_COMP_POL_SHIFT    3
+
+#define ADS1015_COMP_LATCH        0b1
+#define ADS1015_COMP_LATCH_SHIFT  2
+
 #define ADS1015_COMP_CFG_DIS      0b11
+#define ADS1015_COMP_CFG_TRG_1    0b00
+#define ADS1015_COMP_CFG_TRG_2    0b01
+#define ADS1015_COMP_CFG_TRG_4    0b10
 #define ADS1015_COMP_CFG_SHIFT    0
 
 #define ADS101x_PTR_CFG_REG       0b01
 #define ADS101x_PTR_CONV_REG      0b00
-
+#define ADS1015_PTR_CFG_THR_LO    0b10
+#define ADS1015_PTR_CFG_THR_HI    0b11
 #define ADS101x_CONV_LEN          2
 
 #define ADS101x_ADDR_GND          0b1001000
 #define ADS101x_ADDR_VDD          0b1001001
 
+#define ADS101x_CFG_REG_START_CONV            (ADS101x_OS << ADS101x_OS_SHIFT)
+
 #define ADS1015_CFG_REG_MSB_PGA(pga)          (pga << ADS1015_PGA_SHIFT)
 #define ADS101x_CFG_REG_MSB_MODE(m)           (m << ADS101x_MODE_SHIFT)
-
 #define ADS101x_CFG_REG_LSB_DR(dr)            (dr << ADS101x_DR_SHIFT)
+#define ADS1015_CFG_REG_LSB_COMP_MODE(cmode)  (cmode << ADS1015_COMP_MODE_SHIFT)
+#define ADS1015_CFG_REG_LSB_COMP_POL(pol)     (pol << ADS1015_COMP_POL_SHIFT)
+#define ADS1015_CFG_REG_LSB_COMP_LATCH(latch) (latch << ADS1015_COMP_LATCH_SHIFT)
 #define ADS1015_CFG_REG_LSB_COMP(ccfg)        (ccfg << ADS1015_COMP_CFG_SHIFT)
 
-#define ADS101x_MAX_CODE                      0x7FF0
+#define ADS101x_CODE_SHIFT      4
+
+#define ADC_PGA_SETTING         ADS1015_PGA_6144
+#define LOW_VOLTAGE_THRES       3000 /* mV */
 
 char ads101x_lsb_size[][2] = {
   {3, 1}, /* 6144 */
@@ -50,6 +77,12 @@ char ads101x_lsb_size[][2] = {
   {1, 8}, /* 256 */
   {1, 8}, /* 256 */
 };
+
+#define CODE_TO_MV(code) \
+      (((code) >> ADS101x_CODE_SHIFT) * ads101x_lsb_size[ADC_PGA_SETTING][0] / ads101x_lsb_size[ADC_PGA_SETTING][1])
+
+#define MV_TO_CODE(mv)  \
+      (((mv) * ads101x_lsb_size[ADC_PGA_SETTING][1] / ads101x_lsb_size[ADC_PGA_SETTING][0]) << ADS101x_CODE_SHIFT)
 
 static char good_to_go = 0;
 
@@ -152,27 +185,90 @@ void setup() {
 
   Wire.beginTransmission(ADS101x_ADDR_GND);
 
+  Serial.printf("0x%02x\n", ADS1015_PTR_CFG_THR_HI);
+  Wire.write(ADS1015_PTR_CFG_THR_HI);
+
+  Serial.printf("0x%02x\n", 0x7F);
+  Wire.write(0x7F);
+
+  Serial.printf("0x%02x\n", 0xFF);
+  Wire.write(0xFF);
+  
+  ret = Wire.endTransmission();
+  if (!ret) {
+    Serial.println("Sucesfully configured ADC high threshold Register");
+  } else {
+    Serial.printf("I2C failed : %d\n", ret);
+  }
+
+  Wire.beginTransmission(ADS101x_ADDR_GND);
+
+  Serial.printf("0x%02x\n", ADS1015_PTR_CFG_THR_LO);
+  Wire.write(ADS1015_PTR_CFG_THR_LO);
+
+  Serial.printf("0x%02x\n", MV_TO_CODE(LOW_VOLTAGE_THRES) >> 8);
+  Wire.write(MV_TO_CODE(LOW_VOLTAGE_THRES) >> 8);
+
+  Serial.printf("0x%02x\n", MV_TO_CODE(LOW_VOLTAGE_THRES) & 0xFF);
+  Wire.write(MV_TO_CODE(LOW_VOLTAGE_THRES) & 0xFF);
+
+  //Serial.printf("0x%02x\n", 0x30);
+  //Wire.write(0x30);
+
+  //Serial.printf("0x%02x\n", 0x00);
+  //Wire.write(0x00);
+
+  ret = Wire.endTransmission();
+  if (!ret) {
+    Serial.println("Sucesfully configured ADC low threshold Register");
+  } else {
+    Serial.printf("I2C failed : %d\n", ret);
+  }
+
+  Wire.beginTransmission(ADS101x_ADDR_GND);
+
   Serial.printf("0x%02x\n", ADS101x_PTR_CFG_REG);
   Wire.write(ADS101x_PTR_CFG_REG);
-
-  Serial.printf("0x%02x\n", ADS1015_CFG_REG_MSB_PGA(ADS1015_PGA_4096) |
-             ADS101x_CFG_REG_MSB_MODE(ADS101x_MODE_CONT));
-  Wire.write(ADS1015_CFG_REG_MSB_PGA(ADS1015_PGA_4096) |
-             ADS101x_CFG_REG_MSB_MODE(ADS101x_MODE_CONT));
+#if 1
+  Serial.printf("0x%02x\n", ADS101x_CFG_REG_START_CONV | ADS1015_CFG_REG_MSB_PGA(ADC_PGA_SETTING) |
+             ADS101x_CFG_REG_MSB_MODE(ADS101x_MODE_ONESHOT));
+  Wire.write(ADS101x_CFG_REG_START_CONV | ADS1015_CFG_REG_MSB_PGA(ADC_PGA_SETTING) |
+             ADS101x_CFG_REG_MSB_MODE(ADS101x_MODE_ONESHOT));
 
   Serial.printf("0x%02x\n", ADS101x_CFG_REG_LSB_DR(ADS101x_DR_1K6_SPS) |
-             ADS1015_CFG_REG_LSB_COMP(ADS1015_COMP_CFG_DIS));
+             ADS1015_CFG_REG_LSB_COMP_MODE(ADS1015_COMP_MODE_WIN) |
+             ADS1015_CFG_REG_LSB_COMP_POL(ADS1015_COMP_POL_HI) |
+             ADS1015_CFG_REG_LSB_COMP_LATCH(ADS1015_COMP_LATCH) |
+             ADS1015_CFG_REG_LSB_COMP(ADS1015_COMP_CFG_TRG_1));
 
   Wire.write(ADS101x_CFG_REG_LSB_DR(ADS101x_DR_1K6_SPS) |
-             ADS1015_CFG_REG_LSB_COMP(ADS1015_COMP_CFG_DIS));
-  
+             ADS1015_CFG_REG_LSB_COMP_MODE(ADS1015_COMP_MODE_WIN) |
+             ADS1015_CFG_REG_LSB_COMP_POL(ADS1015_COMP_POL_HI) |
+             ADS1015_CFG_REG_LSB_COMP_LATCH(ADS1015_COMP_LATCH) |
+             ADS1015_CFG_REG_LSB_COMP(ADS1015_COMP_CFG_TRG_1));
+ #else
+  Serial.printf("0x%02x\n", ADS101x_CFG_REG_START_CONV | ADS1015_CFG_REG_MSB_PGA(ADC_PGA_SETTING) |
+              ADS101x_CFG_REG_MSB_MODE(ADS101x_MODE_ONESHOT));
+             //ADS101x_CFG_REG_MSB_MODE(ADS101x_MODE_CONT));
+  Wire.write(ADS101x_CFG_REG_START_CONV | ADS1015_CFG_REG_MSB_PGA(ADC_PGA_SETTING) |
+              ADS101x_CFG_REG_MSB_MODE(ADS101x_MODE_ONESHOT));
+
+  Serial.printf("0x%02x\n", ADS101x_CFG_REG_LSB_DR(ADS101x_DR_1K6_SPS) |
+             ADS1015_CFG_REG_LSB_COMP_POL(ADS1015_COMP_POL_HI) |
+             ADS1015_CFG_REG_LSB_COMP(ADS1015_COMP_CFG_TRG_1));
+
+  Wire.write(ADS101x_CFG_REG_LSB_DR(ADS101x_DR_1K6_SPS) |
+             ADS1015_CFG_REG_LSB_COMP_POL(ADS1015_COMP_POL_HI) |
+             ADS1015_CFG_REG_LSB_COMP(ADS1015_COMP_CFG_TRG_1));
+
+ #endif
   ret = Wire.endTransmission();
   if (!ret) {
     Serial.println("Sucesfully configured ADC Config Register");
   } else {
     Serial.printf("I2C failed : %d\n", ret);
   }
-
+#if 1
   Wire.beginTransmission(ADS101x_ADDR_GND);
   Wire.write(ADS101x_PTR_CONV_REG);
   ret = Wire.endTransmission();
@@ -181,7 +277,7 @@ void setup() {
   } else {
     Serial.printf("I2C failed : %d\n", ret);
   }
-
+#endif
   good_to_go = 1;
 
 }
@@ -205,26 +301,19 @@ void loop() {
   } else {
     Serial.println("");
     Serial.println("WiFi connected");
-
-#if 0
-    for (count = 0; count < MAX_NUM_VCC_READS; count++) { 
-      vcc += ESP.getVcc();
-      delay(10);
-    }
-
-    vcc /= MAX_NUM_VCC_READS;
-#else
-  Wire.requestFrom(ADS101x_ADDR_GND, ADS101x_CONV_LEN);
-  vcc = Wire.read() << 4;
-  vcc |= Wire.read() >> 4;
-  Serial.print("Raw voltage is: "); Serial.println(vcc);
-  vcc = vcc * ads101x_lsb_size[ADS1015_PGA_4096][0] / ads101x_lsb_size[ADS1015_PGA_4096][1];
-#endif
+#if 1
+    Wire.requestFrom(ADS101x_ADDR_GND, ADS101x_CONV_LEN);
+    vcc = Wire.read() << 8;
+    vcc |= Wire.read();
+    //vcc >>= 4;
+    Serial.print("Raw voltage is: "); Serial.println(vcc);
+    vcc = CODE_TO_MV(vcc);
+ #endif
     char url[255];
     
     sprintf(url,"http://192.168.1.30/logger/test.pl?voltage=%d", vcc);
     Serial.println(url);
-#if 1
+#if 0
     if (http.begin(url)) {
       int httpCode=http.GET();
       if (httpCode > 0) {
