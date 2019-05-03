@@ -53,6 +53,7 @@
 #define ADS101x_ADDR_VDD          0b1001001
 
 #define ADS101x_CFG_REG_START_CONV            (ADS101x_OS << ADS101x_OS_SHIFT)
+#define ADS101x_CFG_REG_CONV_RDY              ADS101x_CFG_REG_START_CONV // same bit, when read means conversion done
 
 #define ADS1015_CFG_REG_MSB_PGA(pga)          (pga << ADS1015_PGA_SHIFT)
 #define ADS101x_CFG_REG_MSB_MODE(m)           (m << ADS101x_MODE_SHIFT)
@@ -65,7 +66,7 @@
 #define ADS101x_CODE_SHIFT      4
 
 #define ADC_PGA_SETTING         ADS1015_PGA_6144
-#define LOW_VOLTAGE_THRES       3000 /* mV */
+#define LOW_VOLTAGE_THRES       2600 /* mV */
 
 char ads101x_lsb_size[][2] = {
   {3, 1}, /* 6144 */
@@ -85,7 +86,6 @@ char ads101x_lsb_size[][2] = {
       (((mv) * ads101x_lsb_size[ADC_PGA_SETTING][1] / ads101x_lsb_size[ADC_PGA_SETTING][0]) << ADS101x_CODE_SHIFT)
 
 static char good_to_go = 0;
-
 //ADC_MODE(ADC_VCC);
  
 #if 0
@@ -224,62 +224,39 @@ void setup() {
   } else {
     Serial.printf("I2C failed : %d\n", ret);
   }
-
+#if 1
   Wire.beginTransmission(ADS101x_ADDR_GND);
 
   Serial.printf("0x%02x\n", ADS101x_PTR_CFG_REG);
   Wire.write(ADS101x_PTR_CFG_REG);
-#if 1
-  Serial.printf("0x%02x\n", ADS101x_CFG_REG_START_CONV | ADS1015_CFG_REG_MSB_PGA(ADC_PGA_SETTING) |
-             ADS101x_CFG_REG_MSB_MODE(ADS101x_MODE_ONESHOT));
-  Wire.write(ADS101x_CFG_REG_START_CONV | ADS1015_CFG_REG_MSB_PGA(ADC_PGA_SETTING) |
-             ADS101x_CFG_REG_MSB_MODE(ADS101x_MODE_ONESHOT));
+
+//  Serial.printf("0x%02x\n", ADS101x_CFG_REG_START_CONV | ADS1015_CFG_REG_MSB_PGA(ADC_PGA_SETTING) |
+//             ADS101x_CFG_REG_MSB_MODE(ADS101x_MODE_ONESHOT));
+//  Wire.write(ADS101x_CFG_REG_START_CONV | ADS1015_CFG_REG_MSB_PGA(ADC_PGA_SETTING) |
+//             ADS101x_CFG_REG_MSB_MODE(ADS101x_MODE_ONESHOT));
+
+  Serial.printf("0x%02x\n", ADS1015_CFG_REG_MSB_PGA(ADC_PGA_SETTING));
+  Wire.write(ADS1015_CFG_REG_MSB_PGA(ADC_PGA_SETTING));
 
   Serial.printf("0x%02x\n", ADS101x_CFG_REG_LSB_DR(ADS101x_DR_1K6_SPS) |
              ADS1015_CFG_REG_LSB_COMP_MODE(ADS1015_COMP_MODE_WIN) |
-             ADS1015_CFG_REG_LSB_COMP_POL(ADS1015_COMP_POL_HI) |
+             //ADS1015_CFG_REG_LSB_COMP_POL(ADS1015_COMP_POL_HI) |
              ADS1015_CFG_REG_LSB_COMP_LATCH(ADS1015_COMP_LATCH) |
-             ADS1015_CFG_REG_LSB_COMP(ADS1015_COMP_CFG_TRG_1));
+             ADS1015_CFG_REG_LSB_COMP(ADS1015_COMP_CFG_TRG_4));
 
   Wire.write(ADS101x_CFG_REG_LSB_DR(ADS101x_DR_1K6_SPS) |
              ADS1015_CFG_REG_LSB_COMP_MODE(ADS1015_COMP_MODE_WIN) |
-             ADS1015_CFG_REG_LSB_COMP_POL(ADS1015_COMP_POL_HI) |
+             //ADS1015_CFG_REG_LSB_COMP_POL(ADS1015_COMP_POL_HI) |
              ADS1015_CFG_REG_LSB_COMP_LATCH(ADS1015_COMP_LATCH) |
-             ADS1015_CFG_REG_LSB_COMP(ADS1015_COMP_CFG_TRG_1));
- #else
-  Serial.printf("0x%02x\n", ADS101x_CFG_REG_START_CONV | ADS1015_CFG_REG_MSB_PGA(ADC_PGA_SETTING) |
-              ADS101x_CFG_REG_MSB_MODE(ADS101x_MODE_ONESHOT));
-             //ADS101x_CFG_REG_MSB_MODE(ADS101x_MODE_CONT));
-  Wire.write(ADS101x_CFG_REG_START_CONV | ADS1015_CFG_REG_MSB_PGA(ADC_PGA_SETTING) |
-              ADS101x_CFG_REG_MSB_MODE(ADS101x_MODE_ONESHOT));
-
-  Serial.printf("0x%02x\n", ADS101x_CFG_REG_LSB_DR(ADS101x_DR_1K6_SPS) |
-             ADS1015_CFG_REG_LSB_COMP_POL(ADS1015_COMP_POL_HI) |
-             ADS1015_CFG_REG_LSB_COMP(ADS1015_COMP_CFG_TRG_1));
-
-  Wire.write(ADS101x_CFG_REG_LSB_DR(ADS101x_DR_1K6_SPS) |
-             ADS1015_CFG_REG_LSB_COMP_POL(ADS1015_COMP_POL_HI) |
-             ADS1015_CFG_REG_LSB_COMP(ADS1015_COMP_CFG_TRG_1));
-
- #endif
+             ADS1015_CFG_REG_LSB_COMP(ADS1015_COMP_CFG_TRG_4));
   ret = Wire.endTransmission();
   if (!ret) {
     Serial.println("Sucesfully configured ADC Config Register");
   } else {
     Serial.printf("I2C failed : %d\n", ret);
   }
-#if 1
-  Wire.beginTransmission(ADS101x_ADDR_GND);
-  Wire.write(ADS101x_PTR_CONV_REG);
-  ret = Wire.endTransmission();
-  if (!ret) {
-    Serial.println("Sucesfully performed conversion");
-  } else {
-    Serial.printf("I2C failed : %d\n", ret);
-  }
 #endif
   good_to_go = 1;
-
 }
 
 void loop() {
@@ -301,15 +278,71 @@ void loop() {
   } else {
     Serial.println("");
     Serial.println("WiFi connected");
-#if 1
+
+    char url[255];
+
+#if 0
+  Wire.beginTransmission(ADS101x_ADDR_GND);
+
+  Serial.printf("0x%02x\n", ADS101x_PTR_CFG_REG);
+  Wire.write(ADS101x_PTR_CFG_REG);
+
+  Serial.printf("0x%02x\n", ADS101x_CFG_REG_START_CONV | ADS1015_CFG_REG_MSB_PGA(ADC_PGA_SETTING) |
+             ADS101x_CFG_REG_MSB_MODE(ADS101x_MODE_ONESHOT));
+  Wire.write(ADS101x_CFG_REG_START_CONV | ADS1015_CFG_REG_MSB_PGA(ADC_PGA_SETTING) |
+             ADS101x_CFG_REG_MSB_MODE(ADS101x_MODE_ONESHOT));
+#if 0
+  Serial.printf("0x%02x\n", ADS1015_CFG_REG_MSB_PGA(ADC_PGA_SETTING));
+  Wire.write(ADS1015_CFG_REG_MSB_PGA(ADC_PGA_SETTING));
+#endif
+  Serial.printf("0x%02x\n", ADS101x_CFG_REG_LSB_DR(ADS101x_DR_1K6_SPS) |
+             ADS1015_CFG_REG_LSB_COMP_MODE(ADS1015_COMP_MODE_WIN) |
+             //ADS1015_CFG_REG_LSB_COMP_POL(ADS1015_COMP_POL_HI) |
+             ADS1015_CFG_REG_LSB_COMP_LATCH(ADS1015_COMP_LATCH) |
+             ADS1015_CFG_REG_LSB_COMP(ADS1015_COMP_CFG_TRG_1));
+
+  Wire.write(ADS101x_CFG_REG_LSB_DR(ADS101x_DR_1K6_SPS) |
+             ADS1015_CFG_REG_LSB_COMP_MODE(ADS1015_COMP_MODE_WIN) |
+             //ADS1015_CFG_REG_LSB_COMP_POL(ADS1015_COMP_POL_HI) |
+             ADS1015_CFG_REG_LSB_COMP_LATCH(ADS1015_COMP_LATCH) |
+             ADS1015_CFG_REG_LSB_COMP(ADS1015_COMP_CFG_TRG_1));
+  ret = Wire.endTransmission();
+  if (!ret) {
+    Serial.println("Sucesfully configured ADC Config Register");
+  } else {
+    Serial.printf("I2C failed : %d\n", ret);
+  }
+
+    Wire.beginTransmission(ADS101x_ADDR_GND);
+    Wire.write(ADS101x_PTR_CFG_REG);
+    ret = Wire.endTransmission();
+    if (!ret) {
+      Serial.println("Sucesfully read cfg reg");
+    } else {
+      Serial.printf("I2C failed : %d\n", ret);
+    }
+  
+    do {
+      Wire.requestFrom(ADS101x_ADDR_GND, ADS101x_CONV_LEN);
+      ret = Wire.read();
+      Wire.read(); /* discard LSB */
+    } while (!(ret & ADS101x_CFG_REG_CONV_RDY));
+    Serial.println("Conversion is done");
+#endif
+    Wire.beginTransmission(ADS101x_ADDR_GND);
+    Wire.write(ADS101x_PTR_CONV_REG);
+    ret = Wire.endTransmission();
+    if (!ret) {
+      Serial.println("Sucesfully read conversion result");
+    } else {
+      Serial.printf("I2C failed : %d\n", ret);
+    }
+  
     Wire.requestFrom(ADS101x_ADDR_GND, ADS101x_CONV_LEN);
     vcc = Wire.read() << 8;
     vcc |= Wire.read();
-    //vcc >>= 4;
     Serial.print("Raw voltage is: "); Serial.println(vcc);
     vcc = CODE_TO_MV(vcc);
- #endif
-    char url[255];
     
     sprintf(url,"http://192.168.1.30/logger/test.pl?voltage=%d", vcc);
     Serial.println(url);
