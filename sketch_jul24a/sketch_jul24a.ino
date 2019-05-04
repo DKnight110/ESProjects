@@ -66,7 +66,10 @@
 #define ADS101x_CODE_SHIFT      4
 
 #define ADC_PGA_SETTING         ADS1015_PGA_6144
-#define LOW_VOLTAGE_THRES       2600 /* mV */
+#define LOW_VOLTAGE_THRES       2500 /* mV */
+
+#define WATER_ALARM_PIN         12
+#define RST_ACK_PIN             13
 
 char ads101x_lsb_size[][2] = {
   {3, 1}, /* 6144 */
@@ -86,6 +89,7 @@ char ads101x_lsb_size[][2] = {
       (((mv) * ads101x_lsb_size[ADC_PGA_SETTING][1] / ads101x_lsb_size[ADC_PGA_SETTING][0]) << ADS101x_CODE_SHIFT)
 
 static char good_to_go = 0;
+uint8_t water_alarm = 0;
 //ADC_MODE(ADC_VCC);
  
 #if 0
@@ -118,8 +122,20 @@ void setup() {
   
   File config_file;
 
+  pinMode(WATER_ALARM_PIN, INPUT);
+  pinMode(RST_ACK_PIN, OUTPUT);
+
   Serial.begin(115200);
 
+  /* Reset source handling code */
+  if (digitalRead(WATER_ALARM_PIN)) {
+    water_alarm = 1;
+    Serial.printf("*** Got WATER! ***\n");
+  }
+
+  digitalWrite(RST_ACK_PIN, LOW);
+
+  /* End of reset source handling code */
   WiFi.macAddress(my_mac);
   sprintf(file_name,"/%02x_%02x_%02x_config.txt", my_mac[3], my_mac[4], my_mac[5]);
 
