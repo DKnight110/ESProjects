@@ -19,12 +19,23 @@
 #define ADS101x_OS                0b1
 #define ADS101x_OS_SHIFT          7
 
+#define ADS1015_MUX_AIN0_AIN1     0b000
+#define ADS1015_MUX_AIN0_AIN3     0b001
+#define ADS1015_MUX_AIN1_AIN3     0b010
+#define ADS1015_MUX_AIN2_AIN3     0b011
+#define ADS1015_MUX_AIN0_GND      0b100
+#define ADS1015_MUX_AIN1_GND      0b101
+#define ADS1015_MUX_AIN2_GND      0b110
+#define ADS1015_MUX_AIN3_GND      0b111
+#define ADS1015_MUX_SHIFT         4
+
 #define ADS101x_MODE_CONT         0b0
 #define ADS101x_MODE_ONESHOT      0b1
 #define ADS101x_MODE_SHIFT        0
 
 #define ADS101x_DR_1K6_SPS        0b100 // default
 #define ADS101x_DR_SHIFT          5
+
 
 #define ADS1015_COMP_MODE_WIN     0b1
 #define ADS1015_COMP_MODE_LT      0b0
@@ -55,7 +66,9 @@
 #define ADS101x_CFG_REG_START_CONV            (ADS101x_OS << ADS101x_OS_SHIFT)
 #define ADS101x_CFG_REG_CONV_RDY              ADS101x_CFG_REG_START_CONV // same bit, when read means conversion done
 
+#define ADS1015_CFG_REG_MSB_MUX(mux)          (mux << ADS1015_MUX_SHIFT)
 #define ADS1015_CFG_REG_MSB_PGA(pga)          (pga << ADS1015_PGA_SHIFT)
+#define ADS1015_CFG_REG_MSB_MUX(mux)          (mux << ADS1015_MUX_SHIFT)
 #define ADS101x_CFG_REG_MSB_MODE(m)           (m << ADS101x_MODE_SHIFT)
 #define ADS101x_CFG_REG_LSB_DR(dr)            (dr << ADS101x_DR_SHIFT)
 #define ADS1015_CFG_REG_LSB_COMP_MODE(cmode)  (cmode << ADS1015_COMP_MODE_SHIFT)
@@ -66,7 +79,7 @@
 #define ADS101x_CODE_SHIFT      4
 
 #define ADC_PGA_SETTING         ADS1015_PGA_6144
-#define LOW_VOLTAGE_THRES       2500 /* mV */
+#define LOW_VOLTAGE_THRES       2835 /* mV */
 
 #define WATER_ALARM_PIN         12
 #define RST_ACK_PIN             13
@@ -89,7 +102,10 @@ char ads101x_lsb_size[][2] = {
       (((mv) * ads101x_lsb_size[ADC_PGA_SETTING][1] / ads101x_lsb_size[ADC_PGA_SETTING][0]) << ADS101x_CODE_SHIFT)
 
 static char good_to_go = 0;
-uint8_t water_alarm = 0;
+static char water_alarm = 0;
+
+#define CENTRAL_URL "http://192.168.1.80/logger/test.pl?voltage=%d&water=%d"
+
 //ADC_MODE(ADC_VCC);
  
 #if 0
@@ -119,21 +135,24 @@ void setup() {
        c, pos = 0, line = 0;
   IPAddress ip_addr, gw, dns;
   byte my_mac[6], ret;
-  
+  uint32_t adc_cfg_done;
+
   File config_file;
 
   pinMode(WATER_ALARM_PIN, INPUT);
   pinMode(RST_ACK_PIN, OUTPUT);
-
+  
+  digitalWrite(RST_ACK_PIN, HIGH);
+  
   Serial.begin(115200);
 
   /* Reset source handling code */
   if (digitalRead(WATER_ALARM_PIN)) {
     water_alarm = 1;
     Serial.printf("*** Got WATER! ***\n");
+  } else {
+    water_alarm = 0;
   }
-
-  digitalWrite(RST_ACK_PIN, LOW);
 
   /* End of reset source handling code */
   WiFi.macAddress(my_mac);
@@ -197,6 +216,14 @@ void setup() {
 
   Wire.begin(4, 5);
 
+  ESP.rtcUserMemoryRead(0, &adc_cfg_done, sizeof(adc_cfg_done));
+  if (adc_cfg_done == 0xA5A55A5A) {
+    goto start_measurement;
+  }
+  
+  adc_cfg_done = 0xA5A55A5A;
+  ESP.rtcUserMemoryWrite(0, &adc_cfg_done, sizeof(adc_cfg_done));
+
   Serial.printf("0x%02x\n",ADS101x_ADDR_GND);
 
   Wire.beginTransmission(ADS101x_ADDR_GND);
@@ -241,6 +268,7 @@ void setup() {
     Serial.printf("I2C failed : %d\n", ret);
   }
 #if 1
+start_measurement:
   Wire.beginTransmission(ADS101x_ADDR_GND);
 
   Serial.printf("0x%02x\n", ADS101x_PTR_CFG_REG);
@@ -251,8 +279,14 @@ void setup() {
 //  Wire.write(ADS101x_CFG_REG_START_CONV | ADS1015_CFG_REG_MSB_PGA(ADC_PGA_SETTING) |
 //             ADS101x_CFG_REG_MSB_MODE(ADS101x_MODE_ONESHOT));
 
-  Serial.printf("0x%02x\n", ADS1015_CFG_REG_MSB_PGA(ADC_PGA_SETTING));
-  Wire.write(ADS1015_CFG_REG_MSB_PGA(ADC_PGA_SETTING));
+  Serial.printf("0x%02x\n", ADS101x_CFG_REG_START_CONV | 
+                            ADS1015_CFG_REG_MSB_MUX(ADS1015_MUX_AIN0_GND) |
+                            ADS1015_CFG_REG_MSB_PGA(ADC_PGA_SETTING) |
+                            ADS101x_CFG_REG_MSB_MODE(ADS101x_MODE_ONESHOT));
+  Wire.write(ADS101x_CFG_REG_START_CONV | 
+                            ADS1015_CFG_REG_MSB_MUX(ADS1015_MUX_AIN0_GND) |
+                            ADS1015_CFG_REG_MSB_PGA(ADC_PGA_SETTING) |
+                            ADS101x_CFG_REG_MSB_MODE(ADS101x_MODE_ONESHOT));
 
   Serial.printf("0x%02x\n", ADS101x_CFG_REG_LSB_DR(ADS101x_DR_1K6_SPS) |
              ADS1015_CFG_REG_LSB_COMP_MODE(ADS1015_COMP_MODE_WIN) |
@@ -276,13 +310,15 @@ void setup() {
 }
 
 void loop() {
-  uint32_t vcc = 0, count = 20, ret = 0;
+  uint32_t vcc = 0, count = 20, ret = 0, update_success = 0;
   HTTPClient http;
+  char url[255];
 
   if (!good_to_go) {
     Serial.println("No config, going to sleep!");
     goto deep_sleep;
   }
+
   while ((WiFi.status() != WL_CONNECTED) && (--count)) {
     delay(500);
     Serial.print(".");
@@ -291,11 +327,11 @@ void loop() {
   if (!count) {
     Serial.println("");
     Serial.println("WiFi connection failed, going to sleep");
-  } else {
-    Serial.println("");
-    Serial.println("WiFi connected");
-
-    char url[255];
+    goto deep_sleep;
+  }
+  
+  Serial.println("");
+  Serial.println("WiFi connected");
 
 #if 0
   Wire.beginTransmission(ADS101x_ADDR_GND);
@@ -303,9 +339,13 @@ void loop() {
   Serial.printf("0x%02x\n", ADS101x_PTR_CFG_REG);
   Wire.write(ADS101x_PTR_CFG_REG);
 
-  Serial.printf("0x%02x\n", ADS101x_CFG_REG_START_CONV | ADS1015_CFG_REG_MSB_PGA(ADC_PGA_SETTING) |
-             ADS101x_CFG_REG_MSB_MODE(ADS101x_MODE_ONESHOT));
-  Wire.write(ADS101x_CFG_REG_START_CONV | ADS1015_CFG_REG_MSB_PGA(ADC_PGA_SETTING) |
+  Serial.printf("0x%02x\n", ADS101x_CFG_REG_START_CONV | 
+                            ADS1015_CFG_REG_MSB_MUX(ADS1015_MUX_AIN0_GND) |
+                            ADS1015_CFG_REG_MSB_PGA(ADC_PGA_SETTING) |
+                            ADS101x_CFG_REG_MSB_MODE(ADS101x_MODE_ONESHOT));
+  Wire.write(ADS101x_CFG_REG_START_CONV | 
+             ADS1015_CFG_REG_MSB_MUX(ADS1015_MUX_AIN0_GND) | 
+             ADS1015_CFG_REG_MSB_PGA(ADC_PGA_SETTING) |
              ADS101x_CFG_REG_MSB_MODE(ADS101x_MODE_ONESHOT));
 #if 0
   Serial.printf("0x%02x\n", ADS1015_CFG_REG_MSB_PGA(ADC_PGA_SETTING));
@@ -315,84 +355,88 @@ void loop() {
              ADS1015_CFG_REG_LSB_COMP_MODE(ADS1015_COMP_MODE_WIN) |
              //ADS1015_CFG_REG_LSB_COMP_POL(ADS1015_COMP_POL_HI) |
              ADS1015_CFG_REG_LSB_COMP_LATCH(ADS1015_COMP_LATCH) |
-             ADS1015_CFG_REG_LSB_COMP(ADS1015_COMP_CFG_TRG_1));
+             ADS1015_CFG_REG_LSB_COMP(ADS1015_COMP_CFG_TRG_4));
 
   Wire.write(ADS101x_CFG_REG_LSB_DR(ADS101x_DR_1K6_SPS) |
              ADS1015_CFG_REG_LSB_COMP_MODE(ADS1015_COMP_MODE_WIN) |
              //ADS1015_CFG_REG_LSB_COMP_POL(ADS1015_COMP_POL_HI) |
              ADS1015_CFG_REG_LSB_COMP_LATCH(ADS1015_COMP_LATCH) |
-             ADS1015_CFG_REG_LSB_COMP(ADS1015_COMP_CFG_TRG_1));
+             ADS1015_CFG_REG_LSB_COMP(ADS1015_COMP_CFG_TRG_4));
   ret = Wire.endTransmission();
   if (!ret) {
     Serial.println("Sucesfully configured ADC Config Register");
   } else {
     Serial.printf("I2C failed : %d\n", ret);
   }
-
-    Wire.beginTransmission(ADS101x_ADDR_GND);
-    Wire.write(ADS101x_PTR_CFG_REG);
-    ret = Wire.endTransmission();
-    if (!ret) {
-      Serial.println("Sucesfully read cfg reg");
-    } else {
-      Serial.printf("I2C failed : %d\n", ret);
-    }
-  
-    do {
-      Wire.requestFrom(ADS101x_ADDR_GND, ADS101x_CONV_LEN);
-      ret = Wire.read();
-      Wire.read(); /* discard LSB */
-    } while (!(ret & ADS101x_CFG_REG_CONV_RDY));
-    Serial.println("Conversion is done");
+#if 1
+  Wire.beginTransmission(ADS101x_ADDR_GND);
+  Wire.write(ADS101x_PTR_CFG_REG);
+  ret = Wire.endTransmission();
+  if (!ret) {
+    Serial.println("Sucesfully read cfg reg");
+  } else {
+    Serial.printf("I2C failed : %d\n", ret);
+  }
 #endif
-    Wire.beginTransmission(ADS101x_ADDR_GND);
-    Wire.write(ADS101x_PTR_CONV_REG);
-    ret = Wire.endTransmission();
-    if (!ret) {
-      Serial.println("Sucesfully read conversion result");
-    } else {
-      Serial.printf("I2C failed : %d\n", ret);
-    }
-  
+  do {
     Wire.requestFrom(ADS101x_ADDR_GND, ADS101x_CONV_LEN);
-    vcc = Wire.read() << 8;
-    vcc |= Wire.read();
-    Serial.print("Raw voltage is: "); Serial.println(vcc);
-    vcc = CODE_TO_MV(vcc);
-    
-    sprintf(url,"http://192.168.1.30/logger/test.pl?voltage=%d", vcc);
-    Serial.println(url);
-#if 0
-    if (http.begin(url)) {
-      int httpCode=http.GET();
-      if (httpCode > 0) {
-        if (httpCode == HTTP_CODE_OK) {
-          Serial.println("Update success!");
-        } else {
-          Serial.printf("Update failed, got code: %d\n", httpCode);
-        }
-      } else {
-        Serial.printf("GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
-      }
-      http.end();
-    } else {
-      Serial.println("Unable to connect");
-    }
+    ret = Wire.read();
+    Wire.read(); /* discard LSB */
+  } while (!(ret & ADS101x_CFG_REG_CONV_RDY));
+  Serial.println("Conversion is done");
 #endif
+  Wire.beginTransmission(ADS101x_ADDR_GND);
+  Wire.write(ADS101x_PTR_CONV_REG);
+  ret = Wire.endTransmission();
+  if (!ret) {
+    Serial.println("Sucesfully read conversion result");
+  } else {
+    Serial.printf("I2C failed : %d\n", ret);
+  }
+  
+  Wire.requestFrom(ADS101x_ADDR_GND, ADS101x_CONV_LEN);
+  vcc = Wire.read() << 8;
+  vcc |= Wire.read();
+  Serial.print("Raw voltage is: "); Serial.println(vcc);
+  vcc = CODE_TO_MV(vcc);
+
+  if (water_alarm) {
+    sprintf(url, CENTRAL_URL, vcc, 1);
+  } else {
+    sprintf(url, CENTRAL_URL, vcc, 0);
   }
 
-  count = 20;
+  Serial.println(url);
+
+  if (http.begin(url)) {
+    int httpCode=http.GET();
+    if (httpCode > 0) {
+      if (httpCode == HTTP_CODE_OK) {
+        Serial.println("Update success!");
+        update_success = 1;
+        // we sent the message, now there's
+        // not much we can do, so inform
+        // the controller about it and sleep.
+      } else {
+        Serial.printf("Update failed, got code: %d\n", httpCode);
+      }
+    } else {
+      Serial.printf("GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
+    }
+    http.end();
+  } else {
+    Serial.println("Unable to connect");
+  }
+
   WiFi.disconnect(true);
   WiFi.mode(WIFI_OFF);
   WiFi.forceSleepBegin();
 
-  Serial.print("Wait for disconnect");
-  while ((WiFi.status() == WL_CONNECTED) && (--count)) {
-    delay(100);
-    Serial.print(".");
-  }
-  
-deep_sleep:
+  Serial.print("Sleeping");
 
-  ESP.deepSleep(20e6);
+  if (update_success)
+    digitalWrite(RST_ACK_PIN, HIGH);
+
+deep_sleep:
+  ESP.deepSleep(0);
 }

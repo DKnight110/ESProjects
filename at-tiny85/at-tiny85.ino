@@ -25,22 +25,46 @@
 #include <avr/wdt.h>
 
 /* HW defines */
-#define LED_BUILTIN             0
-#define WATER_SENSOR_PIN        A1
-#define ESP8266_RST_PIN         1 // assert this pin for reset of wifi module ...
-#define ESP8266_ACK_PIN         3 // ... wait the ack from the module, as logic 0
-#define ESP8266_WATER_ALARM_PIN 4 // when water is detected, this is logic 1
+#define LED_BUILTIN               0
+#define WATER_SENSOR_PIN          A1
+#define ESP8266_RST_PIN           1 // assert this pin for reset of wifi module ...
+#define ESP8266_ACK_PIN           3 // ... wait the ack from the module, as logic 0
+#define ESP8266_WATER_ALARM_PIN   4 // when water is detected, this is logic 1
 
-#define WATCHDOG_MAX              5   /* seconds */
 #define MAX_WATER_DIFF            100
-#define ESP_RESET_PERIOD          20  /* seconds, multiple of WATCHODG_MAX */
-#define ESP_WATER_ALARM_INTERVAL  10  /* seconds, multiple of WATCHDOG_MAX */
+#define AT_TINY_SLEEP_TIME        1   /* seconds */
+#define WATER_CHECK_TIME          10  /* seconds */
+#define ESP_RESET_TIME            60  /* seconds, multiple of WATER_CHECK_TIME */
+#define ESP_WATER_ALARM_TIME      20  /* seconds, multiple of WATER_CHECK_TIME */
 
-uint8_t watchdog_counter = 0;
-uint16_t esp_counter = 0;
+#define ESP_RUN_ALLOWED_INTERVAL      10500 /* msec, total time to wait for ACK */
+#define ESP_ACK_POLL_TIME             300 /* msec */
+#define ESP_ACK_LOOPS                 (ESP_RUN_ALLOWED_INTERVAL / ESP_ACK_POLL_TIME)
+
 int water_avg = 0;
+uint8_t watchdog_counter = WATER_CHECK_TIME - 1;
+uint32_t esp_counter = ESP_RESET_TIME / WATER_CHECK_TIME - 1;
+uint32_t esp_wakeup_time = ESP_RESET_TIME / WATER_CHECK_TIME;
+
+#if 0
 /* Persistent variable signalling water is still present */
 int water_detected = 0;
+#else
+/* Persistent variable storing if the alarm was sent upstream */
+int water_alarm_sent = 0;
+#endif
+
+#if (AT_TINY_SLEEP_TIME == 8)
+#define TIMER_PRESCALER_SETTING 9
+#elif (AT_TINY_SLEEP_TIME == 4)
+#define TIMER_PRESCALER_SETTING 8
+#elif (AT_TINY_SLEEP_TIME == 2)
+#define TIMER_PRESCALER_SETTING 7
+#elif (AT_TINY_SLEEP_TIME == 1)
+#define TIMER_PRESCALER_SETTING 6
+#else
+#error "Invalid AT Tiny sleep interval"
+#endif
 
 //This runs each time the watch dog wakes us up from sleep
 ISR(WDT_vect) {
@@ -51,6 +75,15 @@ ISR(WDT_vect) {
 void setup() {
   // initialize digital pin LED_BUILTIN as an output.
   pinMode(LED_BUILTIN, OUTPUT);
+  
+  /* do an inital reset of the ESP at boot */
+  pinMode(ESP8266_RST_PIN, OUTPUT);
+
+  digitalWrite(ESP8266_RST_PIN, LOW);
+
+  /* configure the water alarm pin & set it low */
+  pinMode(ESP8266_WATER_ALARM_PIN, OUTPUT);
+  digitalWrite(ESP8266_WATER_ALARM_PIN, LOW);
 
   for(int x = 0 ; x < 8 ; x++)
   {
@@ -127,22 +160,35 @@ int check_water()
 
 // the loop function runs over and over again forever
 void loop() {
-    int wakeup_esp = 0, ret = 0;
+  int ret = 0, count = 0;
 
-    if (watchdog_counter > WATCHDOG_MAX) {
-        watchdog_counter = 0;
+  if (watchdog_counter == WATER_CHECK_TIME) {
+    ADCSRA |= (1<<ADEN); //Enable ADC
+    ret = check_water();
+    ADCSRA &= ~(1<<ADEN); //Disable ADC, saves ~230uA
 
-        esp_counter++;
+    if (ret) {
+      if (!water_alarm_sent) {
+        digitalWrite(ESP8266_WATER_ALARM_PIN, HIGH);
 
-        if (esp_counter == ESP_RESET_PERIOD / WATCHDOG_MAX) {
-           esp_counter = 0;
-           wakeup_esp = 1;
-        }
+        /* optionally signal LED */
+        digitalWrite(LED_BUILTIN, HIGH);
         
-        ADCSRA |= (1<<ADEN); //Enable ADC
-        ret = check_water();
-        ADCSRA &= ~(1<<ADEN); //Disable ADC, saves ~230uA
+        esp_counter = esp_wakeup_time - 1;
+      }
+    } else {
+      water_alarm_sent = 0;
+      /* optionally signal LED */
+      digitalWrite(LED_BUILTIN, LOW);
+    }
 
+    watchdog_counter = 0;
+    esp_counter++;
+  }
+
+  if (esp_counter == esp_wakeup_time) {
+    digitalWrite(ESP8266_RST_PIN, HIGH);
+#if 0
         if (ret != water_detected) {
           if (ret) {
             /* assert ESP alarm line */
@@ -162,6 +208,7 @@ void loop() {
         }
 
         /* If water is still detected, then wakeup ESP again */
+
         if (water_detected && 
             (esp_counter == ESP_WATER_ALARM_INTERVAL / WATCHDOG_MAX)) {
           /* assert ESP alarm line */
@@ -172,22 +219,68 @@ void loop() {
  
           wakeup_esp = 1;
         }
+#endif
+#if 0
+    if (ret) {
+      if (!water_alarm_sent) {
+        /* 
+         * if water is detected and the ESP hasn't sent it upstream,
+         * then assert the alarm pin 
+         */
+        /* assert ESP alarm line */
+        digitalWrite(ESP8266_WATER_ALARM_PIN, HIGH);
 
-        if (wakeup_esp) {
-          wdt_disable();
-          do {
-            /* Toggle reset line to ESP */
-            pinMode(ESP8266_RST_PIN, OUTPUT);
+        /* optionally signal LED */
+        digitalWrite(LED_BUILTIN, HIGH);
+      }
+    } else {
+        /* water is not detected anymore , then reset the sent signal */
+        if (water_alarm_sent)
+          water_alarm_sent = 0; 
+    }
+#endif
+    /*
+     * Wakeup ESP if either it's time to wakeup
+     * or water is detected and the alarm wasn't
+     * sent upstream
+     */
+    wdt_disable();
+#if 0
+          do {            /* Toggle reset line to ESP */
+            //pinMode(ESP8266_RST_PIN, OUTPUT);
             digitalWrite(ESP8266_RST_PIN, LOW);
             delay(10);
             digitalWrite(ESP8266_RST_PIN, HIGH);
-            pinMode(ESP8266_RST_PIN, INPUT_PULLUP);
-            delay(100);
+            //pinMode(ESP8266_RST_PIN, INPUT);
+            delay(300);
           } while(digitalRead(ESP8266_ACK_PIN));
-        }
-    }
+#else
+    for (count = 0; count < ESP_ACK_LOOPS; count++) {
+      delay(ESP_ACK_POLL_TIME);
+      if (!digitalRead(ESP8266_ACK_PIN)) {
+        if (ret && !water_alarm_sent) {
+          water_alarm_sent = 1;
 
-    setup_watchdog(6); //Setup watchdog to go off after 1sec
-    sleep_mode(); //Go to sleep! Wake up 1sec later and check water
-    
+          /* Put pin down, ESP read it */
+          digitalWrite(ESP8266_WATER_ALARM_PIN, LOW);
+
+          esp_wakeup_time = ESP_RESET_TIME / WATER_CHECK_TIME;
+        }
+        break;
+      }
+    }
+    digitalWrite(ESP8266_RST_PIN, LOW);
+
+    if ((count == ESP_ACK_LOOPS) && ret && !water_alarm_sent) {
+      /* 
+       * Got water, but the message didn't get through, so
+       * try again, but faster
+       */
+      esp_wakeup_time =  ESP_WATER_ALARM_TIME / WATER_CHECK_TIME;
+    }
+#endif
+    esp_counter = 0;
+  }
+  setup_watchdog(TIMER_PRESCALER_SETTING); //Setup watchdog to go off after 1sec
+  sleep_mode(); //Go to sleep! Wake up 1sec later and check water
 }
