@@ -7,7 +7,9 @@
 #include <WiFiClient.h>
 #include <Wire.h>
 
-#define CHAR_ARRAY_LEN        32
+#define CHAR_ARRAY_LEN            32
+#define MAX_WIFI_CONNECT_RETRY    20
+#define USE_ADC_ADS111x           1
 
 //#define MAX_NUM_VCC_READS    5
 #define ADS1015_PGA_DEFAULT       ADS1015_PGA_2048
@@ -76,7 +78,12 @@
 #define ADS1015_CFG_REG_LSB_COMP_LATCH(latch) (latch << ADS1015_COMP_LATCH_SHIFT)
 #define ADS1015_CFG_REG_LSB_COMP(ccfg)        (ccfg << ADS1015_COMP_CFG_SHIFT)
 
+
+#if (USE_ADS111x == 1)
+#define ADS101x_CODE_SHIFT      0
+#else
 #define ADS101x_CODE_SHIFT      4
+#endif
 
 #define ADC_PGA_SETTING         ADS1015_PGA_6144
 #define LOW_VOLTAGE_THRES       2835 /* mV */
@@ -84,22 +91,31 @@
 #define WATER_ALARM_PIN         12
 #define RST_ACK_PIN             13
 
+#if (USE_ADS111x == 1)
 char ads101x_lsb_size[][2] = {
-  {3, 1}, /* 6144 */
-  {2, 1}, /* 4096 */
-  {1, 1}, /* 2048 */
-  {1, 2}, /* 1024 */
-  {1, 4}, /* 512 */
-  {1, 8}, /* 256 */
-  {1, 8}, /* 256 */
-  {1, 8}, /* 256 */
+  {3, 4}, /* 6144 */
+  {1, 3}, /* 4096 */
+  {1, 4}, /* 2048 */
+  {1, 5}, /* 1024 */
+  {1, 6}, /* 512 */
+  {1, 7}, /* 256 */
 };
+#else
+char ads101x_lsb_size[][2] = {
+  {3, 0 /* 1 */}, /* 6144 */
+  {2, 0 /* 1 */}, /* 4096 */
+  {1, 0 /* 1 */}, /* 2048 */
+  {1, 1 /* 2 */}, /* 1024 */
+  {1, 2 /* 4 */}, /* 512 */
+  {1, 3 /* 8 */}, /* 256 */
+};
+#endif
 
 #define CODE_TO_MV(code) \
-      (((code) >> ADS101x_CODE_SHIFT) * ads101x_lsb_size[ADC_PGA_SETTING][0] / ads101x_lsb_size[ADC_PGA_SETTING][1])
+      (((code) >> ADS101x_CODE_SHIFT) * ads101x_lsb_size[ADC_PGA_SETTING][0] >> ads101x_lsb_size[ADC_PGA_SETTING][1])
 
 #define MV_TO_CODE(mv)  \
-      (((mv) * ads101x_lsb_size[ADC_PGA_SETTING][1] / ads101x_lsb_size[ADC_PGA_SETTING][0]) << ADS101x_CODE_SHIFT)
+      (((mv) * ads101x_lsb_size[ADC_PGA_SETTING][1] >> ads101x_lsb_size[ADC_PGA_SETTING][0]) << ADS101x_CODE_SHIFT)
 
 static char good_to_go = 0;
 static char water_alarm = 0;
@@ -129,6 +145,76 @@ void loop() {
 }
 #endif
 
+uint16_t read_measurement()
+{
+  uint32_t ret;
+  uint16_t vcc;
+
+  Wire.beginTransmission(ADS101x_ADDR_GND);
+  Wire.write(ADS101x_PTR_CONV_REG);
+  ret = Wire.endTransmission();
+#ifdef DEBUG
+  if (!ret) {
+    Serial.println("Sucesfully read conversion result");
+  } else {
+    Serial.printf("I2C failed : %d\n", ret);
+  }
+#endif
+
+  Wire.requestFrom(ADS101x_ADDR_GND, ADS101x_CONV_LEN);
+  vcc = Wire.read() << 8;
+  vcc |= Wire.read();
+#ifdef DEBUG
+  Serial.print("Raw voltage is: "); Serial.println(vcc);
+#endif
+  vcc = CODE_TO_MV(vcc);
+  return vcc;
+}
+void start_measurement()
+{
+  uint32_t ret;
+
+  Wire.beginTransmission(ADS101x_ADDR_GND);
+#ifdef DEBUG
+  Serial.printf("0x%02x\n", ADS101x_PTR_CFG_REG);
+#endif
+  Wire.write(ADS101x_PTR_CFG_REG);
+
+//  Serial.printf("0x%02x\n", ADS101x_CFG_REG_START_CONV | ADS1015_CFG_REG_MSB_PGA(ADC_PGA_SETTING) |
+//             ADS101x_CFG_REG_MSB_MODE(ADS101x_MODE_ONESHOT));
+//  Wire.write(ADS101x_CFG_REG_START_CONV | ADS1015_CFG_REG_MSB_PGA(ADC_PGA_SETTING) |
+//             ADS101x_CFG_REG_MSB_MODE(ADS101x_MODE_ONESHOT));
+#ifdef DEBUG
+  Serial.printf("0x%02x\n", ADS101x_CFG_REG_START_CONV | 
+                            ADS1015_CFG_REG_MSB_MUX(ADS1015_MUX_AIN0_GND) |
+                            ADS1015_CFG_REG_MSB_PGA(ADC_PGA_SETTING) |
+                            ADS101x_CFG_REG_MSB_MODE(ADS101x_MODE_ONESHOT));
+#endif
+  Wire.write(ADS101x_CFG_REG_START_CONV | 
+                            ADS1015_CFG_REG_MSB_MUX(ADS1015_MUX_AIN0_GND) |
+                            ADS1015_CFG_REG_MSB_PGA(ADC_PGA_SETTING) |
+                            ADS101x_CFG_REG_MSB_MODE(ADS101x_MODE_ONESHOT));
+#ifdef DEBUG
+  Serial.printf("0x%02x\n", ADS101x_CFG_REG_LSB_DR(ADS101x_DR_1K6_SPS) |
+             ADS1015_CFG_REG_LSB_COMP_MODE(ADS1015_COMP_MODE_WIN) |
+             //ADS1015_CFG_REG_LSB_COMP_POL(ADS1015_COMP_POL_HI) |
+             ADS1015_CFG_REG_LSB_COMP_LATCH(ADS1015_COMP_LATCH) |
+             ADS1015_CFG_REG_LSB_COMP(ADS1015_COMP_CFG_TRG_4));
+#endif
+  Wire.write(ADS101x_CFG_REG_LSB_DR(ADS101x_DR_1K6_SPS) |
+             ADS1015_CFG_REG_LSB_COMP_MODE(ADS1015_COMP_MODE_WIN) |
+             //ADS1015_CFG_REG_LSB_COMP_POL(ADS1015_COMP_POL_HI) |
+             ADS1015_CFG_REG_LSB_COMP_LATCH(ADS1015_COMP_LATCH) |
+             ADS1015_CFG_REG_LSB_COMP(ADS1015_COMP_CFG_TRG_4));
+  ret = Wire.endTransmission();
+#ifdef DEBUG
+  if (!ret) {
+    Serial.println("Sucesfully configured ADC Config Register");
+  } else {
+    Serial.printf("I2C failed : %d\n", ret);
+  }
+#endif
+}
 void setup() {
   char ssid[CHAR_ARRAY_LEN], password[CHAR_ARRAY_LEN],
        str[CHAR_ARRAY_LEN], file_name[CHAR_ARRAY_LEN],
@@ -218,7 +304,7 @@ void setup() {
 
   ESP.rtcUserMemoryRead(0, &adc_cfg_done, sizeof(adc_cfg_done));
   if (adc_cfg_done == 0xA5A55A5A) {
-    goto start_measurement;
+    goto skip_threshold_config;
   }
   
   adc_cfg_done = 0xA5A55A5A;
@@ -267,50 +353,12 @@ void setup() {
   } else {
     Serial.printf("I2C failed : %d\n", ret);
   }
-#if 1
-start_measurement:
-  Wire.beginTransmission(ADS101x_ADDR_GND);
-
-  Serial.printf("0x%02x\n", ADS101x_PTR_CFG_REG);
-  Wire.write(ADS101x_PTR_CFG_REG);
-
-//  Serial.printf("0x%02x\n", ADS101x_CFG_REG_START_CONV | ADS1015_CFG_REG_MSB_PGA(ADC_PGA_SETTING) |
-//             ADS101x_CFG_REG_MSB_MODE(ADS101x_MODE_ONESHOT));
-//  Wire.write(ADS101x_CFG_REG_START_CONV | ADS1015_CFG_REG_MSB_PGA(ADC_PGA_SETTING) |
-//             ADS101x_CFG_REG_MSB_MODE(ADS101x_MODE_ONESHOT));
-
-  Serial.printf("0x%02x\n", ADS101x_CFG_REG_START_CONV | 
-                            ADS1015_CFG_REG_MSB_MUX(ADS1015_MUX_AIN0_GND) |
-                            ADS1015_CFG_REG_MSB_PGA(ADC_PGA_SETTING) |
-                            ADS101x_CFG_REG_MSB_MODE(ADS101x_MODE_ONESHOT));
-  Wire.write(ADS101x_CFG_REG_START_CONV | 
-                            ADS1015_CFG_REG_MSB_MUX(ADS1015_MUX_AIN0_GND) |
-                            ADS1015_CFG_REG_MSB_PGA(ADC_PGA_SETTING) |
-                            ADS101x_CFG_REG_MSB_MODE(ADS101x_MODE_ONESHOT));
-
-  Serial.printf("0x%02x\n", ADS101x_CFG_REG_LSB_DR(ADS101x_DR_1K6_SPS) |
-             ADS1015_CFG_REG_LSB_COMP_MODE(ADS1015_COMP_MODE_WIN) |
-             //ADS1015_CFG_REG_LSB_COMP_POL(ADS1015_COMP_POL_HI) |
-             ADS1015_CFG_REG_LSB_COMP_LATCH(ADS1015_COMP_LATCH) |
-             ADS1015_CFG_REG_LSB_COMP(ADS1015_COMP_CFG_TRG_4));
-
-  Wire.write(ADS101x_CFG_REG_LSB_DR(ADS101x_DR_1K6_SPS) |
-             ADS1015_CFG_REG_LSB_COMP_MODE(ADS1015_COMP_MODE_WIN) |
-             //ADS1015_CFG_REG_LSB_COMP_POL(ADS1015_COMP_POL_HI) |
-             ADS1015_CFG_REG_LSB_COMP_LATCH(ADS1015_COMP_LATCH) |
-             ADS1015_CFG_REG_LSB_COMP(ADS1015_COMP_CFG_TRG_4));
-  ret = Wire.endTransmission();
-  if (!ret) {
-    Serial.println("Sucesfully configured ADC Config Register");
-  } else {
-    Serial.printf("I2C failed : %d\n", ret);
-  }
-#endif
+skip_threshold_config:
   good_to_go = 1;
 }
 
 void loop() {
-  uint32_t vcc = 0, count = 20, ret = 0, update_success = 0;
+  uint32_t vcc = 0, count = 0, ret = 0, update_success = 0;
   HTTPClient http;
   char url[255];
 
@@ -319,17 +367,19 @@ void loop() {
     goto deep_sleep;
   }
 
-  while ((WiFi.status() != WL_CONNECTED) && (--count)) {
+  do {
+    start_measurement();
     delay(500);
+    vcc += read_measurement();
     Serial.print(".");
-  }
+  } while ((WiFi.status() != WL_CONNECTED) && (count++ < MAX_WIFI_CONNECT_RETRY));
 
-  if (!count) {
+  if (count == MAX_WIFI_CONNECT_RETRY) {
     Serial.println("");
     Serial.println("WiFi connection failed, going to sleep");
     goto deep_sleep;
   }
-  
+
   Serial.println("");
   Serial.println("WiFi connected");
 
@@ -385,21 +435,9 @@ void loop() {
   } while (!(ret & ADS101x_CFG_REG_CONV_RDY));
   Serial.println("Conversion is done");
 #endif
-  Wire.beginTransmission(ADS101x_ADDR_GND);
-  Wire.write(ADS101x_PTR_CONV_REG);
-  ret = Wire.endTransmission();
-  if (!ret) {
-    Serial.println("Sucesfully read conversion result");
-  } else {
-    Serial.printf("I2C failed : %d\n", ret);
-  }
   
-  Wire.requestFrom(ADS101x_ADDR_GND, ADS101x_CONV_LEN);
-  vcc = Wire.read() << 8;
-  vcc |= Wire.read();
-  Serial.print("Raw voltage is: "); Serial.println(vcc);
-  vcc = CODE_TO_MV(vcc);
-
+  vcc = vcc / (count + 1);
+ 
   if (water_alarm) {
     sprintf(url, CENTRAL_URL, vcc, 1);
   } else {
