@@ -1,0 +1,204 @@
+{
+  "uuid": "992045c8ccc57f6462944c8158f2fffd",
+  "path": "Offline/ESP_Server",
+  "name": "ESP_Server",
+  "content": "",
+  "created_at": "2020-12-29 22:27:59",
+  "updated_at": "2021-01-03 18:20:24",
+  "stick": "",
+  "documents": [
+    {
+      "uuid": "45c9b5995f3b62c7b4e31f98e69bb851",
+      "title": "ESP Server",
+      "description": "",
+      "docType": "1",
+      "master": "",
+      "thumb": "/images/thumb-default.png",
+      "components": {
+        "3f60757f7d33472ab24c2a33e776080a": 1,
+        "0b833263bcfb409d8a029dcd9c6a3b59": 1,
+        "54b9ebb30ec04f3a9a67d8fa51a8adf6": 2,
+        "886f38f10d6245b8aea4e5b6208aa191": 5,
+        "64ee0a97f0ad4a62bb7ecebf757b28db": 1,
+        "802d5fb448efd3d50e4ac51c5f201094": 1,
+        "c91e889a714a427f8ce4048a0e0ce3e0": 1,
+        "8be39d8875a7425292e11c6668f212d5": 1,
+        "3232bb10e8bc416eb290508c7e37c767": 1
+      },
+      "BOM": [
+        [
+          "Value",
+          "Quantity",
+          "Package",
+          "Components",
+          "CustomPara"
+        ],
+        [
+          "2N2222",
+          1,
+          "TO-92-3_L4.9-W3.7-P1.27-L",
+          "Q1",
+          {
+            "BOM_Supplier": "LCSC",
+            "BOM_Manufacturer": "SEMTECH",
+            "BOM_Manufacturer Part": "2N2222",
+            "BOM_Supplier Part": "C118536",
+            "puuid": "6924b36489de4921bb29ca14bf27c33f",
+            "uuid": "0b833263bcfb409d8a029dcd9c6a3b59"
+          }
+        ],
+        [
+          "ESP12E",
+          1,
+          "ESP12E",
+          "U6",
+          {
+            "BOM_Manufacturer": "",
+            "BOM_Manufacturer Part": "",
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "puuid": "9a056d368d8e493690a7348fa065cbc6",
+            "uuid": "3f60757f7d33472ab24c2a33e776080a"
+          }
+        ],
+        [
+          "470",
+          1,
+          "AXIAL-0.4",
+          "R10",
+          {
+            "BOM_Supplier": "LCSC",
+            "BOM_Manufacturer": "UniOhm",
+            "BOM_Manufacturer Part": "MFR0W4F4700A50",
+            "BOM_Supplier Part": "C58592",
+            "puuid": "58660ac887734961820739bcb905346a",
+            "uuid": "8be39d8875a7425292e11c6668f212d5"
+          }
+        ],
+        [
+          "XY301V-A-5.0-2P",
+          2,
+          "CONN-TH_XY301V-A-5.0-2P",
+          "U7,U8",
+          {
+            "BOM_Supplier": "LCSC",
+            "BOM_Supplier Part": "C557651",
+            "BOM_Manufacturer": "--",
+            "BOM_Manufacturer Part": "XY301V-A-5.0-2P",
+            "puuid": "634790b3a3634c79b0ccf4a39e7e3d95",
+            "uuid": "54b9ebb30ec04f3a9a67d8fa51a8adf6"
+          }
+        ],
+        [
+          "1000uF 6.3V Capacitor",
+          1,
+          "1000UF 6.3V CAPACITOR",
+          "C2",
+          {
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "BOM_Manufacturer": "",
+            "BOM_Manufacturer Part": "",
+            "puuid": "14546a8e82844675907107bac8faa50c",
+            "uuid": "64ee0a97f0ad4a62bb7ecebf757b28db"
+          }
+        ],
+        [
+          "Button-6x6x6mm",
+          1,
+          "SW-TH_4PIN-L6.00-W6.00",
+          "SW2",
+          {
+            "BOM_Supplier Part": "C71836",
+            "BOM_Supplier": "LCSC",
+            "BOM_Manufacturer": "BBJ",
+            "BOM_Manufacturer Part": "Switch,6*6*6Plastic head,260G, 0.25mm,Straight line",
+            "puuid": "c0f0cb161cd64d4492cf0688991f9b17",
+            "uuid": "802d5fb448efd3d50e4ac51c5f201094"
+          }
+        ],
+        [
+          "2k2",
+          5,
+          "AXIAL-0.5",
+          "R9,R6,R7,R5,R8",
+          {
+            "BOM_EasyEDA": "C69874",
+            "BOM_Supplier Part": "C69874",
+            "BOM_Supplier": "EasyEDA",
+            "BOM_Manufacturer Part": "CFR02SJ0220A10",
+            "puuid": "82b24632f7994e08b23819f39a530418",
+            "uuid": "886f38f10d6245b8aea4e5b6208aa191"
+          }
+        ],
+        [
+          "100pF",
+          1,
+          "CAP-TH_L5.0-W2.5-P5.08-D0.7",
+          "C1",
+          {
+            "BOM_Supplier": "LCSC",
+            "BOM_Supplier Part": "C254079",
+            "BOM_Manufacturer": "Dersonic",
+            "BOM_Manufacturer Part": "CC1H101KC74DSL4B10MN",
+            "puuid": "e609923febba487d930e816587043b51",
+            "uuid": "3232bb10e8bc416eb290508c7e37c767"
+          }
+        ],
+        [
+          "RED GREEN CATODO",
+          1,
+          "LED GREEN RED CATODO",
+          "D1",
+          {
+            "BOM_Manufacturer Part": "RG309WK-C",
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "puuid": "28fd1eda30d94866b0bae161754f2624",
+            "uuid": "c91e889a714a427f8ce4048a0e0ce3e0"
+          }
+        ]
+      ],
+      "updateTime": 1609690569,
+      "createTime": 1609340734,
+      "histories": [],
+      "created_at": "2020-12-30 17:05:34",
+      "updated_at": "2021-01-03 18:16:09"
+    },
+    {
+      "uuid": "7f2d89eebafedbb7d195afc05d00169f",
+      "puuid": "992045c8ccc57f6462944c8158f2fffd",
+      "title": "PCB_2021-01-03_18-17-48",
+      "filename": "PCB_2021-01-03_18-17-48.json",
+      "description": "",
+      "docType": "3",
+      "master": "",
+      "thumb": "/images/thumb-default.png",
+      "components": {
+        "6924b36489de4921bb29ca14bf27c33f": 1,
+        "9a056d368d8e493690a7348fa065cbc6": 1,
+        "58660ac887734961820739bcb905346a": 1,
+        "634790b3a3634c79b0ccf4a39e7e3d95": 2,
+        "14546a8e82844675907107bac8faa50c": 1,
+        "c0f0cb161cd64d4492cf0688991f9b17": 1,
+        "82b24632f7994e08b23819f39a530418": 5,
+        "e609923febba487d930e816587043b51": 1,
+        "28fd1eda30d94866b0bae161754f2624": 1
+      },
+      "BOM": [],
+      "updateTime": 1609690824,
+      "createTime": 1609690668,
+      "histories": [],
+      "created_at": "2021-01-03 18:17:48",
+      "updated_at": "2021-01-03 18:20:24"
+    }
+  ],
+  "sort": [
+    "73364ce09e4d52dab4b2f4d1d8d46cd8",
+    "45c9b5995f3b62c7b4e31f98e69bb851"
+  ],
+  "title": "ESP_Server",
+  "foldername": "ESP_Server",
+  "schfilename": "ESP_Server.json",
+  "schfilemtime": 1609690569232
+}
