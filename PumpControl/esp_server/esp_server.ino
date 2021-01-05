@@ -37,7 +37,6 @@
 #define MQTT_TOPIC_PUB1_STR1  "PUMP_ON"
 #define MQTT_TOPIC_PUB1_STR2  "PUMP_OFF"
 #define MQTT_TOPIC_PUB1_STR3  "RST"
-//#define MQTT_CLIENT_NAME      "pumpctrl-server"
 
 #define PUB_QUEUE_DEPTH       4
 #define CHAR_ARRAY_LEN  32
@@ -57,8 +56,8 @@
 #endif
 
 struct mqtt_queue {
-  char topic[32];
-  char str[32];
+  char topic[CHAR_ARRAY_LEN];
+  char str[CHAR_ARRAY_LEN];
   unsigned int len;
   boolean retained;
 };
@@ -116,7 +115,6 @@ int queue_publish(const char *topic, const uint8_t *payload, unsigned int len, b
     return -1;
   }
 
-  //mqtt_queue[pub_pidx].topic = topic;
   strcpy(mqtt_queue[pub_pidx].topic,topic);
   strncpy(mqtt_queue[pub_pidx].str, (const char *)payload, len);
   mqtt_queue[pub_pidx].len = len;
@@ -137,10 +135,8 @@ void callback(char *topic, byte *payload, unsigned int length) {
         SERIAL_PRINT("Turning pump ON\n");
         relay_state = 1;
 
-        //digitalWrite(RELAY_PIN, 1);
         digitalWrite(LED_RED, 1);
 
-        //client.publish(MQTT_TOPIC_PUB1, (const uint8_t *)MQTT_TOPIC_PUB1_STR1, strlen(MQTT_TOPIC_PUB1_STR1), true);        
         ret = queue_publish(MQTT_TOPIC_PUB1, (const uint8_t *)MQTT_TOPIC_PUB1_STR1, strlen(MQTT_TOPIC_PUB1_STR1), true);
         if (ret) {
           SERIAL_PRINTF("Failed to publish : %d\n", ret);
@@ -149,10 +145,8 @@ void callback(char *topic, byte *payload, unsigned int length) {
         SERIAL_PRINT("Turning pump OFF\n");
         relay_state = 0;
         
-        //digitalWrite(RELAY_PIN, 0);
         digitalWrite(LED_RED, 0);
 
-        //client.publish(MQTT_TOPIC_PUB1, (const uint8_t *)MQTT_TOPIC_PUB1_STR2, strlen(MQTT_TOPIC_PUB1_STR2), true);
         ret = queue_publish(MQTT_TOPIC_PUB1, (const uint8_t *)MQTT_TOPIC_PUB1_STR2, strlen(MQTT_TOPIC_PUB1_STR2), true);
         if (ret) {
           SERIAL_PRINTF("Failed to publish : %d\n", ret);
@@ -187,12 +181,9 @@ char ssid[CHAR_ARRAY_LEN], password[CHAR_ARRAY_LEN];
 void connect_to_wifi()
 {
   int ret;
+
   // Bring up the WiFi connection
   WiFi.mode(WIFI_STA);
-
-  WiFi.persistent(false);
-  WiFi.setAutoConnect(false);
-  WiFi.setAutoReconnect(false);
 
   while ((ret = WiFi.config(ip_addr, gw, subnet)) == 0) {
     SERIAL_PRINTLN("Applying IP config failed, retrying");
@@ -283,26 +274,16 @@ void setup() {
 
   pinMode(LED_RED, OUTPUT);
   pinMode(LED_GREEN, OUTPUT);
-  //pinMode(RELAY_PIN, OUTPUT);
   pinMode(PUSH_BUTTON, INPUT_PULLUP);
 
   connect_to_wifi();
   connect_to_mqtt();
 
-  //digitalWrite(RELAY_PIN, 0);
   digitalWrite(LED_RED, 0);
   digitalWrite(LED_GREEN, 1);
 }
 
 void loop() {
-
-  if (WiFi.status() != WL_CONNECTED)
-  {
-    digitalWrite(LED_GREEN, 0);
-    connect_to_wifi();
-    digitalWrite(LED_GREEN, 1);
-  }
-
   if (!client.connected())
   {
       digitalWrite(LED_GREEN, 0);
@@ -325,7 +306,7 @@ void loop() {
   if (debounce >= BUTTON_DEBOUNCE_LIMIT) {
     SERIAL_PRINTLN("Button pressed");
     callback(MQTT_TOPIC_SUB1, (byte *)MQTT_TOPIC_SUB1_STR1, strlen(MQTT_TOPIC_SUB1_STR1));
-    //queue_publish(MQTT_TOPIC_SUB1, (const uint8_t *)MQTT_TOPIC_SUB1_STR1, strlen(MQTT_TOPIC_SUB1_STR1), true);
+
     debounce = 0;
     cool_off = COOL_OFF_PERIOD * 1000 / LOOP_DELAY;
   }
