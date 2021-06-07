@@ -1,0 +1,437 @@
+{
+  "uuid": "3d2399d5b4a374c7055766adfdf7e018",
+  "path": "Offline/WaterTank",
+  "name": "WaterTank",
+  "content": "",
+  "created_at": "2021-06-01 13:00:16",
+  "updated_at": "2021-06-07 20:12:14",
+  "stick": "",
+  "documents": [
+    {
+      "uuid": "59728c66f5d7739a7ac55fb86806c22a",
+      "title": "Main",
+      "description": "",
+      "docType": "1",
+      "master": "",
+      "thumb": "/images/thumb-default.png",
+      "components": {
+        "9560291c595d48d888a39d6a098047a2": 2,
+        "cb15fa1ca31a47ca95bcf55a37e31f80": 1,
+        "3f60757f7d33472ab24c2a33e776080a": 1,
+        "8c22d00442cc4a0290c41cc51962e74a": 1,
+        "04b05a7850bf43eebfc59303dc817788": 1,
+        "bb009484ef804a24ac5d18c54b249586": 6,
+        "fd11c9e744c44aeab6011e8bd4c3ea86": 2,
+        "e3eab123787c441b897fcce25e4fe427": 2,
+        "8cb0931e7aee4571ab281a4f2e7b6e80": 1,
+        "64ec0dca7dc80b5bf9f8cf3b9d157cdd": 1
+      },
+      "BOM": [
+        [
+          "Value",
+          "Quantity",
+          "Package",
+          "Components",
+          "CustomPara"
+        ],
+        [
+          "ESP12E",
+          1,
+          "ESP12E",
+          "U2",
+          {
+            "BOM_Manufacturer": "",
+            "BOM_Manufacturer Part": "",
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "puuid": "9a056d368d8e493690a7348fa065cbc6",
+            "uuid": "3f60757f7d33472ab24c2a33e776080a"
+          }
+        ],
+        [
+          "7805",
+          1,
+          "TO-220-3_L10.0-W4.5-P2.54-L",
+          "U4",
+          {
+            "BOM_Supplier": "LCSC",
+            "BOM_Supplier Part": "C305416",
+            "BOM_Manufacturer": "Foshan Blue Rocket Elec",
+            "BOM_Manufacturer Part": "7805",
+            "BOM_JLCPCB Part Class": "Extended Part",
+            "puuid": "948e610cffd14df79f04c73832b1409b",
+            "uuid": "04b05a7850bf43eebfc59303dc817788"
+          }
+        ],
+        [
+          "level shifter-Red",
+          1,
+          "IIC LOGIC LEVEL CONVERTER",
+          "U3",
+          {
+            "BOM_Manufacturer Part": "level shifter",
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "puuid": "642f16c333204f39a4b7817881ac1a43",
+            "uuid": "8c22d00442cc4a0290c41cc51962e74a"
+          }
+        ],
+        [
+          "CONN-TH_2P-P5.00",
+          1,
+          "CONN-TH_2P-P5.00",
+          "P3",
+          {
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "LCSC",
+            "BOM_Manufacturer": "",
+            "BOM_Manufacturer Part": "",
+            "puuid": "be1b3456245c4373bfecde52b7e1b1d6",
+            "uuid": "8cb0931e7aee4571ab281a4f2e7b6e80"
+          }
+        ],
+        [
+          "Switch-SMD-6x6x11",
+          1,
+          "SW-SMD_4P-L6.0-W6.0-P4.50-LS8.5",
+          "SW1",
+          {
+            "BOM_Supplier Part": "C91998",
+            "BOM_Supplier": "LCSC",
+            "BOM_Manufacturer": "BBJ",
+            "BOM_Manufacturer Part": "Switch6*6*11",
+            "puuid": "fe7f3765743b44ec9b6aae9df968e7ba",
+            "uuid": "64ec0dca7dc80b5bf9f8cf3b9d157cdd"
+          }
+        ],
+        [
+          "2N2222",
+          2,
+          "TO92-EBC-OVAL",
+          "T1,T2",
+          {
+            "BOM_Manufacturer Part": "",
+            "puuid": "64b2ab94a2354a2b98bcf97937fa4e52",
+            "uuid": "9560291c595d48d888a39d6a098047a2"
+          }
+        ],
+        [
+          "2k2",
+          4,
+          "R0603",
+          "R3,R7,R6,R2",
+          {
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "BOM_Manufacturer Part": "",
+            "puuid": "1bf59dff03ec4233aa077dc7cf0e92a1",
+            "uuid": "bb009484ef804a24ac5d18c54b249586"
+          }
+        ],
+        [
+          "470",
+          2,
+          "R0603",
+          "R4,R5",
+          {
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "BOM_Manufacturer Part": "",
+            "puuid": "1bf59dff03ec4233aa077dc7cf0e92a1",
+            "uuid": "bb009484ef804a24ac5d18c54b249586"
+          }
+        ],
+        [
+          "bicolor_LED_K",
+          1,
+          "BICOLOR LED 3MM",
+          "LED1",
+          {
+            "BOM_Manufacturer Part": "bicolor LED",
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "puuid": "d0273fd5b07c48f2b24dc563850dbc0c",
+            "uuid": "cb15fa1ca31a47ca95bcf55a37e31f80"
+          }
+        ],
+        [
+          "CONN-TH_3P-P5.00",
+          2,
+          "CONN-TH_3P-P5.00",
+          "P2,P1",
+          {
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "LCSC",
+            "BOM_Manufacturer": "",
+            "BOM_Manufacturer Part": "",
+            "puuid": "b786b51938fe4f1f9bc9380870cc425c",
+            "uuid": "e3eab123787c441b897fcce25e4fe427"
+          }
+        ],
+        [
+          "0.1u",
+          1,
+          "C0603",
+          "C1",
+          {
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "BOM_Manufacturer Part": "",
+            "puuid": "f187d3c25f9f43a29b67d3cfa364ee78",
+            "uuid": "fd11c9e744c44aeab6011e8bd4c3ea86"
+          }
+        ],
+        [
+          "30u",
+          1,
+          "C0603",
+          "C2",
+          {
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "BOM_Manufacturer Part": "",
+            "puuid": "f187d3c25f9f43a29b67d3cfa364ee78",
+            "uuid": "fd11c9e744c44aeab6011e8bd4c3ea86"
+          }
+        ],
+        [
+          "HC-SR04",
+          1,
+          "HC-SR04",
+          "U1",
+          {
+            "BOM_Manufacturer Part": "",
+            "puuid": "0f4560c24d02439189e6afe93feb7088",
+            "uuid": "2b8da94d93754a96b3747061f316b2de"
+          }
+        ],
+        [
+          "2k2",
+          1,
+          "AXIAL-0.5",
+          "R1",
+          {
+            "BOM_EasyEDA": "C69874",
+            "BOM_Supplier Part": "C69874",
+            "BOM_Supplier": "EasyEDA",
+            "BOM_Manufacturer Part": "CFR02SJ0220A10",
+            "puuid": "82b24632f7994e08b23819f39a530418",
+            "uuid": "886f38f10d6245b8aea4e5b6208aa191"
+          }
+        ],
+        [
+          "CONNECTOR 3P",
+          1,
+          "JST-XH 3P",
+          "J1",
+          {
+            "BOM_Manufacturer": "",
+            "BOM_Manufacturer Part": "",
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "puuid": "33b70cb683db44eebcef0b1df493b2f7",
+            "uuid": "be955d87dd8f41e5b7e19b3db47c8240"
+          }
+        ]
+      ],
+      "updateTime": 1623085934,
+      "createTime": 1622541616,
+      "histories": [],
+      "created_at": "2021-06-01 13:00:16",
+      "updated_at": "2021-06-07 20:12:14"
+    },
+    {
+      "uuid": "e60f772086d91f40d3d482320cf0162b",
+      "title": "Water Level Sensor",
+      "description": "",
+      "docType": "1",
+      "master": "",
+      "thumb": "/images/thumb-default.png",
+      "components": {
+        "2b8da94d93754a96b3747061f316b2de": 1,
+        "886f38f10d6245b8aea4e5b6208aa191": 1,
+        "be955d87dd8f41e5b7e19b3db47c8240": 1
+      },
+      "BOM": [
+        [
+          "Value",
+          "Quantity",
+          "Package",
+          "Components",
+          "CustomPara"
+        ],
+        [
+          "ESP12E",
+          1,
+          "ESP12E",
+          "U2",
+          {
+            "BOM_Manufacturer": "",
+            "BOM_Manufacturer Part": "",
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "puuid": "9a056d368d8e493690a7348fa065cbc6",
+            "uuid": "3f60757f7d33472ab24c2a33e776080a"
+          }
+        ],
+        [
+          "7805",
+          1,
+          "TO-220-3_L10.0-W4.5-P2.54-L",
+          "U4",
+          {
+            "BOM_Supplier": "LCSC",
+            "BOM_Supplier Part": "C305416",
+            "BOM_Manufacturer": "Foshan Blue Rocket Elec",
+            "BOM_Manufacturer Part": "7805",
+            "BOM_JLCPCB Part Class": "Extended Part",
+            "puuid": "948e610cffd14df79f04c73832b1409b",
+            "uuid": "04b05a7850bf43eebfc59303dc817788"
+          }
+        ],
+        [
+          "level shifter-Red",
+          1,
+          "IIC LOGIC LEVEL CONVERTER",
+          "U3",
+          {
+            "BOM_Manufacturer Part": "level shifter",
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "puuid": "642f16c333204f39a4b7817881ac1a43",
+            "uuid": "8c22d00442cc4a0290c41cc51962e74a"
+          }
+        ],
+        [
+          "2N2222",
+          2,
+          "TO92-EBC-OVAL",
+          "T2,T1",
+          {
+            "BOM_Manufacturer Part": "",
+            "puuid": "64b2ab94a2354a2b98bcf97937fa4e52",
+            "uuid": "9560291c595d48d888a39d6a098047a2"
+          }
+        ],
+        [
+          "2k2",
+          4,
+          "R0603",
+          "R3,R4,R5,R2",
+          {
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "BOM_Manufacturer Part": "",
+            "puuid": "1bf59dff03ec4233aa077dc7cf0e92a1",
+            "uuid": "bb009484ef804a24ac5d18c54b249586"
+          }
+        ],
+        [
+          "CONNECTOR 3P",
+          2,
+          "JST-XH 3P",
+          "J3,J2",
+          {
+            "BOM_Manufacturer": "",
+            "BOM_Manufacturer Part": "",
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "puuid": "33b70cb683db44eebcef0b1df493b2f7",
+            "uuid": "be955d87dd8f41e5b7e19b3db47c8240"
+          }
+        ],
+        [
+          "bicolor_LED_K",
+          1,
+          "BICOLOR LED 3MM",
+          "LED1",
+          {
+            "BOM_Manufacturer Part": "bicolor LED",
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "puuid": "d0273fd5b07c48f2b24dc563850dbc0c",
+            "uuid": "cb15fa1ca31a47ca95bcf55a37e31f80"
+          }
+        ],
+        [
+          "0.1u",
+          1,
+          "C0603",
+          "C1",
+          {
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "BOM_Manufacturer Part": "",
+            "puuid": "f187d3c25f9f43a29b67d3cfa364ee78",
+            "uuid": "fd11c9e744c44aeab6011e8bd4c3ea86"
+          }
+        ],
+        [
+          "30u",
+          1,
+          "C0603",
+          "C2",
+          {
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "BOM_Manufacturer Part": "",
+            "puuid": "f187d3c25f9f43a29b67d3cfa364ee78",
+            "uuid": "fd11c9e744c44aeab6011e8bd4c3ea86"
+          }
+        ],
+        [
+          "HC-SR04",
+          1,
+          "HC-SR04",
+          "U1",
+          {
+            "BOM_Manufacturer Part": "",
+            "puuid": "0f4560c24d02439189e6afe93feb7088",
+            "uuid": "2b8da94d93754a96b3747061f316b2de"
+          }
+        ],
+        [
+          "2k2",
+          1,
+          "AXIAL-0.5",
+          "R1",
+          {
+            "BOM_EasyEDA": "C69874",
+            "BOM_Supplier Part": "C69874",
+            "BOM_Supplier": "EasyEDA",
+            "BOM_Manufacturer Part": "CFR02SJ0220A10",
+            "puuid": "82b24632f7994e08b23819f39a530418",
+            "uuid": "886f38f10d6245b8aea4e5b6208aa191"
+          }
+        ],
+        [
+          "CONNECTOR 3P",
+          1,
+          "JST-XH 3P",
+          "J1",
+          {
+            "BOM_Manufacturer": "",
+            "BOM_Manufacturer Part": "",
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "puuid": "33b70cb683db44eebcef0b1df493b2f7",
+            "uuid": "be955d87dd8f41e5b7e19b3db47c8240"
+          }
+        ]
+      ],
+      "updateTime": 1622872510,
+      "createTime": 1622654504,
+      "histories": [],
+      "created_at": "2021-06-02 20:21:44",
+      "updated_at": "2021-06-05 08:55:10"
+    }
+  ],
+  "sort": [
+    "59728c66f5d7739a7ac55fb86806c22a",
+    "e60f772086d91f40d3d482320cf0162b"
+  ],
+  "title": "WaterTank",
+  "foldername": "WaterTank",
+  "schfilename": "WaterTank.json",
+  "schfilemtime": 1623085934380
+}
