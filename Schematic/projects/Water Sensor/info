@@ -1,0 +1,173 @@
+{
+  "uuid": "6afd853f9c93810cc78c1361fee594b5",
+  "path": "Offline/Water Sensor",
+  "name": "Water Sensor",
+  "content": "",
+  "created_at": "2021-02-20 18:52:34",
+  "updated_at": "2021-03-15 15:09:58",
+  "stick": "",
+  "documents": [
+    {
+      "uuid": "7cd73a06a75bd97cc242af41172d1fd2",
+      "title": "ESP Client",
+      "description": "",
+      "docType": "1",
+      "master": "",
+      "thumb": "/images/thumb-default.png",
+      "components": {
+        "54b9ebb30ec04f3a9a67d8fa51a8adf6": 2,
+        "d2b62664fb9240ae9f382a07b87e159d": 1,
+        "62577a7b11d0491bb070fd0071aa11f6": 1,
+        "886f38f10d6245b8aea4e5b6208aa191": 1,
+        "64ee0a97f0ad4a62bb7ecebf757b28db": 1,
+        "93a877ae27b72e8d26a4c84564c2f07b": 1,
+        "0b833263bcfb409d8a029dcd9c6a3b59": 1,
+        "b0248eb51e084227889f2cb84eab79c4": 2
+      },
+      "BOM": [
+        [
+          "Value",
+          "Quantity",
+          "Package",
+          "Components",
+          "CustomPara"
+        ],
+        [
+          "2N2222",
+          1,
+          "TO-92-3_L4.9-W3.7-P1.27-L",
+          "Q2",
+          {
+            "BOM_Supplier": "LCSC",
+            "BOM_Manufacturer": "SEMTECH",
+            "BOM_Manufacturer Part": "2N2222",
+            "BOM_Supplier Part": "C118536",
+            "BOM_LCSC Assembly": "Yes",
+            "puuid": "6924b36489de4921bb29ca14bf27c33f",
+            "uuid": "0b833263bcfb409d8a029dcd9c6a3b59"
+          }
+        ],
+        [
+          "XY301V-A-5.0-2P",
+          2,
+          "CONN-TH_XY301V-A-5.0-2P",
+          "U5,U4",
+          {
+            "BOM_Supplier": "LCSC",
+            "BOM_Supplier Part": "C557651",
+            "BOM_Manufacturer": "--",
+            "BOM_Manufacturer Part": "XY301V-A-5.0-2P",
+            "puuid": "634790b3a3634c79b0ccf4a39e7e3d95",
+            "uuid": "54b9ebb30ec04f3a9a67d8fa51a8adf6"
+          }
+        ],
+        [
+          "1000uF 6.3V Capacitor",
+          1,
+          "1000UF 6.3V CAPACITOR",
+          "C1",
+          {
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "BOM_Manufacturer": "",
+            "BOM_Manufacturer Part": "",
+            "puuid": "14546a8e82844675907107bac8faa50c",
+            "uuid": "64ee0a97f0ad4a62bb7ecebf757b28db"
+          }
+        ],
+        [
+          "ESP-12S",
+          1,
+          "WIRELM-SMD_ESP-12S",
+          "U1",
+          {
+            "BOM_Supplier": "LCSC",
+            "BOM_Manufacturer": "Ai-Thinker",
+            "BOM_Manufacturer Part": "ESP-12S",
+            "BOM_Supplier Part": "C82898",
+            "puuid": "82f66d9716004e5589d2b2d4099b18f7",
+            "uuid": "93a877ae27b72e8d26a4c84564c2f07b"
+          }
+        ],
+        [
+          "2k2",
+          1,
+          "AXIAL-0.5",
+          "R2",
+          {
+            "BOM_EasyEDA": "C69874",
+            "BOM_Supplier Part": "C69874",
+            "BOM_Supplier": "EasyEDA",
+            "BOM_Manufacturer Part": "CFR02SJ0220A10",
+            "puuid": "82b24632f7994e08b23819f39a530418",
+            "uuid": "886f38f10d6245b8aea4e5b6208aa191"
+          }
+        ],
+        [
+          "ATTINY85V-10SU",
+          1,
+          "SOIC-8_L5.3-W5.3-P1.27-LS8.0-BL",
+          "U2",
+          {
+            "BOM_Supplier": "LCSC",
+            "BOM_Supplier Part": "C152192",
+            "BOM_Manufacturer": "Microchip Tech",
+            "BOM_Manufacturer Part": "ATTINY85V-10SU",
+            "BOM_JLCPCB SMD": "Yes",
+            "puuid": "de8599bb99f14253b8909bb7e603a704",
+            "uuid": "62577a7b11d0491bb070fd0071aa11f6"
+          }
+        ],
+        [
+          "47k",
+          1,
+          "R0603",
+          "R4",
+          {
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "BOM_Manufacturer Part": "",
+            "puuid": "1bf59dff03ec4233aa077dc7cf0e92a1",
+            "uuid": "b0248eb51e084227889f2cb84eab79c4"
+          }
+        ],
+        [
+          "6k",
+          1,
+          "R0603",
+          "R5",
+          {
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "BOM_Manufacturer Part": "",
+            "puuid": "1bf59dff03ec4233aa077dc7cf0e92a1",
+            "uuid": "b0248eb51e084227889f2cb84eab79c4"
+          }
+        ],
+        [
+          "S7V8F3",
+          1,
+          "S7V8F3",
+          "U3",
+          {
+            "BOM_Manufacturer Part": "",
+            "puuid": "1f0b7337680546568a1a37cefc36e295",
+            "uuid": "d2b62664fb9240ae9f382a07b87e159d"
+          }
+        ]
+      ],
+      "updateTime": 1615813798,
+      "createTime": 1615813277,
+      "histories": [],
+      "created_at": "2021-03-15 15:01:17",
+      "updated_at": "2021-03-15 15:09:58"
+    }
+  ],
+  "sort": [
+    "7cd73a06a75bd97cc242af41172d1fd2"
+  ],
+  "title": "Water Sensor",
+  "foldername": "Water Sensor",
+  "schfilename": "Water Sensor.json",
+  "schfilemtime": 1615813798771
+}
