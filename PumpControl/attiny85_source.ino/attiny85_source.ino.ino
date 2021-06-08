@@ -1,4 +1,4 @@
-#define DEBUG_LEVEL   0
+#define DEBUG_LEVEL   1
 
 #if DEBUG_LEVEL == 0
 #define SERIAL_PRINT(x)
@@ -28,7 +28,7 @@ SendOnlySoftwareSerial Serial(SERIAL_TX);
 #define WAKEUP_BATT_LEVEL_INT     (24 * 60 * 60UL) /* seconds */
 //#define WAKEUP_BATT_LEVEL_INT     (16) /* seconds */
 
-#define ESP_ON_CYCLES             1 /* x AT_TINY_SLEEP_TIME = how long the ESP will be on*/
+#define ESP_ON_CYCLES             2 /* x AT_TINY_SLEEP_TIME = how long the ESP will be on*/
 
 #if (AT_TINY_SLEEP_TIME == 8)
 #define TIMER_PRESCALER_SETTING 9

@@ -14,12 +14,15 @@
 #define CFG_FILE_NAME     "/net_config.txt"
 
 #define PUSH_BUTTON             12
-#define BUTTON_DEBOUNCE_LIMIT   5
 #define LED_RED                 5
 #define LED_GREEN               4
 
-#define LOOP_DELAY            200 /* ms */
-#define COOL_OFF_PERIOD       20 /* s */
+//#define LOOP_DELAY            200 /* ms */
+#define LOOP_DELAY              1000 /* ms */
+//#define BUTTON_DEBOUNCE_LIMIT   5
+#define BUTTON_DEBOUNCE_LIMIT   2
+#define COOL_OFF_PERIOD         20 /* s */
+#define MAX_TRIES_MQTT          20 /* After 20 retries, reconnect wifi */
 
 #define GW_ADDR           169,254,1,1
 #define SUBNET_ADDR       255,255,0,0
@@ -182,6 +185,8 @@ void connect_to_wifi()
 {
   int ret;
 
+  assign_ip_addr();
+
   // Bring up the WiFi connection
   WiFi.mode(WIFI_STA);
 
@@ -208,6 +213,7 @@ void connect_to_wifi()
 void connect_to_mqtt()
 {
   IPAddress mqtt_broker(MQTT_SERVER);
+  int tries = 0;
 
   client.setServer(mqtt_broker, MQTT_PORT);
   client.setCallback(callback);
@@ -220,12 +226,28 @@ void connect_to_mqtt()
       SERIAL_PRINT("failed with state ");
       SERIAL_PRINTLN(client.state());
 
-      toggle_led(LED_GREEN, 1, 300);
+      toggle_led(LED_GREEN, 1, 1000);
+
+      tries++;
+    }
+
+    if (tries == MAX_TRIES_MQTT) {
+      tries = 0;
+      /* Force a reconnection */
+      connect_to_wifi();
     }
   }
 
   client.subscribe(MQTT_TOPIC_SUB1);
   client.publish(MQTT_TOPIC_PUB1, (const uint8_t*)MQTT_TOPIC_PUB1_STR0, strlen(MQTT_TOPIC_PUB1_STR0), true);
+}
+
+void assign_ip_addr()
+{
+  char str[CHAR_ARRAY_LEN];
+
+  sprintf(str,IP_ADDR_TEMPLATE, (int)random(1,254), (int)random(1,254));
+  ip_addr.fromString(str);
 }
 
 void setup() {
@@ -267,10 +289,6 @@ void setup() {
   }
   config_file.close();
   SPIFFS.end();
-
-  sprintf(str,IP_ADDR_TEMPLATE, (int)random(1,254), (int)random(1,254));
-
-  ip_addr.fromString(str);
 
   pinMode(LED_RED, OUTPUT);
   pinMode(LED_GREEN, OUTPUT);
