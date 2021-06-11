@@ -11,20 +11,28 @@
 #include <PubSubClient.h>
 #include <FS.h>
 
-#define CFG_FILE_NAME     "/net_config.txt"
+#define NETCFG_FILE_NAME     "/net_config.txt"
+#define CFG_FILE_NAME     "/limits.bin"
 
+#define SAFE_LVL_BTN            3
 #define PUSH_BUTTON             12
 #define LED_RED                 14
 #define LED_GREEN               16
 
-#define ON_RELAY_PIN            4
-#define OFF_RELAY_PIN           5
+#define RELAY_ON_PIN            4
+#define RELAY_OFF_PIN           5
+
+#define TRIG_ECHO_PIN           13
 
 //#define LOOP_DELAY            200 /* ms */
 #define LOOP_DELAY              1000 /* ms */
 //#define BUTTON_DEBOUNCE_LIMIT   5
 #define BUTTON_DEBOUNCE_LIMIT   2
 #define COOL_OFF_PERIOD         20 /* s */
+#define VALVE_MOVE_TIME_MS      15000 /* ms */
+#define MAX_SAFE_MEASUREMENTS   20
+#define MAX_LEVEL_WARNINGS      10
+
 #define MAX_TRIES_MQTT          20 /* After 20 retries, reconnect wifi */
 
 #define GW_ADDR           169,254,1,1
@@ -37,8 +45,8 @@
 
 #define MQTT_TOPIC_SUB1       "valve/button"
 #define MQTT_TOPIC_SUB1_STR1  "ON"
-#define MQTT_TOPIC_SUB1_STR1  "OFF"
-#define MQTT_TOPIC_SUB1_STR2  "RST"
+#define MQTT_TOPIC_SUB1_STR2  "OFF"
+#define MQTT_TOPIC_SUB1_STR3  "RST"
 
 #define MQTT_TOPIC_PUB1       "water/level"
 
@@ -65,6 +73,9 @@
 #error "You need to define a debug level"
 #endif
 
+#define OFF 0
+#define ON  1
+
 struct mqtt_queue {
   char topic[CHAR_ARRAY_LEN];
   char str[CHAR_ARRAY_LEN];
@@ -72,12 +83,17 @@ struct mqtt_queue {
   boolean retained;
 };
 
+IPAddress ip_addr, gw(GW_ADDR), subnet(SUBNET_ADDR);
+char ssid[CHAR_ARRAY_LEN], password[CHAR_ARRAY_LEN];
+
 WiFiClient wifi_client;
 PubSubClient client(wifi_client);
 
-int relay_state = 0;
-bool all_ok = false;
-int last_button_state = LOW;
+bool post_passed = false;
+char current_state = OFF;
+char current_action = 0xFF;
+short water_safe_limit = 0;
+char water_warning_level = 0;
 int debounce = 0;
 uint32_t cool_off = 0;
 
@@ -87,6 +103,7 @@ unsigned char pub_cidx = 0, pub_pidx = 0;
 void toggle_led(uint8_t pin, uint8_t times, uint16_t delta)
 {
   int i, state = 0;
+  int initial_state = digitalRead(pin);
 
   for (i = 0; i < times * 2; i++)
   {
@@ -100,6 +117,8 @@ void toggle_led(uint8_t pin, uint8_t times, uint16_t delta)
     }
     delay(delta / 2);
   }
+
+  digitalWrite(pin, initial_state);
 }
 
 void publish_msg(bool all)
@@ -135,6 +154,7 @@ int queue_publish(const char *topic, const uint8_t *payload, unsigned int len, b
 
   return 0;
 }
+
 void callback(char *topic, byte *payload, unsigned int length) {
   int ret;
 
@@ -142,35 +162,40 @@ void callback(char *topic, byte *payload, unsigned int length) {
   {
     SERIAL_PRINTLN("Got message:");
     if (strncmp((char *)payload, MQTT_TOPIC_SUB1_STR1, length) == 0) {
-      if (relay_state == 0) {
-        SERIAL_PRINT("Turning pump ON\n");
-        relay_state = 1;
-
-        digitalWrite(LED_RED, 1);
+      if (current_action != 0xFF) {
+        current_action = 1;
+        SERIAL_PRINTLN("Opening valve\n");
 
         ret = queue_publish(MQTT_TOPIC_PUB1, (const uint8_t *)MQTT_TOPIC_PUB1_STR1, strlen(MQTT_TOPIC_PUB1_STR1), true);
         if (ret) {
           SERIAL_PRINTF("Failed to publish : %d\n", ret);
         }
       } else {
-        SERIAL_PRINT("Turning pump OFF\n");
-        relay_state = 0;
-        
-        digitalWrite(LED_RED, 0);
-
-        ret = queue_publish(MQTT_TOPIC_PUB1, (const uint8_t *)MQTT_TOPIC_PUB1_STR2, strlen(MQTT_TOPIC_PUB1_STR2), true);
-        if (ret) {
-          SERIAL_PRINTF("Failed to publish : %d\n", ret);
-        }
+        SERIAL_PRINTF("Can't open valve: action = %d\n", current_action);
       }
     } else {
       if (strncmp((char *)payload, MQTT_TOPIC_SUB1_STR2, length) == 0) {
-        SERIAL_PRINT("Resetting in 5s\n");
-        client.publish(MQTT_TOPIC_PUB1, (const uint8_t *)MQTT_TOPIC_PUB1_STR3, strlen(MQTT_TOPIC_PUB1_STR3), true);
+        if (current_action != 0xFF) {
+          current_action = 0;
+          SERIAL_PRINTLN("Closing valve\n");
 
-        client.disconnect();
-        delay(5000);
-        ESP.restart();
+          ret = queue_publish(MQTT_TOPIC_PUB1, (const uint8_t *)MQTT_TOPIC_PUB1_STR2, strlen(MQTT_TOPIC_PUB1_STR2), true);
+          if (ret) {
+            SERIAL_PRINTF("Failed to publish : %d\n", ret);
+          }
+        } else {
+          SERIAL_PRINTF("Can't close valve: action = %d\n", current_action);
+        }   
+      } else {
+        if (strncmp((char *)payload, MQTT_TOPIC_SUB1_STR3, length) == 0) {
+          SERIAL_PRINT("Resetting in 5s\n");
+          /* Don't care things might crash here... */
+          client.publish(MQTT_TOPIC_PUB1, (const uint8_t *)MQTT_TOPIC_PUB1_STR3, strlen(MQTT_TOPIC_PUB1_STR3), true);
+
+          client.disconnect();
+          delay(5000);
+          ESP.restart();
+        }
       }
     }
   } 
@@ -185,9 +210,6 @@ void callback(char *topic, byte *payload, unsigned int length) {
   SERIAL_PRINTLN("-----------------------");
 
 }
-
-IPAddress ip_addr, gw(GW_ADDR), subnet(SUBNET_ADDR);
-char ssid[CHAR_ARRAY_LEN], password[CHAR_ARRAY_LEN];
 
 void connect_to_wifi()
 {
@@ -258,20 +280,39 @@ void assign_ip_addr()
   ip_addr.fromString(str);
 }
 
-void setup() {
-  char str[CHAR_ARRAY_LEN], file_name[CHAR_ARRAY_LEN],
-       c, pos = 0, line = 0;  
+void save_settings(char state, short water_level)
+{
   File config_file;
+  
+  SPIFFS.begin();
+  config_file = SPIFFS.open(CFG_FILE_NAME, "w");
+  if (!config_file) {
+    SERIAL_PRINTF("Failed to open file %s\n", CFG_FILE_NAME);
+    return;
+  }
 
-  Serial.begin(115200);
+  config_file.write(state);
+  config_file.write(water_level >> 8);
+  config_file.write(water_level & 0xFF);
+
+  SPIFFS.end();
+}
+void setup() {
+  char str[CHAR_ARRAY_LEN],
+       c, pos = 0, line = 0;
+  short avg_water_height;
+  File config_file;
+  int i;
+
+  Serial.begin(115200, SERIAL_8N1, SERIAL_RX_ONLY);
 
   SPIFFS.begin();
 
   randomSeed(millis());
   
-  config_file = SPIFFS.open(CFG_FILE_NAME, "r");
+  config_file = SPIFFS.open(NETCFG_FILE_NAME, "r");
   if (!config_file) {
-    SERIAL_PRINTF("Failed to open file %s\n", file_name);
+    SERIAL_PRINTF("Failed to open file %s\n", CFG_FILE_NAME);
     return;
   }
 
@@ -296,25 +337,181 @@ void setup() {
     }
   }
   config_file.close();
+
+  config_file = SPIFFS.open(CFG_FILE_NAME, "r");
+  if (!config_file) {
+    SERIAL_PRINTF("Failed to open file %s\n", CFG_FILE_NAME);
+    return;
+  }
+
+  while(config_file.position() < config_file.size()) {
+    current_state = config_file.read(); /* 0 = OFF, 1 = ON */
+    water_safe_limit = (config_file.read() << 8) | config_file.read();
+
+    SERIAL_PRINTF("Recovered settings: state %d, water limit %d\n",
+                   current_state, water_safe_limit);
+  }
+
+  config_file.close();
+
   SPIFFS.end();
 
   pinMode(LED_RED, OUTPUT);
   pinMode(LED_GREEN, OUTPUT);
   pinMode(PUSH_BUTTON, INPUT_PULLUP);
+  pinMode(SAFE_LVL_BTN, INPUT_PULLUP);
+  pinMode(RELAY_ON_PIN, OUTPUT);
+  pinMode(RELAY_OFF_PIN, OUTPUT);
 
-  connect_to_wifi();
-  connect_to_mqtt();
+  /* If the set "safe distance" button is pressed, do
+   * the calibration => this can be done only after (P)OR */
+  if (digitalRead(SAFE_LVL_BTN) == 0) {
+    SERIAL_PRINTLN("Setting water safe level");
+    toggle_led(LED_RED, 5, 1000);
 
-  digitalWrite(LED_RED, 0);
-  digitalWrite(LED_GREEN, 1);
+    for (i = 0; i < MAX_SAFE_MEASUREMENTS; i++) {
+      avg_water_height += get_water_height();
+      delay(250);
+    }
+    avg_water_height = avg_water_height / MAX_SAFE_MEASUREMENTS;
+
+    SERIAL_PRINTF("Saving settings: current state %d water safe level %d",
+                current_state, avg_water_height);
+
+    save_settings(current_state, avg_water_height);
+
+    SERIAL_PRINTLN("Saved settings, now resetting in 5s");
+    
+    delay(5000);
+
+    ESP.restart();
+  }
+
+  if (water_safe_limit != 0) {
+    post_passed = true;
+
+    /* Ensure the valve is at one end */
+    if (current_state == OFF) {
+
+      digitalWrite(LED_RED, 0);
+      water_valve_control(LED_GREEN, RELAY_OFF_PIN);
+      digitalWrite(LED_GREEN, 1);
+    } else {
+       digitalWrite(LED_GREEN, 0);
+       water_valve_control(LED_RED, RELAY_ON_PIN);  
+       digitalWrite(LED_RED, 1); 
+    }
+  }
+
+  if (post_passed) {
+      connect_to_wifi();
+      connect_to_mqtt();
+  }
+}
+
+long get_water_height()
+{
+  long height = 0;
+  long duration;
+
+  digitalWrite(TRIG_ECHO_PIN, LOW);
+  delayMicroseconds(5);
+  digitalWrite(TRIG_ECHO_PIN, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG_ECHO_PIN, LOW);
+ 
+  // Read the signal from the sensor: a HIGH pulse whose
+  // duration is the time (in microseconds) from the sending
+  // of the ping to the reception of its echo off of an object.
+  pinMode(TRIG_ECHO_PIN, INPUT);
+  duration = pulseIn(TRIG_ECHO_PIN, HIGH);
+ 
+  // Convert the time into a distance
+  height = (duration/2) / 29.1;     // Divide by 29.1 or multiply by 0.0343
+
+  return height;
+}
+
+void water_valve_control(char pin_led, char relay_pin)
+{
+  int i;
+
+  SERIAL_PRINTF("Setting %d pin to 1\n", relay_pin);
+  digitalWrite(relay_pin, 1);
+
+  for (i = 0; i < VALVE_MOVE_TIME_MS / 1000; i++)
+  {
+    toggle_led(pin_led, 1, 1000);
+  }
+
+  digitalWrite(relay_pin, 0);
+  SERIAL_PRINTF("Setting %d pin to 0\n", relay_pin);
+}
+
+void water_valve_change_state(char state)
+{
+  if (current_state == state) {
+    return;
+  } else {
+    if (state == OFF) {
+      digitalWrite(LED_RED, 0);
+      water_valve_control(LED_GREEN, RELAY_OFF_PIN);
+      /* Let the user know the valve is closed */
+      digitalWrite(LED_GREEN,1);
+    } else {
+      digitalWrite(LED_GREEN, 0);
+      water_valve_control(LED_RED, RELAY_ON_PIN);
+      digitalWrite(LED_RED,1);
+    }
+    current_state = state;
+  }
 }
 
 void loop() {
+  char water_level_str[6] = {0, 0, 0, 0, 0, 0};
+  short cur_water_level;
+  int ret;
+
+  /* If water check level failed => don't do anything */
+  if (!post_passed) {
+    SERIAL_PRINTLN("POST failed, sleeping");
+
+    toggle_led(LED_RED, 10, 1000);
+
+    goto sleep;
+  }
   if (!client.connected())
   {
-      digitalWrite(LED_GREEN, 0);
-      connect_to_mqtt();
+      digitalWrite(LED_RED, 0);
+      water_valve_change_state(OFF);
       digitalWrite(LED_GREEN, 1);
+      
+      connect_to_mqtt();
+  }
+
+  cur_water_level = get_water_height();
+
+  if (current_state == ON) {
+      if (cur_water_level > water_safe_limit) {
+        water_warning_level++;
+ 
+        if (water_warning_level > MAX_LEVEL_WARNINGS) {
+        
+          digitalWrite(LED_RED, 0);
+          water_valve_change_state(OFF);
+          digitalWrite(LED_GREEN, 1);
+
+          water_warning_level = 0;
+        }
+    } else {
+      water_warning_level = 0;
+    }
+  }
+
+  sprintf(water_level_str, "%d", cur_water_level);
+  ret = queue_publish(MQTT_TOPIC_PUB2, (const uint8_t *)water_level_str, strlen(water_level_str), true);
+  if (ret) {
+    SERIAL_PRINTF("Failed to publish : %d\n", ret);
   }
 
   client.loop();
@@ -330,15 +527,60 @@ void loop() {
   }
 
   if (debounce >= BUTTON_DEBOUNCE_LIMIT) {
+    int ret;
     SERIAL_PRINTLN("Button pressed");
-    callback(MQTT_TOPIC_SUB1, (byte *)MQTT_TOPIC_SUB1_STR1, strlen(MQTT_TOPIC_SUB1_STR1));
 
+    if (current_action == 0xFF) {
+      if (current_state == OFF) {
+        current_action = ON;
+      } else {
+        current_action = OFF;
+      }
+    } else {
+      SERIAL_PRINTLN("Can't change state, pending change in progress");
+    }
     debounce = 0;
     cool_off = COOL_OFF_PERIOD * 1000 / LOOP_DELAY;
   }
 
+  /* Somebody wants something... */
+  switch (current_action) {
+    case OFF:
+      digitalWrite(LED_RED, 0);
+      water_valve_change_state(OFF);
+      digitalWrite(LED_GREEN, 1);
+
+      ret = queue_publish(MQTT_TOPIC_PUB1, (const uint8_t *)MQTT_TOPIC_PUB1_STR1, strlen(MQTT_TOPIC_PUB1_STR1), true);
+      if (ret) {
+        SERIAL_PRINTF("Failed to publish : %d\n", ret);
+      }
+      current_action = 0xFF;
+      save_settings(current_state, water_safe_limit);
+
+      break;
+ 
+    case ON:
+      digitalWrite(LED_GREEN, 0);
+      water_valve_change_state(ON);
+      digitalWrite(LED_RED, 1);
+
+      ret = queue_publish(MQTT_TOPIC_PUB1, (const uint8_t *)MQTT_TOPIC_PUB1_STR1, strlen(MQTT_TOPIC_PUB1_STR1), true);
+      if (ret) {
+        SERIAL_PRINTF("Failed to publish : %d\n", ret);
+      }
+      current_action = 0xFF;
+      save_settings(current_state, water_safe_limit);
+
+      break;
+
+    case 0xFF:
+      break;
+  }
+
+  
   /* Check if there's something to send */
   publish_msg(false);
 
+sleep:
   delay(LOOP_DELAY);
 }
