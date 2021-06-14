@@ -32,6 +32,7 @@
 #define VALVE_MOVE_TIME_MS      15000 /* ms */
 #define MAX_SAFE_MEASUREMENTS   20
 #define MAX_LEVEL_WARNINGS      10
+#define WATER_PUBLISH_INTERVAL  5000 /* ms */
 
 #define MAX_TRIES_MQTT          20 /* After 20 retries, reconnect wifi */
 
@@ -48,9 +49,9 @@
 #define MQTT_TOPIC_SUB1_STR2  "OFF"
 #define MQTT_TOPIC_SUB1_STR3  "RST"
 
-#define MQTT_TOPIC_PUB1       "water/level"
+#define MQTT_TOPIC_PUB2       "water/level"
 
-#define MQTT_TOPIC_PUB2       "valve/state"
+#define MQTT_TOPIC_PUB1       "valve/state"
 #define MQTT_TOPIC_PUB1_STR0  "UP"
 #define MQTT_TOPIC_PUB1_STR1  "WATER_ON"
 #define MQTT_TOPIC_PUB1_STR2  "WATER_OFF"
@@ -94,6 +95,7 @@ char current_state = OFF;
 char current_action = 0xFF;
 short water_safe_limit = 0;
 char water_warning_level = 0;
+char water_interval = 0;
 int debounce = 0;
 uint32_t cool_off = 0;
 
@@ -123,14 +125,20 @@ void toggle_led(uint8_t pin, uint8_t times, uint16_t delta)
 
 void publish_msg(bool all)
 {
+  bool ret;
+  SERIAL_PRINTF("publish_msg: cidx = %d, pidx = %d\n", pub_cidx, pub_pidx);
   do {
     if (pub_cidx != pub_pidx) {
       SERIAL_PRINTF("Publishing from index %d\n", pub_cidx);
-      client.publish((const char *)mqtt_queue[pub_cidx].topic,
+      ret = client.publish((const char *)mqtt_queue[pub_cidx].topic,
                      (const uint8_t *)mqtt_queue[pub_cidx].str,
                      mqtt_queue[pub_cidx].len,
                      mqtt_queue[pub_cidx].retained);
       client.loop();
+      if (!ret) {
+        /* Failed to publish => conn dropped. leave it in queue */
+        break;
+      }
       pub_cidx = (pub_cidx + 1) % PUB_QUEUE_DEPTH;
     } else {
       break;
@@ -140,6 +148,7 @@ void publish_msg(bool all)
 
 int queue_publish(const char *topic, const uint8_t *payload, unsigned int len, bool retained)
 {
+  SERIAL_PRINTF("queue_publish: cidx = %d, pidx = %d\n", pub_cidx, pub_pidx);
   if (((pub_pidx + 1) % PUB_QUEUE_DEPTH) == pub_cidx) {
     SERIAL_PRINTLN("Queue full, skipping send!");
     return -1;
@@ -162,7 +171,7 @@ void callback(char *topic, byte *payload, unsigned int length) {
   {
     SERIAL_PRINTLN("Got message:");
     if (strncmp((char *)payload, MQTT_TOPIC_SUB1_STR1, length) == 0) {
-      if (current_action != 0xFF) {
+      if (current_action == 0xFF) {
         current_action = 1;
         SERIAL_PRINTLN("Opening valve\n");
 
@@ -175,7 +184,7 @@ void callback(char *topic, byte *payload, unsigned int length) {
       }
     } else {
       if (strncmp((char *)payload, MQTT_TOPIC_SUB1_STR2, length) == 0) {
-        if (current_action != 0xFF) {
+        if (current_action == 0xFF) {
           current_action = 0;
           SERIAL_PRINTLN("Closing valve\n");
 
@@ -269,7 +278,7 @@ void connect_to_mqtt()
   }
 
   client.subscribe(MQTT_TOPIC_SUB1);
-  client.publish(MQTT_TOPIC_PUB1, (const uint8_t*)MQTT_TOPIC_PUB1_STR0, strlen(MQTT_TOPIC_PUB1_STR0), true);
+  queue_publish(MQTT_TOPIC_PUB1, (const uint8_t*)MQTT_TOPIC_PUB1_STR0, strlen(MQTT_TOPIC_PUB1_STR0), true);
 }
 
 void assign_ip_addr()
@@ -300,11 +309,11 @@ void save_settings(char state, short water_level)
 void setup() {
   char str[CHAR_ARRAY_LEN],
        c, pos = 0, line = 0;
-  short avg_water_height;
+  short avg_water_height = 0;
   File config_file;
   int i;
 
-  Serial.begin(115200, SERIAL_8N1, SERIAL_RX_ONLY);
+  Serial.begin(115200, SERIAL_8N1, SERIAL_TX_ONLY);
 
   SPIFFS.begin();
 
@@ -358,20 +367,19 @@ void setup() {
 
   pinMode(LED_RED, OUTPUT);
   pinMode(LED_GREEN, OUTPUT);
-  pinMode(PUSH_BUTTON, INPUT_PULLUP);
-  pinMode(SAFE_LVL_BTN, INPUT_PULLUP);
+  pinMode(PUSH_BUTTON, INPUT);
+  pinMode(SAFE_LVL_BTN, INPUT);
   pinMode(RELAY_ON_PIN, OUTPUT);
   pinMode(RELAY_OFF_PIN, OUTPUT);
 
   /* If the set "safe distance" button is pressed, do
    * the calibration => this can be done only after (P)OR */
-  if (digitalRead(SAFE_LVL_BTN) == 0) {
+  if (digitalRead(SAFE_LVL_BTN) == HIGH) {
     SERIAL_PRINTLN("Setting water safe level");
-    toggle_led(LED_RED, 5, 1000);
 
     for (i = 0; i < MAX_SAFE_MEASUREMENTS; i++) {
       avg_water_height += get_water_height();
-      delay(250);
+      toggle_led(LED_RED, 1, 250);
     }
     avg_water_height = avg_water_height / MAX_SAFE_MEASUREMENTS;
 
@@ -390,17 +398,10 @@ void setup() {
   if (water_safe_limit != 0) {
     post_passed = true;
 
-    /* Ensure the valve is at one end */
-    if (current_state == OFF) {
-
-      digitalWrite(LED_RED, 0);
-      water_valve_control(LED_GREEN, RELAY_OFF_PIN);
-      digitalWrite(LED_GREEN, 1);
-    } else {
-       digitalWrite(LED_GREEN, 0);
-       water_valve_control(LED_RED, RELAY_ON_PIN);  
-       digitalWrite(LED_RED, 1); 
-    }
+    /* If this got stopped mid-movement,
+     * Ensure the valve is at one end. Also,
+       it doesn't hurt if it's already there. */
+    current_action = current_state;
   }
 
   if (post_passed) {
@@ -413,6 +414,8 @@ long get_water_height()
 {
   long height = 0;
   long duration;
+
+  pinMode(TRIG_ECHO_PIN, OUTPUT);
 
   digitalWrite(TRIG_ECHO_PIN, LOW);
   delayMicroseconds(5);
@@ -429,6 +432,7 @@ long get_water_height()
   // Convert the time into a distance
   height = (duration/2) / 29.1;     // Divide by 29.1 or multiply by 0.0343
 
+  SERIAL_PRINTF("Water height : %d\n", height);
   return height;
 }
 
@@ -450,25 +454,21 @@ void water_valve_control(char pin_led, char relay_pin)
 
 void water_valve_change_state(char state)
 {
-  if (current_state == state) {
-    return;
+  if (state == OFF) {
+    digitalWrite(LED_RED, 0);
+    water_valve_control(LED_GREEN, RELAY_OFF_PIN);
+    /* Let the user know the valve is closed */
+    digitalWrite(LED_GREEN,1);
   } else {
-    if (state == OFF) {
-      digitalWrite(LED_RED, 0);
-      water_valve_control(LED_GREEN, RELAY_OFF_PIN);
-      /* Let the user know the valve is closed */
-      digitalWrite(LED_GREEN,1);
-    } else {
-      digitalWrite(LED_GREEN, 0);
-      water_valve_control(LED_RED, RELAY_ON_PIN);
-      digitalWrite(LED_RED,1);
-    }
-    current_state = state;
+    digitalWrite(LED_GREEN, 0);
+    water_valve_control(LED_RED, RELAY_ON_PIN);
+    digitalWrite(LED_RED,1);
   }
+    current_state = state;
 }
 
 void loop() {
-  char water_level_str[6] = {0, 0, 0, 0, 0, 0};
+  char water_level_str[7] = {0, 0, 0, 0, 0, 0, 0};
   short cur_water_level;
   int ret;
 
@@ -489,17 +489,15 @@ void loop() {
       connect_to_mqtt();
   }
 
+  /* We read water level every LOOP_INTERVAL */
   cur_water_level = get_water_height();
-
   if (current_state == ON) {
-      if (cur_water_level > water_safe_limit) {
+      if (cur_water_level < water_safe_limit) {
         water_warning_level++;
  
         if (water_warning_level > MAX_LEVEL_WARNINGS) {
-        
-          digitalWrite(LED_RED, 0);
-          water_valve_change_state(OFF);
-          digitalWrite(LED_GREEN, 1);
+          /* this will be taken care of below */
+          current_action = OFF;
 
           water_warning_level = 0;
         }
@@ -508,13 +506,22 @@ void loop() {
     }
   }
 
-  sprintf(water_level_str, "%d", cur_water_level);
-  ret = queue_publish(MQTT_TOPIC_PUB2, (const uint8_t *)water_level_str, strlen(water_level_str), true);
-  if (ret) {
-    SERIAL_PRINTF("Failed to publish : %d\n", ret);
+  if (water_interval == WATER_PUBLISH_INTERVAL / LOOP_DELAY) {
+    SERIAL_PRINTLN("Publishing water level");
+  
+    sprintf(water_level_str, "%d", cur_water_level);
+    ret = queue_publish(MQTT_TOPIC_PUB2, (const uint8_t *)water_level_str, strlen(water_level_str), true);
+    if (ret) {
+      SERIAL_PRINTF("Failed to publish : %d\n", ret);
+    }
+    water_interval = 0;
+  } else {
+    water_interval++;
   }
 
   client.loop();
+
+  SERIAL_PRINTF("PUSH button = %d\n", digitalRead(PUSH_BUTTON) == HIGH ? 1 : 0);
 
   if (cool_off == 0) {
     if (digitalRead(PUSH_BUTTON) == HIGH) {
@@ -550,7 +557,7 @@ void loop() {
       water_valve_change_state(OFF);
       digitalWrite(LED_GREEN, 1);
 
-      ret = queue_publish(MQTT_TOPIC_PUB1, (const uint8_t *)MQTT_TOPIC_PUB1_STR1, strlen(MQTT_TOPIC_PUB1_STR1), true);
+      ret = queue_publish(MQTT_TOPIC_PUB1, (const uint8_t *)MQTT_TOPIC_PUB1_STR2, strlen(MQTT_TOPIC_PUB1_STR2), true);
       if (ret) {
         SERIAL_PRINTF("Failed to publish : %d\n", ret);
       }
@@ -579,7 +586,8 @@ void loop() {
 
   
   /* Check if there's something to send */
-  publish_msg(false);
+  /* We send everything: when a button is pressed => 2 publish cmds */
+  publish_msg(true);
 
 sleep:
   delay(LOOP_DELAY);
