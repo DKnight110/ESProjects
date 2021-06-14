@@ -4,7 +4,7 @@
   "name": "WaterTank",
   "content": "",
   "created_at": "2021-06-01 13:00:16",
-  "updated_at": "2021-06-11 11:25:10",
+  "updated_at": "2021-06-12 18:52:30",
   "stick": "",
   "documents": [
     {
@@ -20,7 +20,7 @@
         "3f60757f7d33472ab24c2a33e776080a": 1,
         "8c22d00442cc4a0290c41cc51962e74a": 1,
         "04b05a7850bf43eebfc59303dc817788": 1,
-        "bb009484ef804a24ac5d18c54b249586": 7,
+        "bb009484ef804a24ac5d18c54b249586": 6,
         "fd11c9e744c44aeab6011e8bd4c3ea86": 2,
         "e3eab123787c441b897fcce25e4fe427": 2,
         "8cb0931e7aee4571ab281a4f2e7b6e80": 1,
@@ -119,7 +119,7 @@
           "2k2",
           4,
           "R0603",
-          "R2,R3,R7,R6",
+          "R6,R7,R2,R3",
           {
             "BOM_Supplier Part": "",
             "BOM_Supplier": "",
@@ -130,9 +130,9 @@
         ],
         [
           "470",
-          2,
+          1,
           "R0603",
-          "R4,R5",
+          "R4",
           {
             "BOM_Supplier Part": "",
             "BOM_Supplier": "",
@@ -182,10 +182,10 @@
           }
         ],
         [
-          "30u",
+          "0.1u",
           1,
           "C0603",
-          "C2",
+          "C1",
           {
             "BOM_Supplier Part": "",
             "BOM_Supplier": "",
@@ -195,10 +195,10 @@
           }
         ],
         [
-          "0.1u",
+          "30u",
           1,
           "C0603",
-          "C1",
+          "C2",
           {
             "BOM_Supplier Part": "",
             "BOM_Supplier": "",
@@ -247,11 +247,11 @@
           }
         ]
       ],
-      "updateTime": 1623399910,
+      "updateTime": 1623513150,
       "createTime": 1622541616,
       "histories": [],
       "created_at": "2021-06-01 13:00:16",
-      "updated_at": "2021-06-11 11:25:10"
+      "updated_at": "2021-06-12 18:52:30"
     },
     {
       "uuid": "e60f772086d91f40d3d482320cf0162b",
@@ -446,5 +446,5 @@
   "title": "WaterTank",
   "foldername": "WaterTank",
   "schfilename": "WaterTank.json",
-  "schfilemtime": 1623399910274
+  "schfilemtime": 1623513150365
 }
