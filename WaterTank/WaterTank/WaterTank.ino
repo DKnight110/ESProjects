@@ -29,12 +29,13 @@
 //#define BUTTON_DEBOUNCE_LIMIT   5
 #define BUTTON_DEBOUNCE_LIMIT   2
 #define COOL_OFF_PERIOD         20 /* s */
-#define VALVE_MOVE_TIME_MS      15000 /* ms */
+#define VALVE_MOVE_TIME_MS      20000 /* ms */
 #define MAX_SAFE_MEASUREMENTS   20
 #define MAX_LEVEL_WARNINGS      10
 #define WATER_PUBLISH_INTERVAL  5000 /* ms */
 
-#define MAX_TRIES_MQTT          20 /* After 20 retries, reconnect wifi */
+#define MAX_TRIES_MQTT          20 /* After 20 retries, reconnect wifi & close valve */
+#define MAX_TRIES_WIFI          20 /* After 20 retires, reset the board */
 
 #define GW_ADDR           169,254,1,1
 #define SUBNET_ADDR       255,255,0,0
@@ -98,6 +99,8 @@ char water_warning_level = 0;
 char water_interval = 0;
 int debounce = 0;
 uint32_t cool_off = 0;
+int mqtt_tries;
+int wifi_tries;
 
 struct mqtt_queue mqtt_queue[PUB_QUEUE_DEPTH];
 unsigned char pub_cidx = 0, pub_pidx = 0;
@@ -174,11 +177,6 @@ void callback(char *topic, byte *payload, unsigned int length) {
       if (current_action == 0xFF) {
         current_action = 1;
         SERIAL_PRINTLN("Opening valve\n");
-
-        ret = queue_publish(MQTT_TOPIC_PUB1, (const uint8_t *)MQTT_TOPIC_PUB1_STR1, strlen(MQTT_TOPIC_PUB1_STR1), true);
-        if (ret) {
-          SERIAL_PRINTF("Failed to publish : %d\n", ret);
-        }
       } else {
         SERIAL_PRINTF("Can't open valve: action = %d\n", current_action);
       }
@@ -187,11 +185,6 @@ void callback(char *topic, byte *payload, unsigned int length) {
         if (current_action == 0xFF) {
           current_action = 0;
           SERIAL_PRINTLN("Closing valve\n");
-
-          ret = queue_publish(MQTT_TOPIC_PUB1, (const uint8_t *)MQTT_TOPIC_PUB1_STR2, strlen(MQTT_TOPIC_PUB1_STR2), true);
-          if (ret) {
-            SERIAL_PRINTF("Failed to publish : %d\n", ret);
-          }
         } else {
           SERIAL_PRINTF("Can't close valve: action = %d\n", current_action);
         }   
@@ -222,7 +215,7 @@ void callback(char *topic, byte *payload, unsigned int length) {
 
 void connect_to_wifi()
 {
-  int ret;
+  int ret, tries;
 
   assign_ip_addr();
 
@@ -230,8 +223,9 @@ void connect_to_wifi()
   WiFi.mode(WIFI_STA);
 
   while ((ret = WiFi.config(ip_addr, gw, subnet)) == 0) {
-    SERIAL_PRINTLN("Applying IP config failed, retrying");
+    SERIAL_PRINTLN("Applying IP config failed, resetting");
     delay(500);
+    ESP.restart();
   }
   
   SERIAL_PRINTF("**** %s ****\n**** %s ****\n", ssid, password);
@@ -241,8 +235,13 @@ void connect_to_wifi()
   do {
     toggle_led(LED_GREEN, 1, 500);
     SERIAL_PRINT(".");
-  } while (WiFi.status() != WL_CONNECTED);
+  } while (WiFi.status() != WL_CONNECTED && (tries++ < MAX_TRIES_WIFI));
 
+  if (WiFi.status() != WL_CONNECTED) {
+    SERIAL_PRINTLN("Failed to connect to network, resetting");
+    delay(500);
+    ESP.restart();
+  }
   SERIAL_PRINTLN("");
   SERIAL_PRINTLN("WiFi connected");
 
@@ -252,7 +251,7 @@ void connect_to_wifi()
 void connect_to_mqtt()
 {
   IPAddress mqtt_broker(MQTT_SERVER);
-  int tries = 0;
+  int tries;
 
   client.setServer(mqtt_broker, MQTT_PORT);
   client.setCallback(callback);
@@ -271,6 +270,15 @@ void connect_to_mqtt()
     }
 
     if (tries == MAX_TRIES_MQTT) {
+      /* Things have gone awry: 
+       * no connection to MQTT => goto safe state = valve closed 
+       */
+      digitalWrite(LED_RED, 0);
+      water_valve_change_state(OFF);
+      digitalWrite(LED_GREEN, 1);
+      /* Try and publish. Don't check the ret code, you can't do much anyway */
+      queue_publish(MQTT_TOPIC_PUB1, (const uint8_t *)MQTT_TOPIC_PUB1_STR2, strlen(MQTT_TOPIC_PUB1_STR2), true);
+
       tries = 0;
       /* Force a reconnection */
       connect_to_wifi();
@@ -289,7 +297,7 @@ void assign_ip_addr()
   ip_addr.fromString(str);
 }
 
-void save_settings(char state, short water_level)
+void save_settings(short water_level)
 {
   File config_file;
   
@@ -300,12 +308,13 @@ void save_settings(char state, short water_level)
     return;
   }
 
-  config_file.write(state);
   config_file.write(water_level >> 8);
   config_file.write(water_level & 0xFF);
 
+  config_file.close();
   SPIFFS.end();
 }
+
 void setup() {
   char str[CHAR_ARRAY_LEN],
        c, pos = 0, line = 0;
@@ -345,7 +354,7 @@ void setup() {
       line++;
     }
   }
-  config_file.close();
+    config_file.close();
 
   config_file = SPIFFS.open(CFG_FILE_NAME, "r");
   if (!config_file) {
@@ -353,13 +362,10 @@ void setup() {
     return;
   }
 
-  while(config_file.position() < config_file.size()) {
-    current_state = config_file.read(); /* 0 = OFF, 1 = ON */
-    water_safe_limit = (config_file.read() << 8) | config_file.read();
+  water_safe_limit = (config_file.read() << 8) | config_file.read();
 
-    SERIAL_PRINTF("Recovered settings: state %d, water limit %d\n",
-                   current_state, water_safe_limit);
-  }
+  SERIAL_PRINTF("Recovered settings: water limit %d\n",
+                water_safe_limit);
 
   config_file.close();
 
@@ -383,10 +389,10 @@ void setup() {
     }
     avg_water_height = avg_water_height / MAX_SAFE_MEASUREMENTS;
 
-    SERIAL_PRINTF("Saving settings: current state %d water safe level %d",
-                current_state, avg_water_height);
+    SERIAL_PRINTF("Saving settings: water safe level %d",
+                  avg_water_height);
 
-    save_settings(current_state, avg_water_height);
+    save_settings(avg_water_height);
 
     SERIAL_PRINTLN("Saved settings, now resetting in 5s");
     
@@ -398,16 +404,25 @@ void setup() {
   if (water_safe_limit != 0) {
     post_passed = true;
 
-    /* If this got stopped mid-movement,
-     * Ensure the valve is at one end. Also,
-       it doesn't hurt if it's already there. */
-    current_action = current_state;
+    /* Let's make sure we're in a proper state (i.e. closed)
+     * We first move all the way to OPEN, then CLOSED
+     */
+     water_valve_change_state(ON);
+     delay(1000);
+     water_valve_change_state(OFF);
   }
 
   if (post_passed) {
       connect_to_wifi();
       connect_to_mqtt();
   }
+
+  /* 
+   *  Let the user know the valve is OFF
+   * This is done here since connect to mqtt publishes
+   * and I want the last status to be this one
+   */
+  queue_publish(MQTT_TOPIC_PUB1, (const uint8_t *)MQTT_TOPIC_PUB1_STR2, strlen(MQTT_TOPIC_PUB1_STR2), true);
 }
 
 long get_water_height()
@@ -445,6 +460,9 @@ void water_valve_control(char pin_led, char relay_pin)
 
   for (i = 0; i < VALVE_MOVE_TIME_MS / 1000; i++)
   {
+    if (client.connected()) {
+      client.loop();
+    }
     toggle_led(pin_led, 1, 1000);
   }
 
@@ -480,12 +498,8 @@ void loop() {
 
     goto sleep;
   }
-  if (!client.connected())
-  {
-      digitalWrite(LED_RED, 0);
-      water_valve_change_state(OFF);
-      digitalWrite(LED_GREEN, 1);
-      
+
+  if (!client.connected()) {      
       connect_to_mqtt();
   }
 
@@ -562,8 +576,6 @@ void loop() {
         SERIAL_PRINTF("Failed to publish : %d\n", ret);
       }
       current_action = 0xFF;
-      save_settings(current_state, water_safe_limit);
-
       break;
  
     case ON:
@@ -576,8 +588,6 @@ void loop() {
         SERIAL_PRINTF("Failed to publish : %d\n", ret);
       }
       current_action = 0xFF;
-      save_settings(current_state, water_safe_limit);
-
       break;
 
     case 0xFF:
