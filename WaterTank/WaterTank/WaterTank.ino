@@ -215,7 +215,7 @@ void callback(char *topic, byte *payload, unsigned int length) {
 
 void connect_to_wifi()
 {
-  int ret, tries;
+  int ret, tries = 0;
 
   assign_ip_addr();
 
@@ -251,7 +251,8 @@ void connect_to_wifi()
 void connect_to_mqtt()
 {
   IPAddress mqtt_broker(MQTT_SERVER);
-  int tries;
+  bool valve_closed = false;
+  int tries = 0;
 
   client.setServer(mqtt_broker, MQTT_PORT);
   client.setCallback(callback);
@@ -269,24 +270,31 @@ void connect_to_mqtt()
       tries++;
     }
 
-    if (tries == MAX_TRIES_MQTT) {
-      /* Things have gone awry: 
-       * no connection to MQTT => goto safe state = valve closed 
-       */
-      digitalWrite(LED_RED, 0);
-      water_valve_change_state(OFF);
-      digitalWrite(LED_GREEN, 1);
-      /* Try and publish. Don't check the ret code, you can't do much anyway */
-      queue_publish(MQTT_TOPIC_PUB1, (const uint8_t *)MQTT_TOPIC_PUB1_STR2, strlen(MQTT_TOPIC_PUB1_STR2), true);
+    if (tries == MAX_TRIES_MQTT && !client.connected()) {
+      if (!valve_closed) {
+        /* Things have gone awry: 
+        * no connection to MQTT => goto safe state = valve closed 
+        */
+        digitalWrite(LED_RED, 0);
+        water_valve_change_state(OFF);
+        digitalWrite(LED_GREEN, 1);
+
+        valve_closed = true;
+      }
 
       tries = 0;
-      /* Force a reconnection */
+      /* Force a reconnection. This will reset the board after some tries. */
       connect_to_wifi();
     }
   }
 
   client.subscribe(MQTT_TOPIC_SUB1);
   queue_publish(MQTT_TOPIC_PUB1, (const uint8_t*)MQTT_TOPIC_PUB1_STR0, strlen(MQTT_TOPIC_PUB1_STR0), true);
+
+  if (valve_closed) {
+      /* Try and publish. Don't check the ret code, you can't do much anyway */
+      queue_publish(MQTT_TOPIC_PUB1, (const uint8_t *)MQTT_TOPIC_PUB1_STR2, strlen(MQTT_TOPIC_PUB1_STR2), true);
+  }
 }
 
 void assign_ip_addr()
