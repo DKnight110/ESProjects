@@ -1,0 +1,2737 @@
+[
+    {
+        "id": "32249e45.f0dfaa",
+        "type": "tab",
+        "label": "Water Pump",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "3c6bfb15.be3cc4",
+        "type": "tab",
+        "label": "Exterior Lighting",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "2aec16b8.3a6b5a",
+        "type": "tab",
+        "label": "Water Sensor",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "c9a5b3d6.a877c",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "82610ac1.cd2678",
+        "type": "mqtt-broker",
+        "name": "local",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "webif",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "fcf4c00a.ddf63",
+        "type": "ui_tab",
+        "name": "Home",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "897a1e95.065e5",
+        "type": "ui_base",
+        "theme": {
+            "name": "theme-dark",
+            "lightTheme": {
+                "default": "#0094CE",
+                "baseColor": "#0094CE",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+                "edited": true,
+                "reset": false
+            },
+            "darkTheme": {
+                "default": "#097479",
+                "baseColor": "#097479",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+                "edited": true,
+                "reset": false
+            },
+            "customTheme": {
+                "name": "Untitled Theme 1",
+                "default": "#4B7930",
+                "baseColor": "#4B7930",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+            },
+            "themeState": {
+                "base-color": {
+                    "default": "#097479",
+                    "value": "#097479",
+                    "edited": false
+                },
+                "page-titlebar-backgroundColor": {
+                    "value": "#097479",
+                    "edited": false
+                },
+                "page-backgroundColor": {
+                    "value": "#111111",
+                    "edited": false
+                },
+                "page-sidebar-backgroundColor": {
+                    "value": "#333333",
+                    "edited": false
+                },
+                "group-textColor": {
+                    "value": "#0eb8c0",
+                    "edited": false
+                },
+                "group-borderColor": {
+                    "value": "#555555",
+                    "edited": false
+                },
+                "group-backgroundColor": {
+                    "value": "#333333",
+                    "edited": false
+                },
+                "widget-textColor": {
+                    "value": "#eeeeee",
+                    "edited": false
+                },
+                "widget-backgroundColor": {
+                    "value": "#097479",
+                    "edited": false
+                },
+                "widget-borderColor": {
+                    "value": "#333333",
+                    "edited": false
+                },
+                "base-font": {
+                    "value": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+                }
+            },
+            "angularTheme": {
+                "primary": "indigo",
+                "accents": "blue",
+                "warn": "red",
+                "background": "grey",
+                "palette": "light"
+            }
+        },
+        "site": {
+            "name": "Home Automation",
+            "hideToolbar": "false",
+            "allowSwipe": "false",
+            "lockMenu": "false",
+            "allowTempTheme": "true",
+            "dateFormat": "DD/MM/YYYY",
+            "sizes": {
+                "sx": 48,
+                "sy": 48,
+                "gx": 6,
+                "gy": 6,
+                "cx": 6,
+                "cy": 6,
+                "px": 0,
+                "py": 0
+            }
+        }
+    },
+    {
+        "id": "17da0dfd.94274a",
+        "type": "ui_group",
+        "name": "Watering Control",
+        "tab": "fcf4c00a.ddf63",
+        "order": 1,
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "93953fd7.9801e",
+        "type": "ui_group",
+        "name": "Exterior Lighting Control",
+        "tab": "fcf4c00a.ddf63",
+        "order": 3,
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "d6df61a5.3564c",
+        "type": "light-scheduler-settings",
+        "name": "Light settings",
+        "latitude": "44.426765",
+        "longitude": "26.102537"
+    },
+    {
+        "id": "c2212685.1b23b8",
+        "type": "ui_group",
+        "name": "Flood Sensors",
+        "tab": "fcf4c00a.ddf63",
+        "order": 3,
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "80c1f0d7.b17358",
+        "type": "ui_group",
+        "name": "Sensors Batteries",
+        "tab": "fcf4c00a.ddf63",
+        "order": 4,
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "7dfd2fb6.d1ac5",
+        "type": "light-scheduler-settings",
+        "name": "Solar Watering",
+        "latitude": "44.4956",
+        "longitude": "26.0538"
+    },
+    {
+        "id": "1df2a693.018501",
+        "type": "mqtt in",
+        "z": "32249e45.f0dfaa",
+        "name": "Switch Batt Status",
+        "topic": "pumpctrl/state",
+        "qos": "2",
+        "datatype": "auto",
+        "broker": "82610ac1.cd2678",
+        "x": 130,
+        "y": 60,
+        "wires": [
+            [
+                "77345148.4c1fd"
+            ]
+        ]
+    },
+    {
+        "id": "77345148.4c1fd",
+        "type": "ui_led",
+        "z": "32249e45.f0dfaa",
+        "order": 1,
+        "group": "80c1f0d7.b17358",
+        "width": 0,
+        "height": 0,
+        "label": "Pump Remote Battery Status",
+        "labelPlacement": "left",
+        "labelAlignment": "left",
+        "colorForValue": [
+            {
+                "color": "#ff0000",
+                "value": "LO_BAT",
+                "valueType": "str"
+            },
+            {
+                "color": "#008000",
+                "value": "HIGH_BAT",
+                "valueType": "str"
+            }
+        ],
+        "allowColorForValueInMessage": false,
+        "shape": "circle",
+        "showGlow": true,
+        "name": "Pump Remote Battery Status",
+        "x": 420,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "12700190.438556",
+        "type": "ui_switch",
+        "z": "32249e45.f0dfaa",
+        "name": "",
+        "label": "Watering Pump",
+        "tooltip": "",
+        "group": "17da0dfd.94274a",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "decouple": "true",
+        "topic": "command",
+        "topicType": "str",
+        "style": "",
+        "onvalue": "PUMP_ON",
+        "onvalueType": "str",
+        "onicon": "",
+        "oncolor": "",
+        "offvalue": "PUMP_OFF",
+        "offvalueType": "str",
+        "officon": "",
+        "offcolor": "",
+        "animate": true,
+        "x": 320,
+        "y": 200,
+        "wires": [
+            [
+                "1c12819.6390f7e"
+            ]
+        ]
+    },
+    {
+        "id": "7f82a4f.61fb4dc",
+        "type": "mqtt in",
+        "z": "32249e45.f0dfaa",
+        "name": "Pump Status",
+        "topic": "pumpctrl/status",
+        "qos": "2",
+        "datatype": "auto",
+        "broker": "82610ac1.cd2678",
+        "x": 110,
+        "y": 200,
+        "wires": [
+            [
+                "12700190.438556",
+                "52619e30.87088",
+                "30f36e8a.49c58a",
+                "55675385.972934"
+            ]
+        ]
+    },
+    {
+        "id": "3b72d428.5b80d4",
+        "type": "mqtt out",
+        "z": "32249e45.f0dfaa",
+        "name": "Pump Control",
+        "topic": "pumpctrl/button",
+        "qos": "",
+        "retain": "false",
+        "broker": "82610ac1.cd2678",
+        "x": 1060,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "1b158233.a29d4e",
+        "type": "change",
+        "z": "32249e45.f0dfaa",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "PRESS",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 840,
+        "y": 200,
+        "wires": [
+            [
+                "3b72d428.5b80d4"
+            ]
+        ]
+    },
+    {
+        "id": "1c12819.6390f7e",
+        "type": "delay",
+        "z": "32249e45.f0dfaa",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "20",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": true,
+        "x": 580,
+        "y": 200,
+        "wires": [
+            [
+                "1b158233.a29d4e"
+            ]
+        ]
+    },
+    {
+        "id": "b222abd1.007d3",
+        "type": "inject",
+        "z": "32249e45.f0dfaa",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "1",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "1",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 150,
+        "y": 140,
+        "wires": [
+            [
+                "52619e30.87088"
+            ]
+        ]
+    },
+    {
+        "id": "52619e30.87088",
+        "type": "function",
+        "z": "32249e45.f0dfaa",
+        "name": "WaterPumpCounter",
+        "func": "var count = context.get('count') || 0;\nvar count_on = context.get('count_on') || 0;\n\nif (count_on == 1) {\n    count++;\n    context.set('count', count)\n}\n\nif (msg.payload == \"PUMP_ON\") {\n    count_on = 1;\n    count = 0;\n    context.set('count_on', count_on);\n    context.set('count', count);\n} else if (msg.payload == \"PUMP_OFF\") {\n    count_on = 0;\n    context.set('count_on', count_on);\n}\n\nvar hrs = Math.floor(count / 3600);\nvar mins = Math.floor(count / 60) % 60;\nvar seconds = count % 60;\n\nmsg.payload = hrs.toString().padStart(2, \"0\") + \"h\" + mins.toString().padStart(2, \"0\") + \"m\" + seconds.toString().padStart(2, \"0\") + \"s\";\nreturn msg",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 550,
+        "y": 140,
+        "wires": [
+            [
+                "d1c30609.ce0ec"
+            ]
+        ]
+    },
+    {
+        "id": "d1c30609.ce0ec",
+        "type": "ui_text",
+        "z": "32249e45.f0dfaa",
+        "group": "17da0dfd.94274a",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "Pump Run Time:",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "x": 809,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "ffda7819.517bc8",
+        "type": "mqtt in",
+        "z": "3c6bfb15.be3cc4",
+        "name": "Gard Fata",
+        "topic": "extlighting/fata",
+        "qos": "2",
+        "datatype": "auto",
+        "broker": "82610ac1.cd2678",
+        "x": 480,
+        "y": 360,
+        "wires": [
+            [
+                "afa222b8.e5e46"
+            ]
+        ]
+    },
+    {
+        "id": "afa222b8.e5e46",
+        "type": "ui_switch",
+        "z": "3c6bfb15.be3cc4",
+        "name": "",
+        "label": "Gard Fata",
+        "tooltip": "",
+        "group": "93953fd7.9801e",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "decouple": "true",
+        "topic": "",
+        "style": "",
+        "onvalue": "SWITCH_ON",
+        "onvalueType": "str",
+        "onicon": "",
+        "oncolor": "",
+        "offvalue": "SWITCH_OFF",
+        "offvalueType": "str",
+        "officon": "",
+        "offcolor": "",
+        "x": 690,
+        "y": 360,
+        "wires": [
+            [
+                "d23ff304.bcc37"
+            ]
+        ]
+    },
+    {
+        "id": "d23ff304.bcc37",
+        "type": "http request",
+        "z": "3c6bfb15.be3cc4",
+        "name": "",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "http://192.168.1.70/switch",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "authType": "",
+        "x": 870,
+        "y": 360,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "7c8211c4.7246",
+        "type": "http request",
+        "z": "3c6bfb15.be3cc4",
+        "name": "Status Gard Lateral",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "http://192.168.1.71/status",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "authType": "",
+        "x": 410,
+        "y": 120,
+        "wires": [
+            [
+                "bd3555e9.66e158"
+            ]
+        ]
+    },
+    {
+        "id": "35256baa.f0ba64",
+        "type": "mqtt out",
+        "z": "3c6bfb15.be3cc4",
+        "name": "",
+        "topic": "extlighting/lateral",
+        "qos": "0",
+        "retain": "false",
+        "broker": "82610ac1.cd2678",
+        "x": 870,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "bd3555e9.66e158",
+        "type": "change",
+        "z": "3c6bfb15.be3cc4",
+        "name": "",
+        "rules": [
+            {
+                "t": "change",
+                "p": "payload",
+                "pt": "msg",
+                "from": "Lights are now on",
+                "fromt": "str",
+                "to": "SWITCH_ON",
+                "tot": "str"
+            },
+            {
+                "t": "change",
+                "p": "payload",
+                "pt": "msg",
+                "from": "Lights are now off",
+                "fromt": "str",
+                "to": "SWITCH_OFF",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 660,
+        "y": 120,
+        "wires": [
+            [
+                "35256baa.f0ba64"
+            ]
+        ]
+    },
+    {
+        "id": "31d82d74.5ed5f2",
+        "type": "mqtt in",
+        "z": "3c6bfb15.be3cc4",
+        "name": "Gard Lateral",
+        "topic": "extlighting/lateral",
+        "qos": "2",
+        "datatype": "auto",
+        "broker": "82610ac1.cd2678",
+        "x": 490,
+        "y": 440,
+        "wires": [
+            [
+                "768b3888.549568"
+            ]
+        ]
+    },
+    {
+        "id": "768b3888.549568",
+        "type": "ui_switch",
+        "z": "3c6bfb15.be3cc4",
+        "name": "",
+        "label": "Gard Lateral",
+        "tooltip": "",
+        "group": "93953fd7.9801e",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "decouple": "true",
+        "topic": "",
+        "style": "",
+        "onvalue": "SWITCH_ON",
+        "onvalueType": "str",
+        "onicon": "",
+        "oncolor": "",
+        "offvalue": "SWITCH_OFF",
+        "offvalueType": "str",
+        "officon": "",
+        "offcolor": "",
+        "x": 700,
+        "y": 440,
+        "wires": [
+            [
+                "e34aed23.0b9c7"
+            ]
+        ]
+    },
+    {
+        "id": "e34aed23.0b9c7",
+        "type": "http request",
+        "z": "3c6bfb15.be3cc4",
+        "name": "",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "http://192.168.1.71/switch",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "authType": "",
+        "x": 870,
+        "y": 440,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "ac5e7e73.93639",
+        "type": "http request",
+        "z": "3c6bfb15.be3cc4",
+        "name": "Status Gard Spate",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "http://192.168.1.72/status",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "authType": "",
+        "x": 410,
+        "y": 180,
+        "wires": [
+            [
+                "c6e45fea.a7f78"
+            ]
+        ]
+    },
+    {
+        "id": "9f8d55a1.943548",
+        "type": "mqtt out",
+        "z": "3c6bfb15.be3cc4",
+        "name": "",
+        "topic": "extlighting/spate",
+        "qos": "0",
+        "retain": "false",
+        "broker": "82610ac1.cd2678",
+        "x": 860,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "c6e45fea.a7f78",
+        "type": "change",
+        "z": "3c6bfb15.be3cc4",
+        "name": "",
+        "rules": [
+            {
+                "t": "change",
+                "p": "payload",
+                "pt": "msg",
+                "from": "Lights are now on",
+                "fromt": "str",
+                "to": "SWITCH_ON",
+                "tot": "str"
+            },
+            {
+                "t": "change",
+                "p": "payload",
+                "pt": "msg",
+                "from": "Lights are now off",
+                "fromt": "str",
+                "to": "SWITCH_OFF",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 660,
+        "y": 180,
+        "wires": [
+            [
+                "9f8d55a1.943548"
+            ]
+        ]
+    },
+    {
+        "id": "5dc29209.f9a6ec",
+        "type": "mqtt in",
+        "z": "3c6bfb15.be3cc4",
+        "name": "Gard Spate",
+        "topic": "extlighting/spate",
+        "qos": "2",
+        "datatype": "auto",
+        "broker": "82610ac1.cd2678",
+        "x": 490,
+        "y": 500,
+        "wires": [
+            [
+                "17a735b.6cd0bca"
+            ]
+        ]
+    },
+    {
+        "id": "17a735b.6cd0bca",
+        "type": "ui_switch",
+        "z": "3c6bfb15.be3cc4",
+        "name": "",
+        "label": "Gard Spate",
+        "tooltip": "",
+        "group": "93953fd7.9801e",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "decouple": "true",
+        "topic": "",
+        "style": "",
+        "onvalue": "SWITCH_ON",
+        "onvalueType": "str",
+        "onicon": "",
+        "oncolor": "",
+        "offvalue": "SWITCH_OFF",
+        "offvalueType": "str",
+        "officon": "",
+        "offcolor": "",
+        "x": 700,
+        "y": 500,
+        "wires": [
+            [
+                "1d391ddc.7bcf32"
+            ]
+        ]
+    },
+    {
+        "id": "1d391ddc.7bcf32",
+        "type": "http request",
+        "z": "3c6bfb15.be3cc4",
+        "name": "",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "http://192.168.1.72/switch",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "authType": "",
+        "x": 870,
+        "y": 500,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "81313127.39e56",
+        "type": "http request",
+        "z": "3c6bfb15.be3cc4",
+        "name": "Status Gard Fata",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "http://192.168.1.70/status",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "authType": "",
+        "x": 410,
+        "y": 60,
+        "wires": [
+            [
+                "b95017bf.231be8"
+            ]
+        ]
+    },
+    {
+        "id": "e70f23bc.b1dce",
+        "type": "mqtt out",
+        "z": "3c6bfb15.be3cc4",
+        "name": "",
+        "topic": "extlighting/fata",
+        "qos": "0",
+        "retain": "false",
+        "broker": "82610ac1.cd2678",
+        "x": 860,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "b95017bf.231be8",
+        "type": "change",
+        "z": "3c6bfb15.be3cc4",
+        "name": "",
+        "rules": [
+            {
+                "t": "change",
+                "p": "payload",
+                "pt": "msg",
+                "from": "Lights are now on",
+                "fromt": "str",
+                "to": "SWITCH_ON",
+                "tot": "str"
+            },
+            {
+                "t": "change",
+                "p": "payload",
+                "pt": "msg",
+                "from": "Lights are now off",
+                "fromt": "str",
+                "to": "SWITCH_OFF",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 660,
+        "y": 60,
+        "wires": [
+            [
+                "e70f23bc.b1dce"
+            ]
+        ]
+    },
+    {
+        "id": "d47dd914.710648",
+        "type": "inject",
+        "z": "3c6bfb15.be3cc4",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "5",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "5",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 190,
+        "y": 60,
+        "wires": [
+            [
+                "81313127.39e56",
+                "7c8211c4.7246",
+                "ac5e7e73.93639"
+            ]
+        ]
+    },
+    {
+        "id": "46e52959.7ce858",
+        "type": "light-scheduler",
+        "z": "3c6bfb15.be3cc4",
+        "settings": "d6df61a5.3564c",
+        "events": "[{\"start\":{\"dow\":3,\"mod\":0},\"end\":{\"dow\":3,\"mod\":420}},{\"start\":{\"dow\":2,\"mod\":0},\"end\":{\"dow\":2,\"mod\":420}},{\"start\":{\"dow\":4,\"mod\":0},\"end\":{\"dow\":4,\"mod\":420}},{\"start\":{\"dow\":5,\"mod\":0},\"end\":{\"dow\":5,\"mod\":420}},{\"start\":{\"dow\":6,\"mod\":0},\"end\":{\"dow\":6,\"mod\":420}},{\"start\":{\"dow\":1,\"mod\":0},\"end\":{\"dow\":1,\"mod\":420}},{\"start\":{\"dow\":0,\"mod\":0},\"end\":{\"dow\":0,\"mod\":420}},{\"start\":{\"dow\":1,\"mod\":1035},\"end\":{\"dow\":2,\"mod\":0}},{\"start\":{\"dow\":2,\"mod\":1035},\"end\":{\"dow\":3,\"mod\":0}},{\"start\":{\"dow\":3,\"mod\":1035},\"end\":{\"dow\":4,\"mod\":0}},{\"start\":{\"dow\":4,\"mod\":1035},\"end\":{\"dow\":5,\"mod\":0}},{\"start\":{\"dow\":5,\"mod\":1035},\"end\":{\"dow\":6,\"mod\":0}},{\"start\":{\"dow\":6,\"mod\":1035},\"end\":{\"dow\":0,\"mod\":0}},{\"start\":{\"dow\":0,\"mod\":1035},\"end\":{\"dow\":1,\"mod\":0}}]",
+        "topic": "",
+        "name": "OutLightSchedule",
+        "onPayload": "ON",
+        "onPayloadType": "str",
+        "offPayload": "OFF",
+        "offPayloadType": "str",
+        "onlyWhenDark": true,
+        "scheduleRndMax": 0,
+        "sunElevationThreshold": "0",
+        "sunShowElevationInStatus": true,
+        "outputfreq": "output.statechange",
+        "x": 450,
+        "y": 280,
+        "wires": [
+            [
+                "1d391ddc.7bcf32",
+                "e34aed23.0b9c7",
+                "d23ff304.bcc37"
+            ]
+        ]
+    },
+    {
+        "id": "30f36e8a.49c58a",
+        "type": "switch",
+        "z": "32249e45.f0dfaa",
+        "name": "",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "PUMP_ON",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "PUMP_OFF",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 310,
+        "y": 320,
+        "wires": [
+            [
+                "c7120dcb.ca2828"
+            ],
+            [
+                "83b846cb.9291c8"
+            ]
+        ]
+    },
+    {
+        "id": "be208.674e85f88",
+        "type": "delay",
+        "z": "32249e45.f0dfaa",
+        "name": "",
+        "pauseType": "delay",
+        "timeout": "1",
+        "timeoutUnits": "hours",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "x": 660,
+        "y": 320,
+        "wires": [
+            [
+                "3b72d428.5b80d4"
+            ]
+        ]
+    },
+    {
+        "id": "c7120dcb.ca2828",
+        "type": "change",
+        "z": "32249e45.f0dfaa",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "PRESS",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 480,
+        "y": 280,
+        "wires": [
+            [
+                "be208.674e85f88"
+            ]
+        ]
+    },
+    {
+        "id": "83b846cb.9291c8",
+        "type": "change",
+        "z": "32249e45.f0dfaa",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "reset",
+                "pt": "msg",
+                "to": "1",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 480,
+        "y": 380,
+        "wires": [
+            [
+                "be208.674e85f88"
+            ]
+        ]
+    },
+    {
+        "id": "dbcffe01.35ea9",
+        "type": "mqtt in",
+        "z": "2aec16b8.3a6b5a",
+        "name": "Basement Flood Sensor Battery",
+        "topic": "flood_sensor_basement/batt_state",
+        "qos": "2",
+        "datatype": "auto",
+        "broker": "82610ac1.cd2678",
+        "x": 370,
+        "y": 280,
+        "wires": [
+            [
+                "fd6b7787.472558"
+            ]
+        ]
+    },
+    {
+        "id": "fd6b7787.472558",
+        "type": "ui_led",
+        "z": "2aec16b8.3a6b5a",
+        "order": 2,
+        "group": "80c1f0d7.b17358",
+        "width": 0,
+        "height": 0,
+        "label": "Basement Flood Sensor Battery Status",
+        "labelPlacement": "left",
+        "labelAlignment": "left",
+        "colorForValue": [
+            {
+                "color": "#ff0000",
+                "value": "LO_BAT",
+                "valueType": "str"
+            },
+            {
+                "color": "#008000",
+                "value": "HIGH_BAT",
+                "valueType": "str"
+            }
+        ],
+        "allowColorForValueInMessage": false,
+        "shape": "circle",
+        "showGlow": true,
+        "name": "Basement Flood Sensor Battery Status",
+        "x": 760,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "96cf40eb.406bf",
+        "type": "ui_switch",
+        "z": "2aec16b8.3a6b5a",
+        "name": "",
+        "label": "Water Mains Status",
+        "tooltip": "",
+        "group": "c2212685.1b23b8",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "decouple": "true",
+        "topic": "",
+        "style": "",
+        "onvalue": "WATER_ON",
+        "onvalueType": "str",
+        "onicon": "",
+        "oncolor": "",
+        "offvalue": "WATER_OFF",
+        "offvalueType": "str",
+        "officon": "",
+        "offcolor": "",
+        "x": 930,
+        "y": 220,
+        "wires": [
+            [
+                "9bb3e37.fbc6d2"
+            ]
+        ]
+    },
+    {
+        "id": "9d804de.92de3b",
+        "type": "mqtt in",
+        "z": "2aec16b8.3a6b5a",
+        "name": "Water Mains Status",
+        "topic": "water_mains/status",
+        "qos": "2",
+        "datatype": "auto",
+        "broker": "82610ac1.cd2678",
+        "x": 690,
+        "y": 220,
+        "wires": [
+            [
+                "96cf40eb.406bf"
+            ]
+        ]
+    },
+    {
+        "id": "871b6230.91b7b",
+        "type": "mqtt out",
+        "z": "2aec16b8.3a6b5a",
+        "name": "Water Mains Control",
+        "topic": "water_mains/button",
+        "qos": "0",
+        "retain": "false",
+        "broker": "82610ac1.cd2678",
+        "x": 1380,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "9bb3e37.fbc6d2",
+        "type": "delay",
+        "z": "2aec16b8.3a6b5a",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "minute",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": true,
+        "x": 1150,
+        "y": 220,
+        "wires": [
+            [
+                "871b6230.91b7b"
+            ]
+        ]
+    },
+    {
+        "id": "56dab10b.a36f8",
+        "type": "mqtt in",
+        "z": "2aec16b8.3a6b5a",
+        "name": "Basement Flood Sensor State",
+        "topic": "flood_sensor_basement/state",
+        "qos": "2",
+        "datatype": "auto",
+        "broker": "82610ac1.cd2678",
+        "x": 370,
+        "y": 340,
+        "wires": [
+            [
+                "1a4df7c7.da4d58",
+                "871b6230.91b7b"
+            ]
+        ]
+    },
+    {
+        "id": "1a4df7c7.da4d58",
+        "type": "ui_led",
+        "z": "2aec16b8.3a6b5a",
+        "order": 3,
+        "group": "c2212685.1b23b8",
+        "width": 0,
+        "height": 0,
+        "label": "Basement Flood Sensor State",
+        "labelPlacement": "left",
+        "labelAlignment": "left",
+        "colorForValue": [
+            {
+                "color": "red",
+                "value": "WATER_OFF",
+                "valueType": "str"
+            },
+            {
+                "color": "green",
+                "value": "WATER_ON",
+                "valueType": "str"
+            }
+        ],
+        "allowColorForValueInMessage": false,
+        "showGlow": true,
+        "name": "Basement Flood Sensor State",
+        "x": 740,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "14cb871c.7e0d69",
+        "type": "mqtt in",
+        "z": "2aec16b8.3a6b5a",
+        "name": "Kitchen Flood Sensor Battery",
+        "topic": "flood_sensor_kitchen/batt_state",
+        "qos": "2",
+        "datatype": "auto",
+        "broker": "82610ac1.cd2678",
+        "x": 370,
+        "y": 420,
+        "wires": [
+            [
+                "fd98f3cd.9f9ab8"
+            ]
+        ]
+    },
+    {
+        "id": "fd98f3cd.9f9ab8",
+        "type": "ui_led",
+        "z": "2aec16b8.3a6b5a",
+        "order": 4,
+        "group": "80c1f0d7.b17358",
+        "width": 0,
+        "height": 0,
+        "label": "Kitchen Flood Sensor Battery Status",
+        "labelPlacement": "left",
+        "labelAlignment": "left",
+        "colorForValue": [
+            {
+                "color": "red",
+                "value": "LO_BAT",
+                "valueType": "str"
+            },
+            {
+                "color": "green",
+                "value": "HIGH_BAT",
+                "valueType": "str"
+            }
+        ],
+        "allowColorForValueInMessage": false,
+        "showGlow": true,
+        "name": "Kitchen Flood Sensor Battery Status",
+        "x": 770,
+        "y": 420,
+        "wires": []
+    },
+    {
+        "id": "76dd0d48.b676d4",
+        "type": "mqtt in",
+        "z": "2aec16b8.3a6b5a",
+        "name": "Kitchen Flood Sensor State",
+        "topic": "flood_sensor_kitchen/state",
+        "qos": "2",
+        "datatype": "auto",
+        "broker": "82610ac1.cd2678",
+        "x": 370,
+        "y": 480,
+        "wires": [
+            [
+                "9e494b46.7fd09",
+                "871b6230.91b7b"
+            ]
+        ]
+    },
+    {
+        "id": "9e494b46.7fd09",
+        "type": "ui_led",
+        "z": "2aec16b8.3a6b5a",
+        "order": 4,
+        "group": "c2212685.1b23b8",
+        "width": 0,
+        "height": 0,
+        "label": "Kitchen Flood Sensor State",
+        "labelPlacement": "left",
+        "labelAlignment": "left",
+        "colorForValue": [
+            {
+                "color": "red",
+                "value": "WATER_OFF",
+                "valueType": "str"
+            },
+            {
+                "color": "green",
+                "value": "WATER_ON",
+                "valueType": "str"
+            }
+        ],
+        "allowColorForValueInMessage": false,
+        "showGlow": true,
+        "name": "Kitchen Flood Sensor State",
+        "x": 740,
+        "y": 480,
+        "wires": []
+    },
+    {
+        "id": "4cd6b3a7.05ba2c",
+        "type": "mqtt in",
+        "z": "2aec16b8.3a6b5a",
+        "name": "Ground Bathroom Flood Sensor Battery",
+        "topic": "flood_sensor_bathroom_ground/batt_state",
+        "qos": "2",
+        "datatype": "auto",
+        "broker": "82610ac1.cd2678",
+        "x": 400,
+        "y": 540,
+        "wires": [
+            [
+                "950feb94.3b3f88"
+            ]
+        ]
+    },
+    {
+        "id": "950feb94.3b3f88",
+        "type": "ui_led",
+        "z": "2aec16b8.3a6b5a",
+        "order": 3,
+        "group": "80c1f0d7.b17358",
+        "width": 0,
+        "height": 0,
+        "label": "Ground Bathroom Battery Status",
+        "labelPlacement": "left",
+        "labelAlignment": "left",
+        "colorForValue": [
+            {
+                "color": "red",
+                "value": "LO_BAT",
+                "valueType": "str"
+            },
+            {
+                "color": "green",
+                "value": "HIGH_BAT",
+                "valueType": "str"
+            }
+        ],
+        "allowColorForValueInMessage": false,
+        "showGlow": true,
+        "name": "Ground Bathroom Battery Status",
+        "x": 750,
+        "y": 540,
+        "wires": []
+    },
+    {
+        "id": "5c76990a.6d637",
+        "type": "mqtt in",
+        "z": "2aec16b8.3a6b5a",
+        "name": "Ground Bathroom Flood Sensor State",
+        "topic": "flood_sensor_bathroom_ground/state",
+        "qos": "2",
+        "datatype": "auto",
+        "broker": "82610ac1.cd2678",
+        "x": 410,
+        "y": 600,
+        "wires": [
+            [
+                "9102164f.750918",
+                "871b6230.91b7b"
+            ]
+        ]
+    },
+    {
+        "id": "9102164f.750918",
+        "type": "ui_led",
+        "z": "2aec16b8.3a6b5a",
+        "order": 5,
+        "group": "c2212685.1b23b8",
+        "width": 0,
+        "height": 0,
+        "label": "Ground Bathroom Sensor State",
+        "labelPlacement": "left",
+        "labelAlignment": "left",
+        "colorForValue": [
+            {
+                "color": "red",
+                "value": "WATER_OFF",
+                "valueType": "str"
+            },
+            {
+                "color": "green",
+                "value": "WATER_ON",
+                "valueType": "str"
+            }
+        ],
+        "allowColorForValueInMessage": false,
+        "showGlow": true,
+        "name": "Ground Bathroom Sensor State",
+        "x": 750,
+        "y": 600,
+        "wires": []
+    },
+    {
+        "id": "ba616ebd.e541e8",
+        "type": "mqtt in",
+        "z": "2aec16b8.3a6b5a",
+        "name": "Green Bathroom Sensor Battery",
+        "topic": "flood_sensor_bathroom_green/batt_state",
+        "qos": "2",
+        "datatype": "auto",
+        "broker": "82610ac1.cd2678",
+        "x": 380,
+        "y": 660,
+        "wires": [
+            [
+                "516ff1b5.ec41f8"
+            ]
+        ]
+    },
+    {
+        "id": "516ff1b5.ec41f8",
+        "type": "ui_led",
+        "z": "2aec16b8.3a6b5a",
+        "order": 5,
+        "group": "80c1f0d7.b17358",
+        "width": 0,
+        "height": 0,
+        "label": "Green Bathroom Battery Status",
+        "labelPlacement": "left",
+        "labelAlignment": "left",
+        "colorForValue": [
+            {
+                "color": "#ff0000",
+                "value": "LO_BAT",
+                "valueType": "str"
+            },
+            {
+                "color": "#008000",
+                "value": "HIGH_BAT",
+                "valueType": "str"
+            }
+        ],
+        "allowColorForValueInMessage": false,
+        "shape": "circle",
+        "showGlow": true,
+        "name": "Green Bathroom Battery Status",
+        "x": 750,
+        "y": 660,
+        "wires": []
+    },
+    {
+        "id": "7463b4fc.c5d694",
+        "type": "mqtt in",
+        "z": "2aec16b8.3a6b5a",
+        "name": "Green Bathroom Flood Sensor State",
+        "topic": "flood_sensor_bathroom_green/state",
+        "qos": "2",
+        "datatype": "auto",
+        "broker": "82610ac1.cd2678",
+        "x": 400,
+        "y": 720,
+        "wires": [
+            [
+                "5addf992.809c68",
+                "871b6230.91b7b"
+            ]
+        ]
+    },
+    {
+        "id": "5addf992.809c68",
+        "type": "ui_led",
+        "z": "2aec16b8.3a6b5a",
+        "order": 6,
+        "group": "c2212685.1b23b8",
+        "width": 0,
+        "height": 0,
+        "label": "Green Bathroom Sensor State",
+        "labelPlacement": "left",
+        "labelAlignment": "left",
+        "colorForValue": [
+            {
+                "color": "red",
+                "value": "WATER_OFF",
+                "valueType": "str"
+            },
+            {
+                "color": "green",
+                "value": "WATER_ON",
+                "valueType": "str"
+            }
+        ],
+        "allowColorForValueInMessage": false,
+        "showGlow": true,
+        "name": "Green Bathroom Sensor State",
+        "x": 750,
+        "y": 720,
+        "wires": []
+    },
+    {
+        "id": "62658492.fe4704",
+        "type": "mqtt in",
+        "z": "2aec16b8.3a6b5a",
+        "name": "Attic Flood Sensor Battery",
+        "topic": "flood_sensor_attic/batt_state",
+        "qos": "2",
+        "datatype": "auto",
+        "broker": "82610ac1.cd2678",
+        "x": 360,
+        "y": 900,
+        "wires": [
+            [
+                "ef5113ab.295728"
+            ]
+        ]
+    },
+    {
+        "id": "ef5113ab.295728",
+        "type": "ui_led",
+        "z": "2aec16b8.3a6b5a",
+        "order": 7,
+        "group": "80c1f0d7.b17358",
+        "width": 0,
+        "height": 0,
+        "label": "Attic Bathroom Battery Status",
+        "labelPlacement": "left",
+        "labelAlignment": "left",
+        "colorForValue": [
+            {
+                "color": "#ff0000",
+                "value": "LO_BAT",
+                "valueType": "str"
+            },
+            {
+                "color": "#008000",
+                "value": "HIGH_BAT",
+                "valueType": "str"
+            }
+        ],
+        "allowColorForValueInMessage": false,
+        "shape": "circle",
+        "showGlow": true,
+        "name": "Attic Bathroom Battery Status",
+        "x": 750,
+        "y": 900,
+        "wires": []
+    },
+    {
+        "id": "e49468d6.970f68",
+        "type": "mqtt in",
+        "z": "2aec16b8.3a6b5a",
+        "name": "Attic Flood Sensor State",
+        "topic": "flood_sensor_attic/state",
+        "qos": "2",
+        "datatype": "auto",
+        "broker": "82610ac1.cd2678",
+        "x": 370,
+        "y": 960,
+        "wires": [
+            [
+                "d9545bcd.4ca448",
+                "871b6230.91b7b"
+            ]
+        ]
+    },
+    {
+        "id": "d9545bcd.4ca448",
+        "type": "ui_led",
+        "z": "2aec16b8.3a6b5a",
+        "order": 8,
+        "group": "c2212685.1b23b8",
+        "width": 0,
+        "height": 0,
+        "label": "Attic Bathroom Sensor State",
+        "labelPlacement": "left",
+        "labelAlignment": "left",
+        "colorForValue": [
+            {
+                "color": "red",
+                "value": "WATER_OFF",
+                "valueType": "str"
+            },
+            {
+                "color": "green",
+                "value": "WATER_ON",
+                "valueType": "str"
+            }
+        ],
+        "allowColorForValueInMessage": false,
+        "showGlow": true,
+        "name": "Attic Bathroom Sensor State",
+        "x": 740,
+        "y": 960,
+        "wires": []
+    },
+    {
+        "id": "bbb5751b.cf33",
+        "type": "mqtt in",
+        "z": "2aec16b8.3a6b5a",
+        "name": "Red Bathroom Sensor Battery",
+        "topic": "flood_sensor_bathroom_red/batt_state",
+        "qos": "2",
+        "datatype": "auto",
+        "broker": "82610ac1.cd2678",
+        "x": 370,
+        "y": 780,
+        "wires": [
+            [
+                "3e9d78a7.f2eb2"
+            ]
+        ]
+    },
+    {
+        "id": "3e9d78a7.f2eb2",
+        "type": "ui_led",
+        "z": "2aec16b8.3a6b5a",
+        "order": 6,
+        "group": "80c1f0d7.b17358",
+        "width": 0,
+        "height": 0,
+        "label": "Red Bathroom Battery Status",
+        "labelPlacement": "left",
+        "labelAlignment": "left",
+        "colorForValue": [
+            {
+                "color": "#ff0000",
+                "value": "LO_BAT",
+                "valueType": "str"
+            },
+            {
+                "color": "#008000",
+                "value": "HIGH_BAT",
+                "valueType": "str"
+            }
+        ],
+        "allowColorForValueInMessage": false,
+        "shape": "circle",
+        "showGlow": true,
+        "name": "Red Bathroom Battery Status",
+        "x": 740,
+        "y": 780,
+        "wires": []
+    },
+    {
+        "id": "ed8be9ae.903c68",
+        "type": "mqtt in",
+        "z": "2aec16b8.3a6b5a",
+        "name": "Red Bathroom Flood Sensor State",
+        "topic": "flood_sensor_bathroom_red/state",
+        "qos": "2",
+        "datatype": "auto",
+        "broker": "82610ac1.cd2678",
+        "x": 400,
+        "y": 840,
+        "wires": [
+            [
+                "81a5f7e4.047a1",
+                "871b6230.91b7b"
+            ]
+        ]
+    },
+    {
+        "id": "81a5f7e4.047a1",
+        "type": "ui_led",
+        "z": "2aec16b8.3a6b5a",
+        "order": 7,
+        "group": "c2212685.1b23b8",
+        "width": 0,
+        "height": 0,
+        "label": "Red Bathroom Sensor State",
+        "labelPlacement": "left",
+        "labelAlignment": "left",
+        "colorForValue": [
+            {
+                "color": "red",
+                "value": "WATER_OFF",
+                "valueType": "str"
+            },
+            {
+                "color": "green",
+                "value": "WATER_ON",
+                "valueType": "str"
+            }
+        ],
+        "allowColorForValueInMessage": false,
+        "showGlow": true,
+        "name": "Red Bathroom Sensor State",
+        "x": 740,
+        "y": 840,
+        "wires": []
+    },
+    {
+        "id": "76fb47af.711dd8",
+        "type": "ui_button",
+        "z": "2aec16b8.3a6b5a",
+        "name": "",
+        "group": "c2212685.1b23b8",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "label": "Reset all sensors",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "icon": "",
+        "payload": "WATER_ON",
+        "payloadType": "str",
+        "topic": "",
+        "x": 350,
+        "y": 1040,
+        "wires": [
+            [
+                "9bb3e37.fbc6d2",
+                "647ee41f.ff0a9c",
+                "7ad38cb2.a86414",
+                "3f95385c.58171",
+                "600154ab.84059c",
+                "b65a760.5d35b88",
+                "354a1ef.7181e62"
+            ]
+        ]
+    },
+    {
+        "id": "647ee41f.ff0a9c",
+        "type": "mqtt out",
+        "z": "2aec16b8.3a6b5a",
+        "name": "",
+        "topic": "flood_sensor_basement/state",
+        "qos": "",
+        "retain": "",
+        "broker": "82610ac1.cd2678",
+        "x": 750,
+        "y": 1040,
+        "wires": []
+    },
+    {
+        "id": "7ad38cb2.a86414",
+        "type": "mqtt out",
+        "z": "2aec16b8.3a6b5a",
+        "name": "",
+        "topic": "flood_sensor_kitchen/state",
+        "qos": "",
+        "retain": "",
+        "broker": "82610ac1.cd2678",
+        "x": 740,
+        "y": 1100,
+        "wires": []
+    },
+    {
+        "id": "3f95385c.58171",
+        "type": "mqtt out",
+        "z": "2aec16b8.3a6b5a",
+        "name": "",
+        "topic": "flood_sensor_bathroom_ground/state",
+        "qos": "",
+        "retain": "",
+        "broker": "82610ac1.cd2678",
+        "x": 770,
+        "y": 1160,
+        "wires": []
+    },
+    {
+        "id": "600154ab.84059c",
+        "type": "mqtt out",
+        "z": "2aec16b8.3a6b5a",
+        "name": "",
+        "topic": "flood_sensor_bathroom_green/state",
+        "qos": "",
+        "retain": "",
+        "broker": "82610ac1.cd2678",
+        "x": 770,
+        "y": 1220,
+        "wires": []
+    },
+    {
+        "id": "b65a760.5d35b88",
+        "type": "mqtt out",
+        "z": "2aec16b8.3a6b5a",
+        "name": "",
+        "topic": "flood_sensor_bathroom_red/state",
+        "qos": "",
+        "retain": "",
+        "broker": "82610ac1.cd2678",
+        "x": 760,
+        "y": 1280,
+        "wires": []
+    },
+    {
+        "id": "354a1ef.7181e62",
+        "type": "mqtt out",
+        "z": "2aec16b8.3a6b5a",
+        "name": "",
+        "topic": "flood_sensor_attic/state",
+        "qos": "",
+        "retain": "",
+        "broker": "82610ac1.cd2678",
+        "x": 730,
+        "y": 1340,
+        "wires": []
+    },
+    {
+        "id": "23772efc.2d1c52",
+        "type": "ui_button",
+        "z": "2aec16b8.3a6b5a",
+        "name": "",
+        "group": "80c1f0d7.b17358",
+        "order": 8,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "label": "Reset Batteries",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "icon": "",
+        "payload": "none",
+        "payloadType": "str",
+        "topic": "",
+        "x": 1160,
+        "y": 1020,
+        "wires": [
+            [
+                "a8e9a350.b6e538",
+                "f7872b0b.152f1",
+                "997ce7e8.ec631",
+                "c6ec179.d34db68",
+                "66065c0e.3417fc",
+                "a05ef78e.0f0ef8",
+                "e63161f0.3e5978"
+            ]
+        ]
+    },
+    {
+        "id": "a8e9a350.b6e538",
+        "type": "mqtt out",
+        "z": "2aec16b8.3a6b5a",
+        "name": "",
+        "topic": "flood_sensor_basement/batt_state",
+        "qos": "",
+        "retain": "",
+        "broker": "82610ac1.cd2678",
+        "x": 1580,
+        "y": 1020,
+        "wires": []
+    },
+    {
+        "id": "f7872b0b.152f1",
+        "type": "mqtt out",
+        "z": "2aec16b8.3a6b5a",
+        "name": "",
+        "topic": "flood_sensor_kitchen/batt_state",
+        "qos": "",
+        "retain": "",
+        "broker": "82610ac1.cd2678",
+        "x": 1570,
+        "y": 1080,
+        "wires": []
+    },
+    {
+        "id": "997ce7e8.ec631",
+        "type": "mqtt out",
+        "z": "2aec16b8.3a6b5a",
+        "name": "",
+        "topic": "flood_sensor_bathroom_ground/batt_state",
+        "qos": "",
+        "retain": "",
+        "broker": "82610ac1.cd2678",
+        "x": 1610,
+        "y": 1140,
+        "wires": []
+    },
+    {
+        "id": "c6ec179.d34db68",
+        "type": "mqtt out",
+        "z": "2aec16b8.3a6b5a",
+        "name": "",
+        "topic": "flood_sensor_bathroom_green/batt_state",
+        "qos": "",
+        "retain": "",
+        "broker": "82610ac1.cd2678",
+        "x": 1600,
+        "y": 1200,
+        "wires": []
+    },
+    {
+        "id": "66065c0e.3417fc",
+        "type": "mqtt out",
+        "z": "2aec16b8.3a6b5a",
+        "name": "",
+        "topic": "flood_sensor_bathroom_red/batt_state",
+        "qos": "",
+        "retain": "",
+        "broker": "82610ac1.cd2678",
+        "x": 1590,
+        "y": 1260,
+        "wires": []
+    },
+    {
+        "id": "a05ef78e.0f0ef8",
+        "type": "mqtt out",
+        "z": "2aec16b8.3a6b5a",
+        "name": "",
+        "topic": "flood_sensor_attic/batt_state",
+        "qos": "",
+        "retain": "",
+        "broker": "82610ac1.cd2678",
+        "x": 1560,
+        "y": 1320,
+        "wires": []
+    },
+    {
+        "id": "e63161f0.3e5978",
+        "type": "mqtt out",
+        "z": "2aec16b8.3a6b5a",
+        "name": "",
+        "topic": "pumpctrl/state",
+        "qos": "",
+        "retain": "",
+        "broker": "82610ac1.cd2678",
+        "x": 1520,
+        "y": 960,
+        "wires": []
+    },
+    {
+        "id": "d12d11b9.26b03",
+        "type": "mqtt in",
+        "z": "32249e45.f0dfaa",
+        "name": "Barrel Water Level",
+        "topic": "water/level",
+        "qos": "2",
+        "datatype": "auto",
+        "broker": "82610ac1.cd2678",
+        "x": 150,
+        "y": 560,
+        "wires": [
+            [
+                "babe77.5606d188"
+            ]
+        ]
+    },
+    {
+        "id": "1a6ec880.ec95ef",
+        "type": "ui_gauge",
+        "z": "32249e45.f0dfaa",
+        "name": "",
+        "group": "17da0dfd.94274a",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "gtype": "gage",
+        "title": "Water Tank",
+        "label": "liters",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "900",
+        "colors": [
+            "#ff8080",
+            "#00ff00",
+            "#ff8080"
+        ],
+        "seg1": "350",
+        "seg2": "850",
+        "x": 1130,
+        "y": 500,
+        "wires": []
+    },
+    {
+        "id": "ff22172e.3a5fd8",
+        "type": "ui_chart",
+        "z": "32249e45.f0dfaa",
+        "name": "",
+        "group": "17da0dfd.94274a",
+        "order": 5,
+        "width": "0",
+        "height": "0",
+        "label": "Barrel Water",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "dd HH:mm",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "0",
+        "ymax": "1000",
+        "removeOlder": "1",
+        "removeOlderPoints": "1000",
+        "removeOlderUnit": "86400",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "x": 1130,
+        "y": 560,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "8ed4e9f.157a398",
+        "type": "range",
+        "z": "32249e45.f0dfaa",
+        "minin": "0",
+        "maxin": "89",
+        "minout": "890",
+        "maxout": "0",
+        "action": "scale",
+        "round": true,
+        "property": "payload",
+        "name": "",
+        "x": 600,
+        "y": 560,
+        "wires": [
+            [
+                "1a6ec880.ec95ef",
+                "e885f6f6.50335"
+            ]
+        ]
+    },
+    {
+        "id": "272c707b.e871d8",
+        "type": "mqtt in",
+        "z": "32249e45.f0dfaa",
+        "name": "Intake Water Valve Status",
+        "topic": "valve/state",
+        "qos": "2",
+        "datatype": "auto",
+        "broker": "82610ac1.cd2678",
+        "x": 170,
+        "y": 660,
+        "wires": [
+            [
+                "6713b4ec.ab7854",
+                "55675385.972934"
+            ]
+        ]
+    },
+    {
+        "id": "6713b4ec.ab7854",
+        "type": "ui_switch",
+        "z": "32249e45.f0dfaa",
+        "name": "",
+        "label": "Intake Valve",
+        "tooltip": "",
+        "group": "17da0dfd.94274a",
+        "order": 4,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "decouple": "true",
+        "topic": "",
+        "topicType": "str",
+        "style": "",
+        "onvalue": "WATER_ON",
+        "onvalueType": "str",
+        "onicon": "",
+        "oncolor": "",
+        "offvalue": "WATER_OFF",
+        "offvalueType": "str",
+        "officon": "",
+        "offcolor": "",
+        "animate": true,
+        "x": 450,
+        "y": 660,
+        "wires": [
+            [
+                "632247ba.93aee"
+            ]
+        ]
+    },
+    {
+        "id": "4e027a3.6bc3e04",
+        "type": "switch",
+        "z": "32249e45.f0dfaa",
+        "name": "",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "WATER_ON",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "WATER_OFF",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 880,
+        "y": 660,
+        "wires": [
+            [
+                "3b07e3bc.1124a4"
+            ],
+            [
+                "3d2cd7ac.482848"
+            ]
+        ]
+    },
+    {
+        "id": "3b07e3bc.1124a4",
+        "type": "change",
+        "z": "32249e45.f0dfaa",
+        "name": "Open Intake Valve",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "ON",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1080,
+        "y": 640,
+        "wires": [
+            [
+                "a261caf6.54be5"
+            ]
+        ]
+    },
+    {
+        "id": "3d2cd7ac.482848",
+        "type": "change",
+        "z": "32249e45.f0dfaa",
+        "name": "Close Intake Valve",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "OFF",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1080,
+        "y": 720,
+        "wires": [
+            [
+                "a261caf6.54be5"
+            ]
+        ]
+    },
+    {
+        "id": "a261caf6.54be5",
+        "type": "mqtt out",
+        "z": "32249e45.f0dfaa",
+        "name": "",
+        "topic": "valve/button",
+        "qos": "",
+        "retain": "",
+        "broker": "82610ac1.cd2678",
+        "x": 1280,
+        "y": 680,
+        "wires": []
+    },
+    {
+        "id": "632247ba.93aee",
+        "type": "delay",
+        "z": "32249e45.f0dfaa",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "60",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": true,
+        "x": 670,
+        "y": 660,
+        "wires": [
+            [
+                "4e027a3.6bc3e04"
+            ]
+        ]
+    },
+    {
+        "id": "da747dea.28fa3",
+        "type": "ui_button",
+        "z": "32249e45.f0dfaa",
+        "name": "",
+        "group": "17da0dfd.94274a",
+        "order": 6,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "label": "Clear Data",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "icon": "",
+        "payload": "[]",
+        "payloadType": "json",
+        "topic": "",
+        "topicType": "str",
+        "x": 890,
+        "y": 600,
+        "wires": [
+            [
+                "ff22172e.3a5fd8"
+            ]
+        ]
+    },
+    {
+        "id": "720f4694.54fa98",
+        "type": "debug",
+        "z": "c9a5b3d6.a877c",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1150,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "e885f6f6.50335",
+        "type": "smooth",
+        "z": "32249e45.f0dfaa",
+        "name": "",
+        "property": "payload",
+        "action": "mean",
+        "count": "20",
+        "round": "",
+        "mult": "single",
+        "reduce": false,
+        "x": 760,
+        "y": 560,
+        "wires": [
+            [
+                "c8856d40.79bc18"
+            ]
+        ]
+    },
+    {
+        "id": "c8856d40.79bc18",
+        "type": "rbe",
+        "z": "32249e45.f0dfaa",
+        "name": "",
+        "func": "rbe",
+        "gap": "",
+        "start": "",
+        "inout": "out",
+        "septopics": false,
+        "property": "payload",
+        "x": 910,
+        "y": 560,
+        "wires": [
+            [
+                "ff22172e.3a5fd8"
+            ]
+        ]
+    },
+    {
+        "id": "babe77.5606d188",
+        "type": "function",
+        "z": "32249e45.f0dfaa",
+        "name": "Remove outliers",
+        "func": "if (context.get(\"meas_val\") === undefined) {\n    prev_val = msg.payload\n} else {\n    prev_val = context.get(\"meas_val\");\n}\nmax_delta = 5;\nif (Math.abs(msg.payload - prev_val) > max_delta) {\n    node.warn(\"Outlier found: prev val = \" + prev_val + \", cur val = \" + msg.payload);\n    msg.payload = prev_val;\n} else {\n    prev_val = msg.payload;\n    context.set(\"meas_val\", prev_val);\n}\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 380,
+        "y": 560,
+        "wires": [
+            [
+                "8ed4e9f.157a398",
+                "55675385.972934"
+            ]
+        ]
+    },
+    {
+        "id": "57c7a4ea.121cc4",
+        "type": "mqtt in",
+        "z": "32249e45.f0dfaa",
+        "name": "Solar Watering Valve Status",
+        "topic": "solar-watering/state",
+        "qos": "2",
+        "datatype": "auto",
+        "broker": "82610ac1.cd2678",
+        "x": 160,
+        "y": 800,
+        "wires": [
+            [
+                "ee282be7.3db6e8"
+            ]
+        ]
+    },
+    {
+        "id": "ee282be7.3db6e8",
+        "type": "ui_switch",
+        "z": "32249e45.f0dfaa",
+        "name": "",
+        "label": "Solar Watering Valve",
+        "tooltip": "",
+        "group": "17da0dfd.94274a",
+        "order": 4,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "decouple": "true",
+        "topic": "",
+        "topicType": "str",
+        "style": "",
+        "onvalue": "WATER_ON",
+        "onvalueType": "str",
+        "onicon": "",
+        "oncolor": "",
+        "offvalue": "WATER_OFF",
+        "offvalueType": "str",
+        "officon": "",
+        "offcolor": "",
+        "animate": true,
+        "x": 440,
+        "y": 800,
+        "wires": [
+            [
+                "63d07360.72b7cc"
+            ]
+        ]
+    },
+    {
+        "id": "4238d4bb.dc8fbc",
+        "type": "switch",
+        "z": "32249e45.f0dfaa",
+        "name": "",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "WATER_ON",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "WATER_OFF",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 860,
+        "y": 800,
+        "wires": [
+            [
+                "d627a782.b1c818"
+            ],
+            [
+                "75090ffa.39ed1"
+            ]
+        ]
+    },
+    {
+        "id": "d627a782.b1c818",
+        "type": "change",
+        "z": "32249e45.f0dfaa",
+        "name": "Open Solar Valve",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "ON",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1060,
+        "y": 780,
+        "wires": [
+            [
+                "df23017e.31b608"
+            ]
+        ]
+    },
+    {
+        "id": "75090ffa.39ed1",
+        "type": "change",
+        "z": "32249e45.f0dfaa",
+        "name": "Close Solar Valve",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "OFF",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1060,
+        "y": 860,
+        "wires": [
+            [
+                "df23017e.31b608"
+            ]
+        ]
+    },
+    {
+        "id": "df23017e.31b608",
+        "type": "mqtt out",
+        "z": "32249e45.f0dfaa",
+        "name": "",
+        "topic": "solar-watering/button",
+        "qos": "",
+        "retain": "",
+        "broker": "82610ac1.cd2678",
+        "x": 1290,
+        "y": 820,
+        "wires": []
+    },
+    {
+        "id": "63d07360.72b7cc",
+        "type": "delay",
+        "z": "32249e45.f0dfaa",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "60",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": true,
+        "x": 650,
+        "y": 800,
+        "wires": [
+            [
+                "4238d4bb.dc8fbc"
+            ]
+        ]
+    },
+    {
+        "id": "761ea4bc.b4643c",
+        "type": "light-scheduler",
+        "z": "32249e45.f0dfaa",
+        "settings": "7dfd2fb6.d1ac5",
+        "events": "[{\"start\":{\"dow\":5,\"mod\":1200},\"end\":{\"dow\":5,\"mod\":1215}},{\"start\":{\"dow\":1,\"mod\":1200},\"end\":{\"dow\":1,\"mod\":1215}}]",
+        "topic": "",
+        "name": "",
+        "onPayload": "WATER_ON",
+        "onPayloadType": "str",
+        "offPayload": "WATER_OFF",
+        "offPayloadType": "str",
+        "onlyWhenDark": false,
+        "scheduleRndMax": 0,
+        "sunElevationThreshold": 6,
+        "sunShowElevationInStatus": false,
+        "outputfreq": "output.statechange",
+        "x": 590,
+        "y": 980,
+        "wires": [
+            [
+                "4238d4bb.dc8fbc"
+            ]
+        ]
+    },
+    {
+        "id": "c1932c82.81af58",
+        "type": "inject",
+        "z": "c9a5b3d6.a877c",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "valve/state",
+        "payload": "WATER_ON",
+        "payloadType": "str",
+        "x": 180,
+        "y": 400,
+        "wires": [
+            [
+                "d5b4139a.e58168"
+            ]
+        ]
+    },
+    {
+        "id": "ae7b2d5a.e5029",
+        "type": "inject",
+        "z": "c9a5b3d6.a877c",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "water/level",
+        "payload": "50",
+        "payloadType": "num",
+        "x": 190,
+        "y": 280,
+        "wires": [
+            [
+                "d5b4139a.e58168"
+            ]
+        ]
+    },
+    {
+        "id": "142b288e.79cb17",
+        "type": "inject",
+        "z": "c9a5b3d6.a877c",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": "10",
+        "topic": "pumpctrl/status",
+        "payload": "PUMP_ON",
+        "payloadType": "str",
+        "x": 170,
+        "y": 180,
+        "wires": [
+            [
+                "d5b4139a.e58168"
+            ]
+        ]
+    },
+    {
+        "id": "ff62552e.83ea9",
+        "type": "debug",
+        "z": "c9a5b3d6.a877c",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 670,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "e427a819.4201f",
+        "type": "inject",
+        "z": "c9a5b3d6.a877c",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "valve/state",
+        "payload": "WATER_OFF",
+        "payloadType": "str",
+        "x": 170,
+        "y": 460,
+        "wires": [
+            [
+                "d5b4139a.e58168"
+            ]
+        ]
+    },
+    {
+        "id": "f05fdbab.892d1",
+        "type": "inject",
+        "z": "c9a5b3d6.a877c",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": "10",
+        "topic": "pumpctrl/status",
+        "payload": "PUMP_OFF",
+        "payloadType": "str",
+        "x": 180,
+        "y": 120,
+        "wires": [
+            [
+                "d5b4139a.e58168"
+            ]
+        ]
+    },
+    {
+        "id": "312dac1d.fc39fc",
+        "type": "inject",
+        "z": "c9a5b3d6.a877c",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "water/level",
+        "payload": "25",
+        "payloadType": "num",
+        "x": 190,
+        "y": 240,
+        "wires": [
+            [
+                "d5b4139a.e58168"
+            ]
+        ]
+    },
+    {
+        "id": "f930d1c9.fdf718",
+        "type": "debug",
+        "z": "32249e45.f0dfaa",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 800,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "d5b4139a.e58168",
+        "type": "function",
+        "z": "c9a5b3d6.a877c",
+        "name": "WaterSafety",
+        "func": "if (msg.topic == \"pumpctrl/status\") {\n    if (msg.payload == \"PUMP_ON\") {\n        context.set(\"pump_status\", \"ON\");\n    } else {\n        if (msg.payload == \"PUMP_OFF\") {\n            context.set(\"pump_status\", \"OFF\");\n        }\n    }\n} else {\n    if (msg.topic == \"water/level\") {\n        context.set(\"water_level\", msg.payload);\n    } else {\n        if (msg.topic == \"valve/state\") {\n            if (msg.payload == \"WATER_ON\") {\n                context.set(\"valve_state\", \"ON\");\n            } else {\n                context.set(\"valve_state\", \"OFF\");\n            }\n        }\n    }\n}\n\nif ((context.get(\"pump_status\") == \"ON\") && \n    (context.get(\"water_level\") < 30) &&\n    (context.get(\"valve_state\") == \"ON\")){\n        msg.payload = \"WATER_OFF\";\n        context.set(\"safe_shdn\", \"YES\");\n\n        return msg;\n} else {\n    if ((context.get(\"pump_status\") == \"OFF\") && \n        (context.get(\"water_level\") > 30) &&\n        (context.get(\"valve_state\") == \"OFF\") &&\n        context.get(\"safe_shdn\") == \"YES\") {\n        context.set(\"safe_shdn\", \"NO\");\n        msg.payload = \"WATER_ON\";\n        \n        return msg;\n    }\n}\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "// Code added here will be run once\n// whenever the node is deployed.\ncontext.set(\"pump_status\", \"OFF\");\ncontext.set(\"valve_state\", \"OFF\");\ncontext.set(\"water_level\", 50);\ncontext.set(\"safe_shdn\", \"NO\");",
+        "finalize": "",
+        "x": 470,
+        "y": 300,
+        "wires": [
+            [
+                "ff62552e.83ea9"
+            ]
+        ]
+    },
+    {
+        "id": "55675385.972934",
+        "type": "function",
+        "z": "32249e45.f0dfaa",
+        "name": "WaterSafety",
+        "func": "if (msg.topic == \"pumpctrl/status\") {\n    if (msg.payload == \"PUMP_ON\") {\n        context.set(\"pump_status\", \"ON\");\n    } else {\n        if (msg.payload == \"PUMP_OFF\") {\n            context.set(\"pump_status\", \"OFF\");\n        }\n    }\n} else {\n    if (msg.topic == \"water/level\") {\n        context.set(\"water_level\", msg.payload);\n    } else {\n        if (msg.topic == \"valve/state\") {\n            if (msg.payload == \"WATER_ON\") {\n                context.set(\"valve_state\", \"ON\");\n            } else {\n                context.set(\"valve_state\", \"OFF\");\n            }\n        }\n    }\n}\n\nif ((context.get(\"pump_status\") == \"ON\") && \n    (context.get(\"water_level\") < 26) &&\n    (context.get(\"valve_state\") == \"ON\")){\n        msg.payload = \"WATER_OFF\";\n        context.set(\"safe_shdn\", \"YES\");\n\n        return msg;\n} else {\n    if ((context.get(\"pump_status\") == \"OFF\") && \n        (context.get(\"water_level\") > 26) &&\n        (context.get(\"valve_state\") == \"OFF\") &&\n        context.get(\"safe_shdn\") == \"YES\") {\n        context.set(\"safe_shdn\", \"NO\");\n        msg.payload = \"WATER_ON\";\n        \n        return msg;\n    }\n}\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "// Code added here will be run once\n// whenever the node is deployed.\ncontext.set(\"pump_status\", \"OFF\");\ncontext.set(\"valve_state\", \"OFF\");\ncontext.set(\"water_level\", 50);\ncontext.set(\"safe_shdn\", \"NO\");",
+        "finalize": "",
+        "x": 570,
+        "y": 460,
+        "wires": [
+            [
+                "4e027a3.6bc3e04",
+                "f930d1c9.fdf718"
+            ]
+        ]
+    }
+]
+
