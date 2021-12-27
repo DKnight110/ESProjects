@@ -22,11 +22,11 @@
 	#define ERROR(...) fprintf (stderr, __VA_ARGS__)
 #else
 	#if ERR_LEVEL == 3
-		#define DEBUG(...) SERIAL_PRINTF(...)
+		#define DEBUG(...) send_log("DBG: ", ...)
 	#else
 		#define DEBUG(...)
 	#endif
-	#define ERROR(...) SERIAL_PRINTF(stderr, __VA_ARGS__)
+	#define ERROR(...) send_log("ERR: ", __VA_ARGS__)
 #endif
 
 #define LED_STATUS_1	0
@@ -75,10 +75,15 @@ struct serial_cmd {
 	uint8_t cmd[];
 };
 
+#ifdef __cplusplus
+ extern "C" {
+#endif
 int uart_rx(unsigned char ch);
 
 void process_message(char buf[]);
 
 void send_log(const char *format,...);
-
+#ifdef __cplusplus
+}
+#endif
 #endif /* SERIAL_COMMS_H */

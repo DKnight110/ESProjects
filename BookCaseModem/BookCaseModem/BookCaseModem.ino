@@ -7,9 +7,12 @@
     printed to Serial when the module is connected.
 */
 
+#include <serial_comms.h>
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 #include <FS.h>
+
+#define ESP_AS_MODEM
 
 #define NETCFG_FILE_NAME     "/net_config.txt"
 
@@ -37,8 +40,8 @@
 
 #define MQTT_TOPIC_SUB3       "bookcase/fan"
 #define MQTT_TOPIC_SUB3_STR1  "ON"
-#define MQTT_TOPIC_SUB3_STR1  "OFF"
-#define MQTT_TOPIC_SUB3_STR2  "SET_PWM"
+#define MQTT_TOPIC_SUB3_STR2  "OFF"
+#define MQTT_TOPIC_SUB3_STR3  "SET_PWM"
 
 #define MQTT_TOPIC_PUB1       "bookcase/debug"
 #define MQTT_TOPIC_PUB1_STR1  "RST"
@@ -73,7 +76,7 @@
 #endif
 #else
 #define SERIAL_PRINT(x) send_log("%s", x)
-#define SERIAL_PRINTLN(x) send_log("%s", x)
+#define SERIAL_PRINTLN(x) send_log("%s\n", x)
 #define SERIAL_PRINTF(x, ...)  send_log(x,  __VA_ARGS__)
 #endif
 
@@ -118,6 +121,12 @@ void toggle_led(uint8_t pin, uint8_t times, uint16_t delta)
   digitalWrite(pin, initial_state);
 }
 
+void modem_reset()
+{
+  client.disconnect();
+  delay(5000);
+  ESP.restart();
+}
 void publish_msg(bool all)
 {
   bool ret;
@@ -167,9 +176,8 @@ void callback(char *topic, byte *payload, unsigned int length) {
   {
     if (!strncmp((char *)payload, MQTT_TOPIC_SUB1_STR1, length))
     {
-      digitalWrite(PICO_RESET_PIN, 0);
       client.disconnect();
-      //delay(5000);
+      delay(1000);
       ESP.restart();
     }
   }
@@ -197,7 +205,7 @@ void callback(char *topic, byte *payload, unsigned int length) {
     }
     else
     {
-      SERIAL_PRINTF("Got unknown comm
+      SERIAL_PRINTLN("Got unknown!");
     }
 
   } 

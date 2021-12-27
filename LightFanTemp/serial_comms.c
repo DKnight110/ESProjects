@@ -215,12 +215,11 @@ void process_message(char buf[])
 	switch (cmd->cmd_type) {
 #ifdef ESP8266
 		case MODEM_RESET:
-			client.disconnect();
-			delay(5000);
-			ESP.restart();
-			
+			modem_reset();
+
+			break;
 		default:
-			SERIAL_PRINTF("Unknown command type 0x%02x, seq 0x%02x, cmd len %d, content %s\n", cmd->cmd_type, cmd->seq, cmd->cmd_len, cmd->cmd);
+			send_log("Unknown command type 0x%02x, seq 0x%02x, cmd len %d, content %s\n", cmd->cmd_type, cmd->seq, cmd->cmd_len, cmd->cmd);
 			break;
 #else
 		case WIFI_CONNECTED:
