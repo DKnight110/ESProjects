@@ -1,6 +1,7 @@
 #ifndef LED_STRIP_HELPERS_H
 #define LED_STRIP_HELPERS_H
 
+#include <stdint.h>
 #include "macro_helpers.h"
 
 /* 
@@ -66,5 +67,18 @@
 #define COLOR_RED	0x0000FF
 #define COLOR_GREEN	0x00FF00
 #define COLOR_BLUE	0xFF0000
+
+struct led_program_entry {
+	uint16_t time;	/* How long to keep this before switching to the next */
+	uint32_t leds[NUM_LEDS_IN_STRIP];	/* leds array for this step */
+};
+
+#define NUM_LED_PROGRAMS		2
+
+#define NUM_STEPS_IN_PROGRAM	(2 * NUM_LEDS_IN_STRIP - 1)
+
+struct led_programs {
+	struct led_program_entry led_program_entry[NUM_STEPS_IN_PROGRAM];
+};
 
 #endif /* LED_STRIP_HELPERS_H */

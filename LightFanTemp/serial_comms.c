@@ -39,7 +39,11 @@ void uart_tx(char *src, int len)
 	/* First we put out the start char */
 	put_char(START_CHAR);
 	
-	for (i = 0; i < len; i++) { 
+	for (i = 0; i < len; i++) {
+		if ((src[i] == START_CHAR) || (src[i] == END_CHAR) || (src[i] == ESCAPE_CHAR))
+		{
+			put_char(ESCAPE_CHAR);
+		}
 		put_char(src[i]);
 	}
 
@@ -48,65 +52,110 @@ void uart_tx(char *src, int len)
 
 void send_log(const char *format,...) {
 		struct serial_cmd *rsp = (struct serial_cmd *)rsp_buf;
+		uint8_t calc_parity;
 		va_list arglist;
-		int i;
+		int i, ret;
 
 		rsp->cmd_type = SEND_LOG;
-		rsp->parity = 0;
+		rsp->parity = calc_parity = 0;
+		rsp->seq = rx_seq;
 
 		va_start(arglist, format);
-		vsprintf(rsp->cmd, format, arglist);
+		ret  = vsnprintf(rsp->cmd, sizeof(rsp_buf) - 4, format, arglist);
 		va_end(arglist);
 
-		/* Yeah, if it's longer... tough luck */
-		rsp->cmd_len = strlen(rsp->cmd);
+		if (ret < 0) {
+			ERROR("Log too long!\n");
+			return;
+		}
+
+		rsp->cmd_len  = (uint8_t)ret;
+
+		/* Need to finish the string */
+		rsp->cmd[rsp->cmd_len++] = 0;
 
 		for(i = 0; i < rsp->cmd_len + 4; i++) {
-			rsp->parity += rsp->cmd[i];
+			calc_parity += rsp_buf[i];
 		}
+		rsp->parity = calc_parity;
 
 		uart_tx(rsp_buf, rsp->cmd_len + 4);
 }
 
-void uart_rx(unsigned char ch)
+
+int uart_rx(unsigned char ch)
 {
+	struct serial_cmd *cmd = (struct serial_cmd *)rx_buf;
+
 	DEBUG("In %s\n", __func__);
-	DEBUG("ch = 0x%02x\n", ch);
-	switch(parser_state) {
-		case MSG_START:
-			if (ch == START_CHAR) {
+	DEBUG("parser state = %d, ch = 0x%02x (%c)\n", parser_state, ch, ch);
+
+	DEBUG("pos = %d, cmd_len = %d\n", pos, cmd->cmd_len);
+
+	if (parser_state == MSG_ESCAPE)
+	{
+		parity += ch;
+		DEBUG("ESCAPE Parity = 0x%02x\n", parity);
+		rx_buf[pos++] = ch;
+
+		parser_state = MSG_RCV;
+		return 1;
+	}
+
+	switch (ch)
+	{
+		case START_CHAR:
+			if (parser_state == MSG_START)
+			{
 				DEBUG("State = MSG_RCV\n");
 				parser_state = MSG_PARITY_RCV;
 				pos = 0;
 				parity = 0;
 			}
+			else
+			{
+				DEBUG("Invalid start char received in state 0x%02x\n", parser_state);
+				parser_state = MSG_START;
+			}
+
 			break;
 
-		case MSG_PARITY_RCV:
-			/* Skip Parity, assume 0 for calculation */
-			rx_buf[pos++] = ch;
-			parser_state = MSG_RCV;
-			break;
-	
-		case MSG_RCV:
-			if (ch == END_CHAR) {
+		case END_CHAR:
+			if (parser_state == MSG_RCV)
+			{
 				DEBUG("State = MSG_END\n");
 				parser_state = MSG_END;
-			} else {
+			}
+			else
+			{
+				DEBUG("Invalid end char received in state 0x%02x\n", parser_state);
+				parser_state = MSG_START;
+			}
+
+			break;
+
+		case ESCAPE_CHAR:
+			DEBUG("Got ESCAPE char\n");
+			parser_state = MSG_ESCAPE;
+			break;
+
+		default:
+			if (parser_state == MSG_PARITY_RCV)
+			{
+				rx_buf[pos++] = ch;
+				parser_state = MSG_RCV;
+			}
+			else
+			{
 				parity += ch;
 				DEBUG("Parity = 0x%02x\n", parity);
 				rx_buf[pos++] = ch;
 			}
 			break;
 
-		default:
-			DEBUG("Unknown state 0x0%2x\n", parser_state);
-			break;
 	}
 
 	if (parser_state == MSG_END) {
-		struct serial_cmd *cmd = (struct serial_cmd *)rx_buf;
-
 		if (cmd->seq != rx_seq) {
 			DEBUG("Warn: expected seq %d, got %d\n", rx_seq, cmd->seq);
 			rx_seq = cmd->seq;
@@ -121,7 +170,11 @@ void uart_rx(unsigned char ch)
 			process_message(rx_buf);
 		}
 		parser_state = MSG_START;
+
+		return 0;
 	}
+
+	return 1;
 }
 
 #ifndef ESP8266
@@ -141,6 +194,11 @@ void send_modem_reset() {
 
 		uart_tx(rsp_buf, rsp->cmd_len + 4);
 }
+
+__WEAK void parse_log(uint8_t *cmd)
+{
+	fprintf(stderr, "LOG: %s", cmd);
+}
 #endif
 
 #ifdef ESP8266
@@ -150,7 +208,8 @@ void process_message(char buf[])
 {
 	struct serial_cmd *cmd = (struct serial_cmd *)buf;
 #ifndef ESP8266
-	uint32_t prev_color;
+	uint8_t prg_step, led;
+	struct led_programs *tmp;
 #endif
 
 	switch (cmd->cmd_type) {
@@ -161,89 +220,68 @@ void process_message(char buf[])
 			ESP.restart();
 			
 		default:
-			send_log("Unknown command type 0x%02x, seq 0x%02x, cmd len %d, content %s\n", cmd->cmd_type, cmd->seq, cmd->cmd_len, cmd->cmd);
+			SERIAL_PRINTF("Unknown command type 0x%02x, seq 0x%02x, cmd len %d, content %s\n", cmd->cmd_type, cmd->seq, cmd->cmd_len, cmd->cmd);
 			break;
-#endif
-#ifndef ESP8266:
+#else
 		case WIFI_CONNECTED:
-			prev_color = led_data[LED_STATUS_0];
-			led_data[LED_STATUS_0] = COLOR_GREEN;
-			show_pixels();
-			delay(500);
-			led_data[LED_STATUS_0] = prev_color;
-			show_pixels();
+			ERROR("Wifi Connected!\n");
 			break;
 
 		case WIFI_DISCONNECTED:
-			prev_color = led_data[LED_STATUS_1];
-			led_data[LED_STATUS_1] = COLOR_RED;
-			show_pixels();
-			delay(500);
-			led_data[LED_STATUS_1] = prev_color;
-			show_pixels();
+			ERROR("Wifi DisConnected!\n");
 			break;
 			
 		case MQTT_CONNECTED:
-			prev_color = led_data[LED_STATUS_1];
-			led_data[LED_STATUS_1] = COLOR_GREEN;
-			show_pixels();
-			delay(500);
-			led_data[LED_STATUS_1] = prev_color;
-			show_pixels();
+			ERROR("MQTT Connected!\n");
 			break;
 
 		case MQTT_DISCONNECTED:
-			prev_color = led_data[LED_STATUS_1];
-			led_data[LED_STATUS_1] = COLOR_RED;
-			show_pixels();
-			delay(500);
-			led_data[LED_STATUS_1] = prev_color;
-			show_pixels();
+			ERROR("MQTT DisConnected!\n");
 			break;
-#else /* ifndef ESP8266 */		
+		
 		case SET_LED_COLOR:
-			uint8_t prg_step = cmd->cmd[0];
-			uint8_t led = cmd->cmd[1];
+			prg_step = cmd->cmd[0];
+			led = cmd->cmd[1];
 
-			shadow_prg->led_program_entry[prg_step].leds[led] = (cmd->cmd[1] << 16) | (cmd->cmd[2] << 8) | cmd->cmd[3]);
+			shadow_prg->led_program_entry[prg_step].leds[led] = (cmd->cmd[1] << 16) | (cmd->cmd[2] << 8) | cmd->cmd[3];
 
 			break;
 
 		case SET_LED_COLOR_BULK:
-			uint8_t prg_step = cmd->cmd[0];
+			prg_step = cmd->cmd[0];
 			int i = 0;
 
 			for(i = 0; i < NUM_LEDS_IN_STRIP; i++) {
-				shadow_prg->led_program_entry[prg_step].leds[led] = (cmd->cmd[1 + i] << 16) | (cmd->cmd[2 + i] << 8) | cmd->cmd[3 + i]);
+				shadow_prg->led_program_entry[prg_step].leds[led] = (cmd->cmd[1 + i] << 16) | (cmd->cmd[2 + i] << 8) | cmd->cmd[3 + i];
 			}
 			break;
 		
 		case SET_LED_TIME:
-			uint8_t prg_step = cmd->cmd[0];
+			prg_step = cmd->cmd[0];
 			shadow_prg->led_program_entry[prg_step].time = (cmd->cmd[1] << 8) | cmd->cmd[2];
 			break;
 
 		case SET_LED_TIME_BULK:
-			uint8_t prg_step = cmd->cmd[0];
+			prg_step = cmd->cmd[0];
 
 			for(i = 0; i < NUM_LEDS_IN_STRIP * 2; i++) {
-				shadow_prg->led_program_entry[prg_step].leds[led] = (cmd->cmd[1 + i] << 16) | (cmd->cmd[2 + i] << 8) | cmd->cmd[3 + i]);
+				shadow_prg->led_program_entry[prg_step].leds[led] = (cmd->cmd[1 + i] << 16) | (cmd->cmd[2 + i] << 8) | cmd->cmd[3 + i];
 			}
 
 			break;
 			
 		case SWITCH_PROGRAMS:
-			struct led_programs *tmp = cur_prg;
+			tmp = cur_prg;
 			cur_prg = shadow_prg;
 			shadow_prg = cur_prg;
 			break;
 
 		case SEND_LOG:
-			parse_log(cmd->
+			parse_log(cmd->cmd);
 			break;
 
 		default:
-			SERIAL_PRINTLN("Unknown command type 0x%02x, seq 0x%02x, cmd len %d, content %s\n", cmd->cmd_type, cmd->seq, cmd->cmd_len, cmd->cmd);
+			ERROR("Unknown command type 0x%02x, seq 0x%02x, cmd len %d, content %s\n", cmd->cmd_type, cmd->seq, cmd->cmd_len, cmd->cmd);
 			break;
 #endif /* ESP8266 */
 	}	

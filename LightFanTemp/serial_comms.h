@@ -8,11 +8,26 @@
 #define ESCAPE_CHAR	0xde
 #define END_CHAR	0x5a
 
-#define CMD_LEN		256
+#define CMD_LEN		255
 
 #define __WEAK __attribute__((weak))
 
-#define DEBUG(...) fprintf (stderr, __VA_ARGS__)
+#ifndef ESP8266
+	#if ERR_LEVEL == 3
+		#define DEBUG(...) fprintf (stderr, __VA_ARGS__)
+	#else
+	#define DEBUG(...)
+	#endif
+
+	#define ERROR(...) fprintf (stderr, __VA_ARGS__)
+#else
+	#if ERR_LEVEL == 3
+		#define DEBUG(...) SERIAL_PRINTF(...)
+	#else
+		#define DEBUG(...)
+	#endif
+	#define ERROR(...) SERIAL_PRINTF(stderr, __VA_ARGS__)
+#endif
 
 #define LED_STATUS_1	0
 #define LED_STATUS_2	1
@@ -22,13 +37,15 @@ enum cmd_type {
 
 		WIFI_CONNECTED 	= 0x10,
 		WIFI_DISCONNECTED,
-		WIFI_MQTT_CONNECTED,
-		WIFI_MQTT_DISCONNECTED
+		MQTT_CONNECTED,
+		MQTT_DISCONNECTED,
 
 		SET_LED_COLOR 	= 0x20,
 		SET_LED_COLOR_BULK,
 		GET_LED_COLOR,
 		GET_LED_COLOR_BULK,
+		SET_LED_TIME,
+		SET_LED_TIME_BULK,
 
 		SET_FAN_POWER_STATE = 0x30,
 		SET_FAN_PWM_PERC,
@@ -38,12 +55,15 @@ enum cmd_type {
 		SEND_TEMP,
 		
 		SEND_LOG = 0x50,
+
+		SWITCH_PROGRAMS = 0x60,
 };
 
 enum parser_state {
 	MSG_START,
 	MSG_PARITY_RCV,
 	MSG_RCV,
+	MSG_ESCAPE,
 	MSG_END
 };
 
@@ -55,8 +75,10 @@ struct serial_cmd {
 	uint8_t cmd[];
 };
 
-void uart_rx(unsigned char ch);
+int uart_rx(unsigned char ch);
 
 void process_message(char buf[]);
+
+void send_log(const char *format,...);
 
 #endif /* SERIAL_COMMS_H */
