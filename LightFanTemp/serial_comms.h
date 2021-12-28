@@ -72,7 +72,7 @@ struct serial_cmd {
 	uint8_t seq;
 	uint8_t cmd_type;
 	uint8_t cmd_len;
-	uint8_t cmd[];
+	char cmd[];
 };
 
 #ifdef __cplusplus
@@ -83,6 +83,9 @@ int uart_rx(unsigned char ch);
 void process_message(char buf[]);
 
 void send_log(const char *format,...);
+
+void put_char(unsigned char ch);
+
 #ifdef __cplusplus
 }
 #endif

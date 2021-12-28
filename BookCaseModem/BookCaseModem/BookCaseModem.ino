@@ -127,6 +127,11 @@ void modem_reset()
   delay(5000);
   ESP.restart();
 }
+
+void put_char(unsigned char ch)
+{
+  Serial.print(ch);
+}
 void publish_msg(bool all)
 {
   bool ret;

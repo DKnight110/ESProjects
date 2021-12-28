@@ -18,13 +18,14 @@ uint8_t current_prg_idx = 0;
 
 #endif
 /* Globals */
-uint8_t rsp_buf[CMD_LEN];
+char rsp_buf[CMD_LEN];
 
 char rx_buf[255];
 int pos;
 enum parser_state parser_state = MSG_START;
 uint8_t parity = 0;
 uint8_t rx_seq = 0;
+
 
 /* Funcs */
 __WEAK void put_char(unsigned char ch)
@@ -50,7 +51,8 @@ void uart_tx(char *src, int len)
 	put_char(END_CHAR);
 }
 
-void send_log(const char *format,...) {
+void send_log(const char *format, ...)
+{
 		struct serial_cmd *rsp = (struct serial_cmd *)rsp_buf;
 		uint8_t calc_parity;
 		va_list arglist;
@@ -81,7 +83,6 @@ void send_log(const char *format,...) {
 
 		uart_tx(rsp_buf, rsp->cmd_len + 4);
 }
-
 
 int uart_rx(unsigned char ch)
 {
