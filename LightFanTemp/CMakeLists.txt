@@ -12,13 +12,16 @@ pico_sdk_init()
 
 pico_generate_pio_header(lightfantemp ${CMAKE_CURRENT_LIST_DIR}/ws2812.pio OUTPUT_DIR ${CMAKE_CURRENT_LIST_DIR}/generated)
 
-target_sources(lightfantemp PRIVATE main.c)
+target_sources(lightfantemp PRIVATE
+	main.c
+	serial_comms.c
+)
 
-#add_executable(lightfantemp 
-#	main.c
-#	)
+#target_compile_definitions(lightfantemp PRIVATE
+#        ERR_LEVEL=3
+#)
 
-target_link_libraries(lightfantemp pico_stdlib hardware_pio)
+target_link_libraries(lightfantemp pico_stdlib hardware_pio hardware_uart)
 
 pico_enable_stdio_usb(lightfantemp 1)
 pico_enable_stdio_uart(lightfantemp 1)
