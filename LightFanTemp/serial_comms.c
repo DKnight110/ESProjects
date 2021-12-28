@@ -95,22 +95,13 @@ int uart_rx(unsigned char ch)
 
 	DEBUG("pos = %d, cmd_len = %d\n", pos, cmd->cmd_len);
 
-	if (parser_state == MSG_ESCAPE)
-	{
-		parity += ch;
-		DEBUG("ESCAPE Parity = 0x%02x\n", parity);
-		rx_buf[pos++] = ch;
 
-		parser_state = MSG_RCV;
-		return 1;
-	}
-
-	switch (ch)
+	switch (parser_state)
 	{
-		case START_CHAR:
-			if (parser_state == MSG_START)
+		case MSG_START:
+			DEBUG("State = MSG_START\n");
+			if (ch == START_CHAR) 
 			{
-				DEBUG("State = MSG_RCV\n");
 				parser_state = MSG_PARITY_RCV;
 				pos = 0;
 				parity = 0;
@@ -120,48 +111,52 @@ int uart_rx(unsigned char ch)
 				ERROR("Invalid start char received in state 0x%02x\n", parser_state);
 				parser_state = MSG_START;
 			}
-
 			break;
 
-		case END_CHAR:
-			if (parser_state == MSG_RCV)
-			{
-				DEBUG("State = MSG_END\n");
-				parser_state = MSG_END;
-			}
-			else
-			{
-				ERROR("Invalid end char received in state 0x%02x\n", parser_state);
-				parser_state = MSG_START;
-			}
-
+		case MSG_PARITY_RCV:
+			DEBUG("State = MSG_PARITY_RCV\n");
+			rx_buf[pos++] = ch;
+			parser_state = MSG_RCV;
+			
 			break;
 
-		case ESCAPE_CHAR:
-			DEBUG("Got ESCAPE char\n");
-			parser_state = MSG_ESCAPE;
-			break;
+		case MSG_RCV:
+			DEBUG("State = MSG_RCV\n");
+			switch (ch)
+			{
+				case  ESCAPE_CHAR:
+				
+					DEBUG("Got ESCAPE char\n");
+					parser_state = MSG_ESCAPE;
+					break;
 
-		default:
-			if (parser_state == MSG_PARITY_RCV)
-			{
-				rx_buf[pos++] = ch;
-				parser_state = MSG_RCV;
-			}
-			else
-			{
-				parity += ch;
-				DEBUG("Parity = 0x%02x\n", parity);
-				rx_buf[pos++] = ch;
+				case END_CHAR:
+					parser_state = MSG_END;
+					break;
+	
+				default:
+					parity += ch;
+					DEBUG("Parity = 0x%02x\n", parity);
+					rx_buf[pos++] = ch;
 			}
 			break;
 
+		case MSG_ESCAPE:
+			DEBUG("State = MSG_ESCAPE\n");
+			parity += ch;
+			DEBUG("ESCAPE Parity = 0x%02x\n", parity);
+			rx_buf[pos++] = ch;
+
+			parser_state = MSG_RCV;
+
+			break;
+	
 	}
 
 	if (parser_state == MSG_END) {
 		if (cmd->seq != rx_seq) {
 			ERROR("Warn: expected seq %d, got %d\n", rx_seq, cmd->seq);
-			rx_seq = cmd->seq;
+			rx_seq = cmd->seq + 1;
 		} else {
 			rx_seq++;
 		}
