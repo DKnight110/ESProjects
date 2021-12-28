@@ -16,6 +16,8 @@
 #define SERIAL_COMMS_TX_PIN	8
 #define SERIAL_COMMS_RX_PIN	9
 
+char double_rx_buf[CMD_LEN*NUM_ENTRIES];
+
 const uint LEDPIN = 25;
 
 #ifdef PICO_DEFAULT_WS2812_PIN
@@ -97,7 +99,7 @@ void setup_serial_comms_uart()
     uart_set_format(SERIAL_COMMS_UART_ID, DATA_BITS, STOP_BITS, PARITY);
 
     // Turn off FIFO's - we want to do this character by character
-    uart_set_fifo_enabled(SERIAL_COMMS_UART_ID, true);
+    uart_set_fifo_enabled(SERIAL_COMMS_UART_ID, false);
 
     // Set up a RX interrupt
     // We need to set up the handler first
@@ -166,6 +168,11 @@ int main()
 #endif
 	while(1)
 	{
+		if (serial_buf_pidx != serial_buf_cidx)
+		{
+			process_message(&double_rx_buf[CMD_LEN * serial_buf_cidx]);
+			serial_buf_cidx = (serial_buf_cidx + 1) % NUM_ENTRIES;
+		}
 	        tight_loop_contents();
 	}
 }

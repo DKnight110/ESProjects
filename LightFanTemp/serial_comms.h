@@ -10,6 +10,8 @@
 
 #define CMD_LEN		255
 
+#define NUM_ENTRIES	4
+
 #define __WEAK __attribute__((weak))
 
 #ifndef ESP8266
@@ -74,6 +76,10 @@ struct serial_cmd {
 	uint8_t cmd_len;
 	char cmd[];
 };
+
+extern char double_rx_buf[CMD_LEN*NUM_ENTRIES];
+extern char *rx_buf;
+extern volatile uint8_t serial_buf_cidx, serial_buf_pidx;
 
 #ifdef __cplusplus
  extern "C" {

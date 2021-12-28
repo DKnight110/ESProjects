@@ -20,9 +20,13 @@ uint8_t current_prg_idx = 0;
 /* Globals */
 char rsp_buf[CMD_LEN];
 
-char rx_buf[255];
+char *rx_buf = double_rx_buf;
+
+volatile uint8_t serial_buf_cidx, serial_buf_pidx;
+
 int pos;
 enum parser_state parser_state = MSG_START;
+enum parser_state prev_parser_state = MSG_START;
 uint8_t parity = 0;
 uint8_t rx_seq = 0;
 uint8_t tx_seq = 0;
@@ -115,9 +119,19 @@ int uart_rx(unsigned char ch)
 
 		case MSG_PARITY_RCV:
 			DEBUG("State = MSG_PARITY_RCV\n");
-			rx_buf[pos++] = ch;
-			parser_state = MSG_RCV;
-			
+
+			if (ch == ESCAPE_CHAR)
+			{
+				DEBUG("Got escape in MSG_PARITY_RCV\n");
+				parser_state = MSG_ESCAPE;
+				prev_parser_state = MSG_PARITY_RCV;
+			}
+			else
+			{
+				rx_buf[pos++] = ch;
+				parser_state = MSG_RCV;
+			}
+
 			break;
 
 		case MSG_RCV:
@@ -125,9 +139,9 @@ int uart_rx(unsigned char ch)
 			switch (ch)
 			{
 				case  ESCAPE_CHAR:
-				
-					DEBUG("Got ESCAPE char\n");
+					DEBUG("Got escape in MSG_RCV\n");
 					parser_state = MSG_ESCAPE;
+					prev_parser_state = MSG_RCV;
 					break;
 
 				case END_CHAR:
@@ -143,11 +157,24 @@ int uart_rx(unsigned char ch)
 
 		case MSG_ESCAPE:
 			DEBUG("State = MSG_ESCAPE\n");
-			parity += ch;
-			DEBUG("ESCAPE Parity = 0x%02x\n", parity);
-			rx_buf[pos++] = ch;
+			switch (prev_parser_state)
+			{
+				case MSG_RCV:
+					parity += ch;
+					DEBUG("ESCAPE Parity = 0x%02x\n", parity);
+					rx_buf[pos++] = ch;
+					break;
+				
+				case MSG_PARITY_RCV:
+					rx_buf[pos++] = ch;
+					break;
 
+				default:
+					ERROR("Unknown prev state %d\n", prev_parser_state);
+					break;
+			}
 			parser_state = MSG_RCV;
+//			parser_state = prev_parser_state;
 
 			break;
 	
@@ -165,7 +192,17 @@ int uart_rx(unsigned char ch)
 			ERROR("Parity failed: expected 0x%02x, got 0x%02x\n", parity, cmd->parity);
 		} else {
 			DEBUG("Processing message\n");
-			process_message(rx_buf);
+			//process_message(rx_buf);
+			if (((serial_buf_pidx + 1 ) % NUM_ENTRIES) == serial_buf_cidx)
+			{
+				ERROR("Serial overflow: pidx = %d, cidx = %d\n", serial_buf_pidx, serial_buf_cidx);
+			}
+			else
+			{
+				DEBUG("Serial pidx = %d, cidx = %d\n", serial_buf_pidx, serial_buf_cidx);
+				serial_buf_pidx = (serial_buf_pidx + 1) % NUM_ENTRIES;
+				rx_buf = &double_rx_buf[CMD_LEN * serial_buf_pidx];
+			}
 		}
 		parser_state = MSG_START;
 
