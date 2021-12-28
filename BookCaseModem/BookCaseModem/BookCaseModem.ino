@@ -130,7 +130,7 @@ void modem_reset()
 
 void put_char(unsigned char ch)
 {
-  Serial.print(ch);
+  Serial.write(ch);
 }
 void publish_msg(bool all)
 {
