@@ -97,7 +97,7 @@ void setup_serial_comms_uart()
     uart_set_format(SERIAL_COMMS_UART_ID, DATA_BITS, STOP_BITS, PARITY);
 
     // Turn off FIFO's - we want to do this character by character
-    uart_set_fifo_enabled(SERIAL_COMMS_UART_ID, false);
+    uart_set_fifo_enabled(SERIAL_COMMS_UART_ID, true);
 
     // Set up a RX interrupt
     // We need to set up the handler first
