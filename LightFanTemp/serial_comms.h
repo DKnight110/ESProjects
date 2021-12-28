@@ -14,12 +14,12 @@
 
 #ifndef ESP8266
 	#if ERR_LEVEL == 3
-		#define DEBUG(...) fprintf (stderr, __VA_ARGS__)
+		#define DEBUG(...) printf(__VA_ARGS__)
 	#else
 	#define DEBUG(...)
 	#endif
 
-	#define ERROR(...) fprintf (stderr, __VA_ARGS__)
+	#define ERROR(...) printf(__VA_ARGS__)
 #else
 	#if ERR_LEVEL == 3
 		#define DEBUG(...) send_log("DBG: ", ...)

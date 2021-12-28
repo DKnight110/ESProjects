@@ -25,7 +25,7 @@ int pos;
 enum parser_state parser_state = MSG_START;
 uint8_t parity = 0;
 uint8_t rx_seq = 0;
-
+uint8_t tx_seq = 0;
 
 /* Funcs */
 __WEAK void put_char(unsigned char ch)
@@ -60,7 +60,7 @@ void send_log(const char *format, ...)
 
 		rsp->cmd_type = SEND_LOG;
 		rsp->parity = calc_parity = 0;
-		rsp->seq = rx_seq;
+		rsp->seq = tx_seq;
 
 		va_start(arglist, format);
 		ret  = vsnprintf(rsp->cmd, sizeof(rsp_buf) - 4, format, arglist);
@@ -82,6 +82,8 @@ void send_log(const char *format, ...)
 		rsp->parity = calc_parity;
 
 		uart_tx(rsp_buf, rsp->cmd_len + 4);
+
+		tx_seq++;
 }
 
 int uart_rx(unsigned char ch)
@@ -115,7 +117,7 @@ int uart_rx(unsigned char ch)
 			}
 			else
 			{
-				DEBUG("Invalid start char received in state 0x%02x\n", parser_state);
+				ERROR("Invalid start char received in state 0x%02x\n", parser_state);
 				parser_state = MSG_START;
 			}
 
@@ -129,7 +131,7 @@ int uart_rx(unsigned char ch)
 			}
 			else
 			{
-				DEBUG("Invalid end char received in state 0x%02x\n", parser_state);
+				ERROR("Invalid end char received in state 0x%02x\n", parser_state);
 				parser_state = MSG_START;
 			}
 
@@ -158,14 +160,14 @@ int uart_rx(unsigned char ch)
 
 	if (parser_state == MSG_END) {
 		if (cmd->seq != rx_seq) {
-			DEBUG("Warn: expected seq %d, got %d\n", rx_seq, cmd->seq);
+			ERROR("Warn: expected seq %d, got %d\n", rx_seq, cmd->seq);
 			rx_seq = cmd->seq;
 		} else {
 			rx_seq++;
 		}
 
 		if (cmd->parity != parity) {
-			DEBUG("Parity failed: expected 0x%02x, got 0x%02x\n", parity, cmd->parity);
+			ERROR("Parity failed: expected 0x%02x, got 0x%02x\n", parity, cmd->parity);
 		} else {
 			DEBUG("Processing message\n");
 			process_message(rx_buf);
@@ -188,6 +190,7 @@ void send_modem_reset() {
 		rsp->parity = 0;
 
 		rsp->cmd_len = 0;
+		rsp->seq = tx_seq++;
 
 		for(i = 0; i < rsp->cmd_len + 4; i++) {
 			rsp->parity += rsp->cmd[i];
@@ -198,7 +201,7 @@ void send_modem_reset() {
 
 __WEAK void parse_log(uint8_t *cmd)
 {
-	fprintf(stderr, "LOG: %s", cmd);
+	printf("LOG: %s", cmd);
 }
 #endif
 
