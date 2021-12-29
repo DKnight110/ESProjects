@@ -6,7 +6,6 @@
     server_ip is the IP address of the ESP8266 module, will be
     printed to Serial when the module is connected.
 */
-#define NUM_ENTRIES 2 /* double buffering for serial */
 #include <serial_comms.h>
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
@@ -136,10 +135,10 @@ void put_char(unsigned char ch)
 void publish_msg(bool all)
 {
   bool ret;
-  SERIAL_PRINTF("publish_msg: cidx = %d, pidx = %d\n", pub_cidx, pub_pidx);
+  DEBUG("publish_msg: cidx = %d, pidx = %d\n", pub_cidx, pub_pidx);
   do {
     if (pub_cidx != pub_pidx) {
-      SERIAL_PRINTF("Publishing from index %d\n", pub_cidx);
+      DEBUG("Publishing from index %d\n", pub_cidx);
       ret = client.publish((const char *)mqtt_queue[pub_cidx].topic,
                      (const uint8_t *)mqtt_queue[pub_cidx].str,
                      mqtt_queue[pub_cidx].len,
@@ -158,9 +157,9 @@ void publish_msg(bool all)
 
 int queue_publish(const char *topic, const uint8_t *payload, unsigned int len, bool retained)
 {
-  SERIAL_PRINTF("queue_publish: cidx = %d, pidx = %d\n", pub_cidx, pub_pidx);
+  DEBUG("queue_publish: cidx = %d, pidx = %d\n", pub_cidx, pub_pidx);
   if (((pub_pidx + 1) % PUB_QUEUE_DEPTH) == pub_cidx) {
-    SERIAL_PRINTLN("Queue full, skipping send!");
+    ERROR("Queue full, skipping send!");
     return -1;
   }
 
@@ -389,38 +388,29 @@ sleep:
 
 void publish_mqtt_fan_pwm(uint8_t len, uint8_t *cmd)
 {
-  char topic[32], payload[8];
+  char payload[64] = {0}, tmp[4];
   int i;
-
-  for (i = 0; i < len; i++)
+ 
+  for (i = 0; i < len; i+=2)
   {
-    sprintf(topic, MQTT_TOPIC_PUB1 "_%d", i);
-    sprintf(payload,"%d", cmd[i]);
-
-    queue_publish(topic, (const uint8_t*)payload, strlen(payload), true);
-
-    if ((i % PUB_QUEUE_DEPTH) == PUB_QUEUE_DEPTH -1)
-    {
-      publish_msg(true);
-    }
+    sprintf(tmp,"%d,", (cmd[i] << 8) | cmd[i + 1]);
+    strcat(payload, tmp);
   }
+  payload[strlen(payload) - 1] = 0;
+  queue_publish(MQTT_TOPIC_PUB3, (const uint8_t *)payload, strlen(payload), true);
 }
 
 void publish_mqtt_temp(uint8_t len, uint8_t *cmd)
 {
-  char topic[32], payload[8];
+  char payload[64] = {0}, tmp[4];
   int i;
 
   for (i = 0; i < len; i++)
   {
-    sprintf(topic, MQTT_TOPIC_PUB2 "_%d", i);
-    sprintf(payload,"%d", cmd[i]);
-
-    queue_publish(topic, (const uint8_t*)payload, strlen(payload), true);
-
-    if ((i % PUB_QUEUE_DEPTH) == PUB_QUEUE_DEPTH -1)
-    {
-      publish_msg(true);
-    }
+    sprintf(tmp,"%d,", cmd[i]);
+    strcat(payload, tmp);
   }
+
+  payload[strlen(payload) - 1] = 0;
+  queue_publish(MQTT_TOPIC_PUB2, (const uint8_t *)payload, strlen(payload), true);
 }
