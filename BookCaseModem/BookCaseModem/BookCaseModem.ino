@@ -1,4 +1,4 @@
-/*
+  /*
     This sketch demonstrates how to set up a simple HTTP-like server.
     The server will set a GPIO pin depending on the request
       http://server_ip/gpio/0 will set the GPIO2 low,
@@ -6,7 +6,7 @@
     server_ip is the IP address of the ESP8266 module, will be
     printed to Serial when the module is connected.
 */
-
+#define NUM_ENTRIES 2 /* double buffering for serial */
 #include <serial_comms.h>
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
@@ -47,10 +47,10 @@
 #define MQTT_TOPIC_PUB1_STR1  "RST"
 #define MQTT_TOPIC_PUB1_STR2  "DBGPRINT"
 
-#define MQTT_TOPIC_PUB2       "bookcase/temperature"
+#define MQTT_TOPIC_PUB2       "bookcase/temp"
 #define MQTT_TOPIC_PUB2_STR0  "TEMP"
 
-#define MQTT_TOPIC_PUB3       "bookcase/fan_speed"
+#define MQTT_TOPIC_PUB3       "bookcase/fan"
 #define MQTT_TOPIC_PUB3_STR0  "SPEED"
 
 #define PUB_QUEUE_DEPTH       4
@@ -77,7 +77,7 @@
 #else
 #define SERIAL_PRINT(x) send_log("%s", x)
 #define SERIAL_PRINTLN(x) send_log("%s\n", x)
-#define SERIAL_PRINTF(x, ...)  send_log(x,  __VA_ARGS__)
+#define SERIAL_PRINTF(...)  send_log(__VA_ARGS__)
 #endif
 
 struct mqtt_queue {
@@ -89,6 +89,7 @@ struct mqtt_queue {
 
 IPAddress ip_addr, gw(GW_ADDR), subnet(SUBNET_ADDR);
 char ssid[CHAR_ARRAY_LEN], password[CHAR_ARRAY_LEN];
+char double_rx_buf[CMD_LEN*NUM_ENTRIES];
 
 WiFiClient wifi_client;
 PubSubClient client(wifi_client);
@@ -258,7 +259,7 @@ void connect_to_wifi()
   SERIAL_PRINTLN("");
   SERIAL_PRINTLN("WiFi connected");
 
-  SERIAL_PRINT("**** IP = "); SERIAL_PRINT(ip_addr); SERIAL_PRINT(" ***\n");  
+  SERIAL_PRINT("**** IP = "); SERIAL_PRINT(ip_addr.toString().c_str()); SERIAL_PRINT(" ***\n");  
 }
 
 void connect_to_mqtt()
@@ -371,6 +372,55 @@ void loop() {
   /* We send everything: when a button is pressed => 2 publish cmds */
   publish_msg(true);
 
+  while (Serial.available()) {
+        char x = Serial.read();
+        uart_rx(x);
+  }
+
+  if (serial_buf_pidx != serial_buf_cidx)
+  {
+    process_message(&double_rx_buf[CMD_LEN * serial_buf_cidx]);
+    serial_buf_cidx = (serial_buf_cidx + 1) % NUM_ENTRIES;
+  }
+
 sleep:
   delay(LOOP_DELAY);
+}
+
+void publish_mqtt_fan_pwm(uint8_t len, uint8_t *cmd)
+{
+  char topic[32], payload[8];
+  int i;
+
+  for (i = 0; i < len; i++)
+  {
+    sprintf(topic, MQTT_TOPIC_PUB1 "_%d", i);
+    sprintf(payload,"%d", cmd[i]);
+
+    queue_publish(topic, (const uint8_t*)payload, strlen(payload), true);
+
+    if ((i % PUB_QUEUE_DEPTH) == PUB_QUEUE_DEPTH -1)
+    {
+      publish_msg(true);
+    }
+  }
+}
+
+void publish_mqtt_temp(uint8_t len, uint8_t *cmd)
+{
+  char topic[32], payload[8];
+  int i;
+
+  for (i = 0; i < len; i++)
+  {
+    sprintf(topic, MQTT_TOPIC_PUB2 "_%d", i);
+    sprintf(payload,"%d", cmd[i]);
+
+    queue_publish(topic, (const uint8_t*)payload, strlen(payload), true);
+
+    if ((i % PUB_QUEUE_DEPTH) == PUB_QUEUE_DEPTH -1)
+    {
+      publish_msg(true);
+    }
+  }
 }
