@@ -190,8 +190,8 @@ int main()
 
 bool timer_callback(repeating_timer_t *rt)
 {
-	int8_t temperatures[NUM_TEMP_SENSORS];
-	uint16_t fan_speed[NUM_FANS];
+	int8_t temperatures[NUM_TEMP_SENSORS] = {0x10, 0x20, 0x30, 0x40, 0x50, 0x60, 0x70};
+	uint16_t fan_speed[NUM_FANS] = {0x100, 0x200, 0x300, 0x400, 0x500, 0x600, 0x700};
 
 	// Code to actually read the temperatures...
 	send_temperature(temperatures);
