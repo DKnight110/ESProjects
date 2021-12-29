@@ -311,11 +311,11 @@ void process_message(char buf[])
 			break;
 
 		case SEND_FAN_PWM:
-			publish_mqtt_fan_pwm(cmd->len, cmd->cmd);
+			publish_mqtt_fan_pwm(cmd->cmd_len, cmd->cmd);
 			break;
 
 		case SEND_TEMP:
-			publish_mqtt_temp(cmd->len, cmd->cmd);
+			publish_mqtt_temp(cmd->cmd_len, cmd->cmd);
 			break;
 
 		default:
