@@ -34,7 +34,7 @@ uint8_t tx_seq = 0;
 /* Funcs */
 __WEAK void put_char(unsigned char ch)
 {
-	fprintf(stderr, "0x%02x ",ch);
+	printf("0x%02x ",ch);
 }
 
 void uart_tx(char *src, int len)
@@ -216,7 +216,6 @@ int uart_rx(unsigned char ch)
 void send_modem_reset()
 {
 		struct serial_cmd *rsp = (struct serial_cmd *)rsp_buf;
-		va_list arglist;
 		int i;
 
 		rsp->cmd_type = MODEM_RESET;
@@ -237,15 +236,16 @@ void send_modem_reset()
 void send_temperature(int8_t *temperatures)
 {
 		struct serial_cmd *rsp = (struct serial_cmd *)rsp_buf;
-		va_list arglist;
+		uint8_t calc_parity;
 		int i;
 
 		rsp->cmd_type = SEND_TEMP;
-		rsp->parity = 0;
+		rsp->parity = calc_parity = 0;
+		rsp->seq = tx_seq;
 
 		/* 1 byte for each is enough, -127..+128 */
 		rsp->cmd_len = NUM_TEMP_SENSORS;
-		rsp->seq = tx_seq++;
+		rsp->seq = tx_seq;
 
 		for (i = 0; i < NUM_TEMP_SENSORS; i++)
 		{
@@ -253,37 +253,42 @@ void send_temperature(int8_t *temperatures)
 		}
 		
 		for(i = 0; i < rsp->cmd_len + 4; i++) {
-			rsp->parity += rsp->cmd[i];
+			calc_parity += rsp_buf[i];
 		}
 
+		rsp->parity = calc_parity;
+
 		uart_tx(rsp_buf, rsp->cmd_len + 4);
+		tx_seq++;
 }
 
 void send_tacho(uint16_t *fan_speed)
 {
 		struct serial_cmd *rsp = (struct serial_cmd *)rsp_buf;
-		va_list arglist;
+		uint8_t calc_parity;
 		int i;
 
 		rsp->cmd_type = SEND_FAN_PWM;
-		rsp->parity = 0;
+		rsp->parity = calc_parity = 0;
 
 		/* speed can be > 255 => 2 bytes each */
 		rsp->cmd_len = NUM_FANS * 2;
-		rsp->seq = tx_seq++;
+		rsp->seq = tx_seq;
 
-		for (i = 0; i < NUM_TEMP_SENSORS; i++)
+		for (i = 0; i < rsp->cmd_len; i+=2)
 		{
-			rsp->cmd[i] = ((fan_speed[i] >> 8) & 0xFF) |
-					(fan_speed[i] & 0xFF);
+			rsp->cmd[i] = (fan_speed[i/2] >> 8) & 0xFF;
+			rsp->cmd[i + 1] = fan_speed[i/2] & 0xFF;
 		}
 
 		for(i = 0; i < rsp->cmd_len + 4; i++) {
-			rsp->parity += rsp->cmd[i];
+			calc_parity += rsp_buf[i];
 		}
 
-		uart_tx(rsp_buf, rsp->cmd_len + 4);
+		rsp->parity = calc_parity;
 
+		uart_tx(rsp_buf, rsp->cmd_len + 4);
+		tx_seq++;
 }
 
 __WEAK void parse_log(uint8_t *cmd)
