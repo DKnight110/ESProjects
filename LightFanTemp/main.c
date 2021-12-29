@@ -4,6 +4,8 @@
 #include "ws2812.pio.h"
 #include "serial_comms.h"
 
+#include "macro_helpers.h"
+
 #include "hardware/uart.h"
 #include "hardware/irq.h"
 
@@ -31,6 +33,7 @@ const uint LEDPIN = 25;
 #define NUM_LEDS 49
 
 int chars_rxed;
+bool timer_callback(repeating_timer_t *rt);
 
 static inline void put_pixel(uint32_t pixel_grb) {
     pio_sm_put_blocking(pio0, 0, pixel_grb << 8u);
@@ -141,6 +144,14 @@ int main()
 
 	setup_serial_comms_uart();
 
+   repeating_timer_t timer;
+
+    // negative timeout means exact delay (rather than delay between callbacks)
+    if (!add_repeating_timer_ms(-1000, timer_callback, NULL, &timer)) {
+        printf("Failed to add timer\n");
+        return 1;
+    }
+
 #if 0	
 	while (1)
 	{
@@ -176,3 +187,15 @@ int main()
 	        tight_loop_contents();
 	}
 }
+
+bool timer_callback(repeating_timer_t *rt)
+{
+	int8_t temperatures[NUM_TEMP_SENSORS];
+	uint16_t fan_speed[NUM_FANS];
+
+	// Code to actually read the temperatures...
+	send_temperature(temperatures);
+	// Code to actually read the fan speed..
+	send_tacho(fan_speed);
+}
+

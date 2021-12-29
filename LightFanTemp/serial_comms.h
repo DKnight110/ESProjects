@@ -8,9 +8,13 @@
 #define ESCAPE_CHAR	0xde
 #define END_CHAR	0x5a
 
+#ifndef CMD_LEN
 #define CMD_LEN		255
+#endif
 
+#ifndef NUM_ENTRIES
 #define NUM_ENTRIES	4
+#endif
 
 #define __WEAK __attribute__((weak))
 
@@ -51,7 +55,7 @@ enum cmd_type {
 
 		SET_FAN_POWER_STATE = 0x30,
 		SET_FAN_PWM_PERC,
-		GET_FAN_PWM_PERC,
+		SEND_FAN_PWM,
 
 		GET_TEMP = 0x40,
 		SEND_TEMP,
@@ -92,7 +96,22 @@ void send_log(const char *format,...);
 
 void put_char(unsigned char ch);
 
+#ifndef ESP8266
+void send_temperature(int8_t *temperatures);
+
+void send_tacho(uint16_t *fan_speed);
+
+void send_modem_reset(void);
+#else
+void publish_mqtt_fan_pwm(uint8_t len, uint8_t *cmd);
+
+void publish_mqtt_temp(uint8_t len, uint8_t *cmd);
+
+void modem_reset(void);
+#endif
+
 #ifdef __cplusplus
 }
 #endif
 #endif /* SERIAL_COMMS_H */
+

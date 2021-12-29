@@ -10,4 +10,7 @@
 
 #define LED_PROGRAM_END	{ 0, 0, {0} }
 
+#define NUM_TEMP_SENSORS	7
+#define NUM_FANS		7
+
 #endif /* MACRO_HELPERS_H */

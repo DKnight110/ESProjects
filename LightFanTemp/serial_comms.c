@@ -213,7 +213,8 @@ int uart_rx(unsigned char ch)
 }
 
 #ifndef ESP8266
-void send_modem_reset() {
+void send_modem_reset()
+{
 		struct serial_cmd *rsp = (struct serial_cmd *)rsp_buf;
 		va_list arglist;
 		int i;
@@ -229,6 +230,60 @@ void send_modem_reset() {
 		}
 
 		uart_tx(rsp_buf, rsp->cmd_len + 4);
+
+
+}
+
+void send_temperature(int8_t *temperatures)
+{
+		struct serial_cmd *rsp = (struct serial_cmd *)rsp_buf;
+		va_list arglist;
+		int i;
+
+		rsp->cmd_type = SEND_TEMP;
+		rsp->parity = 0;
+
+		/* 1 byte for each is enough, -127..+128 */
+		rsp->cmd_len = NUM_TEMP_SENSORS;
+		rsp->seq = tx_seq++;
+
+		for (i = 0; i < NUM_TEMP_SENSORS; i++)
+		{
+			rsp->cmd[i] = temperatures[i];
+		}
+		
+		for(i = 0; i < rsp->cmd_len + 4; i++) {
+			rsp->parity += rsp->cmd[i];
+		}
+
+		uart_tx(rsp_buf, rsp->cmd_len + 4);
+}
+
+void send_tacho(uint16_t *fan_speed)
+{
+		struct serial_cmd *rsp = (struct serial_cmd *)rsp_buf;
+		va_list arglist;
+		int i;
+
+		rsp->cmd_type = SEND_FAN_PWM;
+		rsp->parity = 0;
+
+		/* speed can be > 255 => 2 bytes each */
+		rsp->cmd_len = NUM_FANS * 2;
+		rsp->seq = tx_seq++;
+
+		for (i = 0; i < NUM_TEMP_SENSORS; i++)
+		{
+			rsp->cmd[i] = ((fan_speed[i] >> 8) & 0xFF) |
+					(fan_speed[i] & 0xFF);
+		}
+
+		for(i = 0; i < rsp->cmd_len + 4; i++) {
+			rsp->parity += rsp->cmd[i];
+		}
+
+		uart_tx(rsp_buf, rsp->cmd_len + 4);
+
 }
 
 __WEAK void parse_log(uint8_t *cmd)
@@ -254,6 +309,15 @@ void process_message(char buf[])
 			modem_reset();
 
 			break;
+
+		case SEND_FAN_PWM:
+			publish_mqtt_fan_pwm(cmd->len, cmd->cmd);
+			break;
+
+		case SEND_TEMP:
+			publish_mqtt_temp(cmd->len, cmd->cmd);
+			break;
+
 		default:
 			send_log("Unknown command type 0x%02x, seq 0x%02x, cmd len %d, content %s\n", cmd->cmd_type, cmd->seq, cmd->cmd_len, cmd->cmd);
 			break;
