@@ -68,6 +68,12 @@ static inline uint32_t urgb_u32(uint8_t r, uint8_t g, uint8_t b) {
  * ESP8266_RST = GP21 (pin 27)
 */
 
+void put_char(unsigned char ch)
+{
+	do {} while (!uart_is_writable(SERIAL_COMMS_UART_ID));
+	uart_putc(SERIAL_COMMS_UART_ID, ch);
+}
+
 void serial_comms_uart_rx() {
     while (uart_is_readable(SERIAL_COMMS_UART_ID)) {
         uint8_t ch = uart_getc(SERIAL_COMMS_UART_ID);
@@ -147,7 +153,7 @@ int main()
    repeating_timer_t timer;
 
     // negative timeout means exact delay (rather than delay between callbacks)
-    if (!add_repeating_timer_ms(-1000, timer_callback, NULL, &timer)) {
+    if (!add_repeating_timer_ms(5000, timer_callback, NULL, &timer)) {
         printf("Failed to add timer\n");
         return 1;
     }
