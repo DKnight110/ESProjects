@@ -28,11 +28,11 @@
 	#define ERROR(...) printf(__VA_ARGS__)
 #else
 	#if ERR_LEVEL == 3
-		#define DEBUG(...) send_log("DBG: ", ...)
+		#define DEBUG(...) { send_log("DBG: "); send_log( __VA_ARGS__); }
 	#else
 		#define DEBUG(...)
 	#endif
-	#define ERROR(...) send_log("ERR: ", __VA_ARGS__)
+	#define ERROR(...) { send_log("ERR: "); send_log(__VA_ARGS__); }
 #endif
 
 #define LED_STATUS_1	0
