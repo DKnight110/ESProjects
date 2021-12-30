@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
+#include <stdbool.h>
 
 #include "serial_comms.h"
 
@@ -15,6 +16,9 @@ struct led_programs *cur_prg = &led_programs[0];
 struct led_programs *shadow_prg = &led_programs[1];
 
 uint8_t current_prg_idx = 0;
+
+bool wifi_connected;
+bool mqtt_connected;
 
 #endif
 /* Globals */
@@ -301,14 +305,60 @@ __WEAK void parse_log(uint8_t *cmd)
 #endif
 
 #ifdef ESP8266
+void send_wifi_status(bool status)
+{
+	struct serial_cmd *rsp = (struct serial_cmd *)rsp_buf;
+	uint8_t calc_parity;
+	int i;
+
+	rsp->cmd_type = status == TRUE ? WIFI_CONNECTED : WIFI_DISCONNECTED;
+	rsp->parity = calc_parity = 0;
+
+	/* speed can be > 255 => 2 bytes each */
+	rsp->cmd_len = 0;
+	rsp->seq = tx_seq;
+
+	for(i = 0; i < rsp->cmd_len + 4; i++) {
+		calc_parity += rsp_buf[i];
+	}
+
+	rsp->parity = calc_parity;
+
+	uart_tx(rsp_buf, rsp->cmd_len + 4);
+	tx_seq++;
+}
+
+void send_mqtt_status(bool status)
+{
+	struct serial_cmd *rsp = (struct serial_cmd *)rsp_buf;
+	uint8_t calc_parity;
+	int i;
+
+	rsp->cmd_type = status == TRUE ? MQTT_CONNECTED : MQTT_DISCONNECTED;
+	rsp->parity = calc_parity = 0;
+
+	/* speed can be > 255 => 2 bytes each */
+	rsp->cmd_len = 0;
+	rsp->seq = tx_seq;
+
+	for(i = 0; i < rsp->cmd_len + 4; i++) {
+		calc_parity += rsp_buf[i];
+	}
+
+	rsp->parity = calc_parity;
+
+	uart_tx(rsp_buf, rsp->cmd_len + 4);
+	tx_seq++;
+}
 
 #endif
 void process_message(char buf[])
 {
 	struct serial_cmd *cmd = (struct serial_cmd *)buf;
 #ifndef ESP8266
-	uint8_t prg_step, led;
 	struct led_programs *tmp;
+	uint8_t prg_step, led;
+	int i;
 #endif
 
 	switch (cmd->cmd_type) {
@@ -332,52 +382,53 @@ void process_message(char buf[])
 #else
 		case WIFI_CONNECTED:
 			ERROR("Wifi Connected!\n");
+			wifi_connected = true;
 			break;
 
 		case WIFI_DISCONNECTED:
 			ERROR("Wifi DisConnected!\n");
+			wifi_connected = true;
 			break;
 			
 		case MQTT_CONNECTED:
 			ERROR("MQTT Connected!\n");
+			mqtt_connected = true;
 			break;
 
 		case MQTT_DISCONNECTED:
 			ERROR("MQTT DisConnected!\n");
+			mqtt_connected = false;
 			break;
 		
+		case SET_FAN_POWER_STATE:
+			/* Kill power to all fans, 2 pins */
+			ERROR("Setting FANs power state to %d\n", cmd->cmd[0]);
+			set_fans_power_state(cmd->cmd[0]);
+			break;
+
+		case SET_FAN_PWM_PERC:
+			ERROR("Setting FAN %d PWM to %d\n", cmd->cmd[0], cmd->cmd[1]);
+			set_fan_pwm(cmd->cmd[0],cmd->cmd[1]);			
+			break;
+
 		case SET_LED_COLOR:
+			ERROR("Setting LEDs in step %d (% d ms)\n", cmd->cmd[0], cmd->cmd[1]);
 			prg_step = cmd->cmd[0];
-			led = cmd->cmd[1];
-
-			shadow_prg->led_program_entry[prg_step].leds[led] = (cmd->cmd[1] << 16) | (cmd->cmd[2] << 8) | cmd->cmd[3];
-
-			break;
-
-		case SET_LED_COLOR_BULK:
-			prg_step = cmd->cmd[0];
-			int i = 0;
-
-			for(i = 0; i < NUM_LEDS_IN_STRIP; i++) {
-				shadow_prg->led_program_entry[prg_step].leds[led] = (cmd->cmd[1 + i] << 16) | (cmd->cmd[2 + i] << 8) | cmd->cmd[3 + i];
-			}
-			break;
-		
-		case SET_LED_TIME:
-			prg_step = cmd->cmd[0];
-			shadow_prg->led_program_entry[prg_step].time = (cmd->cmd[1] << 8) | cmd->cmd[2];
-			break;
-
-		case SET_LED_TIME_BULK:
-			prg_step = cmd->cmd[0];
-
-			for(i = 0; i < NUM_LEDS_IN_STRIP * 2; i++) {
-				shadow_prg->led_program_entry[prg_step].leds[led] = (cmd->cmd[1 + i] << 16) | (cmd->cmd[2 + i] << 8) | cmd->cmd[3 + i];
+			shadow_prg->led_program_entry[prg_step].time = cmd->cmd[1];			
+			for (i = 0; i < NUM_LEDS_IN_STRIP * 3; i+=3)
+			{
+				shadow_prg->led_program_entry[prg_step].leds[i/3] = (cmd->cmd[2 + i] << 16) | (cmd->cmd[3 + i] << 8) | cmd->cmd[4 + i];
 			}
 
 			break;
-			
+
+		case SET_LED_PROGRAM_STEPS:
+			ERROR("Setting num steps to %d\n", cmd->cmd[0]);
+			shadow_prg->num_steps = cmd->cmd[0];
+			break;
+						
 		case SWITCH_PROGRAMS:
+			ERROR("Switching programs\n");
 			tmp = cur_prg;
 			cur_prg = shadow_prg;
 			shadow_prg = cur_prg;

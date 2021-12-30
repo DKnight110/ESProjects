@@ -47,11 +47,8 @@ enum cmd_type {
 		MQTT_DISCONNECTED,
 
 		SET_LED_COLOR 	= 0x20,
-		SET_LED_COLOR_BULK,
-		GET_LED_COLOR,
-		GET_LED_COLOR_BULK,
-		SET_LED_TIME,
-		SET_LED_TIME_BULK,
+		SET_LED_PROGRAM_STEPS,
+		SWITCH_PROGRAMS,
 
 		SET_FAN_POWER_STATE = 0x30,
 		SET_FAN_PWM_PERC,
@@ -61,8 +58,6 @@ enum cmd_type {
 		SEND_TEMP,
 		
 		SEND_LOG = 0x50,
-
-		SWITCH_PROGRAMS = 0x60,
 };
 
 enum parser_state {
@@ -102,6 +97,11 @@ void send_temperature(int16_t *temperatures);
 void send_tacho(uint16_t *fan_speed);
 
 void send_modem_reset(void);
+
+void set_fans_power_state(uint8_t state);
+
+void set_fan_pwm(uint8_t fan, uint8_t pwm);
+
 #else
 void publish_mqtt_fan_pwm(uint8_t len, uint8_t *cmd);
 

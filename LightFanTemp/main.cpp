@@ -11,50 +11,6 @@
 
 #include "one_wire.h"
 
-#define SERIAL_COMMS_UART_ID	uart1
-#define BAUD_RATE 115200
-#define DATA_BITS 8
-#define STOP_BITS 1
-#define PARITY    UART_PARITY_NONE
-
-#define SERIAL_COMMS_TX_PIN	8
-#define SERIAL_COMMS_RX_PIN	9
-
-#define TEMP_MEAS_PIN		3
-
-char double_rx_buf[CMD_LEN*NUM_ENTRIES];
-int16_t temperatures[NUM_TEMP_SENSORS] = {0x1000, 0x2000, 0x3000, 0x4000, 0x5000, 0x6000, 0x7000};
-
-const uint LEDPIN = 25;
-
-#ifdef PICO_DEFAULT_WS2812_PIN
-#define WS2812_PIN PICO_DEFAULT_WS2812_PIN
-#else
-// default to pin 2 if the board doesn't have a default WS2812 pin defined
-#define WS2812_PIN 4
-#endif
-
-#define IS_RGBW 0
-#define NUM_LEDS 49
-
-int chars_rxed;
-bool timer_callback(repeating_timer_t *rt);
-bool read_temp_callback(repeating_timer_t *rt);
-bool do_read_temps;
-
-One_wire one_wire(TEMP_MEAS_PIN);
-rom_address_t address{};
-
-static inline void put_pixel(uint32_t pixel_grb) {
-    pio_sm_put_blocking(pio0, 0, pixel_grb << 8u);
-}
-
-static inline uint32_t urgb_u32(uint8_t r, uint8_t g, uint8_t b) {
-    return
-            ((uint32_t) (r) << 8) |
-            ((uint32_t) (g) << 16) |
-            (uint32_t) (b);
-}
 /* PIN assignments
  * PIN_LED = GP2 (pin 4)
  * PIN_TMP = GP3 (pin 5)
@@ -78,6 +34,113 @@ static inline uint32_t urgb_u32(uint8_t r, uint8_t g, uint8_t b) {
  * PIN_FAN_ON_2 = GP21 (pin 27)
  * ESP8266_RST = GP22 (pin 29)
 */
+
+#define SERIAL_COMMS_UART_ID	uart1
+#define BAUD_RATE 115200
+#define DATA_BITS 8
+#define STOP_BITS 1
+#define PARITY    UART_PARITY_NONE
+
+/* pins defines */
+#define SERIAL_COMMS_TX_PIN	8
+#define SERIAL_COMMS_RX_PIN	9
+#define TEMP_MEAS_PIN		3
+
+/* timer intervals defines */
+#define REPORTING_INT_MS	5000
+#define TEMP_READ_INT_MS	1000
+#define FAN_SPEED_UPDATE_INT_MS	10000
+
+#define PWM_LOW_THRESHOLD	20
+
+#define INVALID_TEMPERATURE	0x0bad
+#define INVALID_SPEED		0xbeef
+
+
+const uint LEDPIN = 25;
+
+#ifdef PICO_DEFAULT_WS2812_PIN
+#define WS2812_PIN PICO_DEFAULT_WS2812_PIN
+#else
+// default to pin 2 if the board doesn't have a default WS2812 pin defined
+#define WS2812_PIN 4
+#endif
+
+#define IS_RGBW 0
+#define NUM_LEDS 49
+
+int chars_rxed;
+
+/* One wire */
+One_wire one_wire(TEMP_MEAS_PIN);
+rom_address_t address{};
+
+/* Timers */
+repeating_timer_t timer;
+repeating_timer_t temp_read_timer;
+repeating_timer_t fans_adjust_timer;
+
+/* Timer helpers */
+bool reporting_callback(repeating_timer_t *rt);
+bool read_temp_callback(repeating_timer_t *rt);
+bool set_fan_speeds(repeating_timer_t *rt);
+bool do_read_temps;
+
+char double_rx_buf[CMD_LEN*NUM_ENTRIES];
+int16_t temperatures[NUM_TEMP_SENSORS] = {
+	INVALID_TEMPERATURE,	
+	INVALID_TEMPERATURE,
+	INVALID_TEMPERATURE,
+	INVALID_TEMPERATURE,
+	INVALID_TEMPERATURE,
+	INVALID_TEMPERATURE,
+	INVALID_TEMPERATURE
+};
+
+extern bool wifi_connected;
+extern bool mqtt_connected;
+
+struct fans {
+	bool auto_speed[NUM_FANS];
+	uint16_t speed[NUM_FANS];
+	uint8_t pwm[NUM_FANS];
+};
+
+struct fans fans = {
+	{ 0, 0, 0, 0, 0, 0 },
+	{
+		INVALID_SPEED,
+		INVALID_SPEED,
+		INVALID_SPEED,
+		INVALID_SPEED,
+		INVALID_SPEED,
+		INVALID_SPEED,
+		INVALID_SPEED 
+	},
+	{ 
+		PWM_LOW_THRESHOLD,
+		PWM_LOW_THRESHOLD,
+		PWM_LOW_THRESHOLD,
+		PWM_LOW_THRESHOLD,
+		PWM_LOW_THRESHOLD,
+		PWM_LOW_THRESHOLD,
+		PWM_LOW_THRESHOLD
+	}
+};
+
+/* LEDs PIO */
+PIO pio;
+
+static inline void put_pixel(uint32_t pixel_grb) {
+    pio_sm_put_blocking(pio0, 0, pixel_grb << 8u);
+}
+
+static inline uint32_t urgb_u32(uint8_t r, uint8_t g, uint8_t b) {
+    return
+            ((uint32_t) (r) << 8) |
+            ((uint32_t) (g) << 16) |
+            (uint32_t) (b);
+}
 
 void put_char(unsigned char ch)
 {
@@ -139,17 +202,57 @@ void setup_serial_comms_uart()
     DEBUG("Done setting up comms interrupts\n");
 }
 
+void setup_timers()
+{
+    // negative timeout means exact delay (rather than delay between callbacks)
+    if (!add_repeating_timer_ms(REPORTING_INT_MS, reporting_callback, NULL, &timer)) {
+ 	panic("Failed to add reporting callback timer\n");
+    }
+
+    if (!add_repeating_timer_ms(TEMP_READ_INT_MS, read_temp_callback, NULL, &temp_read_timer)) {
+ 	panic("Failed to add temperature read callback timer\n");
+    }
+
+    if (!add_repeating_timer_ms(FAN_SPEED_UPDATE_INT_MS, set_fan_speeds, NULL, &fans_adjust_timer)) {
+	panic("Failed to add fan speed update callback timer\n");
+    }
+}
+
+void setup_onewire()
+{
+	one_wire.init();
+
+        one_wire.single_device_read_rom(address);
+        printf("Device Address: %02x%02x%02x%02x%02x%02x%02x%02x\n", address.rom[0], address.rom[1], address.rom[2], address.rom[3], address.rom[4], address.rom[5], address.rom[6], address.rom[7]);
+
+}
+
+void setup_pwm()
+{
+// TBD
+}
+
+void setup_leds()
+{
+   	int sm = 0;
+	uint offset;
+
+	pio = pio0;
+	offset = pio_add_program(pio, &ws2812_program);
+
+    	ws2812_program_init(pio, sm, offset, WS2812_PIN, 800000, IS_RGBW);
+}
+
 int main()
 {
+	int i;
 	stdio_init_all();
 	
 	gpio_init(LEDPIN);
 	gpio_set_dir(LEDPIN, GPIO_OUT);
 
     // todo get free sm
-    PIO pio = pio0;
-    int sm = 0, i = 0;
-    uint offset = pio_add_program(pio, &ws2812_program);
+
 	uint32_t color = 0xFF0000, cur_pixel = 0;
 	uint32_t data[NUM_LEDS];
 	
@@ -157,28 +260,12 @@ int main()
 		data[i] = 0x0000FF;
 	}
 
-    ws2812_program_init(pio, sm, offset, WS2812_PIN, 800000, IS_RGBW);
+
 
 	setup_serial_comms_uart();
-
-   repeating_timer_t timer;
-   repeating_timer_t temp_read_timer;
-
-    // negative timeout means exact delay (rather than delay between callbacks)
-    if (!add_repeating_timer_ms(5000, timer_callback, NULL, &timer)) {
-        printf("Failed to add timer\n");
-        return 1;
-    }
-
-    if (!add_repeating_timer_ms(1000, read_temp_callback, NULL, &temp_read_timer)) {
-        printf("Failed to add timer\n");
-        return 1;
-    }
-
-	one_wire.init();
-
-        one_wire.single_device_read_rom(address);
-        printf("Device Address: %02x%02x%02x%02x%02x%02x%02x%02x\n", address.rom[0], address.rom[1], address.rom[2], address.rom[3], address.rom[4], address.rom[5], address.rom[6], address.rom[7]);
+	setup_timers();
+	setup_onewire();
+	setup_leds();
 #if 0	
 	while (1)
 	{
@@ -225,19 +312,101 @@ int main()
 	}
 }
 
-bool timer_callback(repeating_timer_t *rt)
+bool reporting_callback(repeating_timer_t *rt)
 {
-	uint16_t fan_speed[NUM_FANS] = {0x100, 0x200, 0x300, 0x400, 0x500, 0x600, 0x700};
-
-	// Code to actually read the temperatures...
-	send_temperature(temperatures);
-	// Code to actually read the fan speed..
-	send_tacho(fan_speed);
-
+	if (wifi_connected && mqtt_connected)
+	{
+		// Code to actually read the temperatures...
+		send_temperature(temperatures);
+		// Code to actually read the fan speed..
+		send_tacho(fans.speed);
+	}
 }
 
 bool read_temp_callback(repeating_timer_t *rt)
 {
 	do_read_temps = true;
+}
+
+void set_fans_power_state(uint8_t state)
+{
+	if (state)
+	{
+		// set gpios to 1
+	}
+	else
+	{
+		// set gpios to 0
+	}
+}
+
+
+
+void set_fan_pwm(uint8_t fan, uint8_t pwm)
+{
+	if (pwm > 100)
+	{
+		fans.auto_speed[fan] = true;
+	}
+	else
+	{
+		fans.auto_speed[fan] = false;
+		if (pwm < PWM_LOW_THRESHOLD)
+		{
+			pwm = PWM_LOW_THRESHOLD;
+		}
+		fans.pwm[fan] = pwm;
+		// set pwm for fan
+	}
+}
+
+/* 
+ * < 24 => 20
+ * 24 <= x < 26 => 30
+ * 26 <= x < 28 => 40
+ * 28 <= x < 30 => 50
+ * 30 <= x < 31 => 60
+ * 31 <= x < 32 => 70
+ * 32 <= x < 33 => 80
+ * 33 <= x < 34 => 90
+ * >= 34 => 100
+ * N.B. Should this be user-updatable?
+ */
+#define NUM_POINTS_TEMP_VS_PWM	9
+const uint8_t temp_vs_pwm_curve[][3] = {
+	{0, 24, 20},
+	{24, 26, 30},
+	{26, 28, 40},
+	{28, 30, 50},
+	{30, 31, 60},
+	{31, 32, 70},
+	{32, 33, 80},
+	{33, 34, 90},
+	{34, 100, 100},
+	{0, 0, 0}
+};
+
+bool set_fan_speeds(repeating_timer_t *rt)
+{
+	int i, row;
+	for (i = 0; i < NUM_FANS; i++)
+	{
+		if (fans.auto_speed[i])
+		{
+			for (row = 0; !(temp_vs_pwm_curve[row][0] | temp_vs_pwm_curve[row][1] | temp_vs_pwm_curve[row][2]); row++)
+			{
+				if ((temp_vs_pwm_curve[row][0] < temperatures[i]) &&
+				    (temperatures[i] <= temp_vs_pwm_curve[row][1]))
+				{
+					ERROR("Setting fan %d PWM to %d\n", temp_vs_pwm_curve[row][2]);
+					set_fan_pwm(i, temp_vs_pwm_curve[row][2]);
+				}
+			}
+		}
+		else
+		{
+			set_fan_pwm(i, fans.pwm[i]);
+		}
+	}
 }
 
