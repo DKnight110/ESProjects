@@ -337,7 +337,6 @@ void send_mqtt_status(bool status)
 	rsp->cmd_type = status == TRUE ? MQTT_CONNECTED : MQTT_DISCONNECTED;
 	rsp->parity = calc_parity = 0;
 
-	/* speed can be > 255 => 2 bytes each */
 	rsp->cmd_len = 0;
 	rsp->seq = tx_seq;
 
@@ -351,6 +350,124 @@ void send_mqtt_status(bool status)
 	tx_seq++;
 }
 
+void send_led_color(uint8_t *msg)
+{
+	struct serial_cmd *rsp = (struct serial_cmd *)rsp_buf;
+	uint8_t calc_parity;
+	int i;
+
+	rsp->cmd_type = SET_LED_COLOR;
+	rsp->parity = calc_parity = 0;
+
+	rsp->cmd_len = NUM_LEDS_IN_STRIP + 2; /* timing and step */
+	rsp->seq = tx_seq;
+
+	rsp->cmd = msg;
+
+	for(i = 0; i < rsp->cmd_len + 4; i++) {
+		calc_parity += rsp_buf[i];
+	}
+
+	rsp->parity = calc_parity;
+
+	uart_tx(rsp_buf, rsp->cmd_len + 4);
+	tx_seq++;
+
+}
+
+void send_led_program_steps(uint8_t num_steps)
+{
+	struct serial_cmd *rsp = (struct serial_cmd *)rsp_buf;
+	uint8_t calc_parity;
+	int i;
+
+	rsp->cmd_type = SET_LED_PROGRAM_STEPS;
+	rsp->parity = calc_parity = 0;
+
+	rsp->cmd_len = 1;
+	rsp->seq = tx_seq;
+
+	rsp->cmd[0] = num_steps;
+	for(i = 0; i < rsp->cmd_len + 4; i++) {
+		calc_parity += rsp_buf[i];
+	}
+
+	rsp->parity = calc_parity;
+
+	uart_tx(rsp_buf, rsp->cmd_len + 4);
+	tx_seq++;
+}
+
+void send_fan_state(bool state)
+{
+	struct serial_cmd *rsp = (struct serial_cmd *)rsp_buf;
+	uint8_t calc_parity;
+	int i;
+
+	rsp->cmd_type = SET_FAN_POWER_STATE;
+	rsp->parity = calc_parity = 0;
+
+	rsp->cmd_len = 1;
+	rsp->seq = tx_seq;
+
+	rsp->cmd[0] = state ? 1 : 0;
+
+	for(i = 0; i < rsp->cmd_len + 4; i++) {
+		calc_parity += rsp_buf[i];
+	}
+
+	rsp->parity = calc_parity;
+
+	uart_tx(rsp_buf, rsp->cmd_len + 4);
+	tx_seq++;
+}
+
+void send_fan_pwm(uint8_t fan, uint8_t pwm)
+{
+	struct serial_cmd *rsp = (struct serial_cmd *)rsp_buf;
+	uint8_t calc_parity;
+	int i;
+
+	rsp->cmd_type = SEND_FAN_PWM;
+	rsp->parity = calc_parity = 0;
+
+	rsp->cmd_len = 1;
+	rsp->seq = tx_seq;
+
+	rsp->cmd[0] = fan;
+	rsp->cmd[1] = pwm;
+
+	for(i = 0; i < rsp->cmd_len + 4; i++) {
+		calc_parity += rsp_buf[i];
+	}
+
+	rsp->parity = calc_parity;
+
+	uart_tx(rsp_buf, rsp->cmd_len + 4);
+	tx_seq++;
+}
+
+void send_led_program_switch()
+{
+	struct serial_cmd *rsp = (struct serial_cmd *)rsp_buf;
+	uint8_t calc_parity;
+	int i;
+
+	rsp->cmd_type = SWITCH_PROGRAMS;
+	rsp->parity = calc_parity = 0;
+
+	rsp->cmd_len = 0;
+	rsp->seq = tx_seq;
+
+	for(i = 0; i < rsp->cmd_len + 4; i++) {
+		calc_parity += rsp_buf[i];
+	}
+
+	rsp->parity = calc_parity;
+
+	uart_tx(rsp_buf, rsp->cmd_len + 4);
+	tx_seq++;
+}
 #endif
 void process_message(char buf[])
 {
