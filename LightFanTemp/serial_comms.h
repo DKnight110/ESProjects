@@ -108,6 +108,21 @@ void publish_mqtt_fan_pwm(uint8_t len, uint8_t *cmd);
 void publish_mqtt_temp(uint8_t len, uint8_t *cmd);
 
 void modem_reset(void);
+
+void send_wifi_status(bool status);
+
+void send_mqtt_status(bool status);
+
+void send_led_color(uint8_t *msg);
+
+void send_led_program_steps(uint8_t num_steps);
+
+void send_fan_state(bool state);
+
+void send_fan_pwm(uint8_t fan, uint8_t pwm);
+
+void send_led_program_switch();
+
 #endif
 
 #ifdef __cplusplus
