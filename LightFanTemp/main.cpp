@@ -107,7 +107,8 @@ struct fans {
 };
 
 struct fans fans = {
-	{ 0, 0, 0, 0, 0, 0 },
+	/* default all are auto speed */
+	{ 1, 1, 1, 1, 1, 1 },
 	{
 		INVALID_SPEED,
 		INVALID_SPEED,

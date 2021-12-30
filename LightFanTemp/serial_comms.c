@@ -250,7 +250,7 @@ void send_temperature(int16_t *temperatures)
 		/* 1 byte for each would be enough, -127..+128...
 		 * BUT DS18B20 can do .1 degrees...
 		 * so send this as int(Temp_f * 10) */
-		rsp->cmd_len = NUM_TEMP_SENSORS;
+		rsp->cmd_len = NUM_TEMP_SENSORS * 2;
 		rsp->seq = tx_seq;
 
 		for (i = 0; i < NUM_TEMP_SENSORS * 2; i+=2)
@@ -507,7 +507,7 @@ void process_message(char buf[])
 
 		case WIFI_DISCONNECTED:
 			ERROR("Wifi DisConnected!\n");
-			wifi_connected = true;
+			wifi_connected = false;
 			break;
 			
 		case MQTT_CONNECTED:
