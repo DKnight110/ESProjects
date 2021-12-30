@@ -216,7 +216,7 @@ int main()
 		{
 		        one_wire.convert_temperature(address, true, false);
 			//printf("Temperature: %3.1foC\n", one_wire.temperature(address));
-			temperatures[0] = (int16_t)(one_wire.temperature(address) * 10.0);
+			temperatures[0] = (int16_t)(one_wire.temperature(address) * 100.0f);
 			do_read_temps = false;
 		}
 

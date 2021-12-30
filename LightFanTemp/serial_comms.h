@@ -97,7 +97,7 @@ void send_log(const char *format,...);
 void put_char(unsigned char ch);
 
 #ifndef ESP8266
-void send_temperature(int8_t *temperatures);
+void send_temperature(int16_t *temperatures);
 
 void send_tacho(uint16_t *fan_speed);
 

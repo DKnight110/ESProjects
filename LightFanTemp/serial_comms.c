@@ -233,7 +233,7 @@ void send_modem_reset()
 
 }
 
-void send_temperature(int8_t *temperatures)
+void send_temperature(int16_t *temperatures)
 {
 		struct serial_cmd *rsp = (struct serial_cmd *)rsp_buf;
 		uint8_t calc_parity;
@@ -243,15 +243,18 @@ void send_temperature(int8_t *temperatures)
 		rsp->parity = calc_parity = 0;
 		rsp->seq = tx_seq;
 
-		/* 1 byte for each is enough, -127..+128 */
+		/* 1 byte for each would be enough, -127..+128...
+		 * BUT DS18B20 can do .1 degrees...
+		 * so send this as int(Temp_f * 10) */
 		rsp->cmd_len = NUM_TEMP_SENSORS;
 		rsp->seq = tx_seq;
 
-		for (i = 0; i < NUM_TEMP_SENSORS; i++)
+		for (i = 0; i < NUM_TEMP_SENSORS * 2; i+=2)
 		{
-			rsp->cmd[i] = temperatures[i];
+			rsp->cmd[i] = (temperatures[i/2] >> 8) & 0xFF;
+			rsp->cmd[i + 1] = temperatures[i/2] & 0xFF;
 		}
-		
+
 		for(i = 0; i < rsp->cmd_len + 4; i++) {
 			calc_parity += rsp_buf[i];
 		}
