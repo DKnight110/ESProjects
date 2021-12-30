@@ -431,7 +431,7 @@ void send_fan_pwm(uint8_t fan, uint8_t pwm)
 	uint8_t calc_parity;
 	int i;
 
-	rsp->cmd_type = SEND_FAN_PWM;
+	rsp->cmd_type = SET_FAN_PWM_PERC;
 	rsp->parity = calc_parity = 0;
 
 	rsp->cmd_len = 1;
@@ -532,12 +532,12 @@ void process_message(char buf[])
 			break;
 
 		case SET_LED_COLOR:
-			ERROR("Setting LEDs in step %d (% d ms)\n", cmd->cmd[0], cmd->cmd[1]);
 			prg_step = cmd->cmd[0];
-			shadow_prg->led_program_entry[prg_step].time = cmd->cmd[1];			
+			shadow_prg->led_program_entry[prg_step].time = (cmd->cmd[1] << 8) | cmd->cmd[2];
+			ERROR("Setting LEDs in step %d (% d ms)\n", cmd->cmd[0], cmd->cmd[1]);
 			for (i = 0; i < NUM_LEDS_IN_STRIP * 3; i+=3)
 			{
-				shadow_prg->led_program_entry[prg_step].leds[i/3] = (cmd->cmd[2 + i] << 16) | (cmd->cmd[3 + i] << 8) | cmd->cmd[4 + i];
+				shadow_prg->led_program_entry[prg_step].leds[i/3] = (cmd->cmd[3 + i] << 16) | (cmd->cmd[4 + i] << 8) | cmd->cmd[5 + i];
 			}
 
 			break;
