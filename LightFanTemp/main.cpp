@@ -9,6 +9,8 @@
 #include "hardware/uart.h"
 #include "hardware/irq.h"
 
+#include "one_wire.h"
+
 #define SERIAL_COMMS_UART_ID	uart1
 #define BAUD_RATE 115200
 #define DATA_BITS 8
@@ -18,7 +20,10 @@
 #define SERIAL_COMMS_TX_PIN	8
 #define SERIAL_COMMS_RX_PIN	9
 
+#define TEMP_MEAS_PIN		3
+
 char double_rx_buf[CMD_LEN*NUM_ENTRIES];
+int16_t temperatures[NUM_TEMP_SENSORS] = {0x1000, 0x2000, 0x3000, 0x4000, 0x5000, 0x6000, 0x7000};
 
 const uint LEDPIN = 25;
 
@@ -34,6 +39,11 @@ const uint LEDPIN = 25;
 
 int chars_rxed;
 bool timer_callback(repeating_timer_t *rt);
+bool read_temp_callback(repeating_timer_t *rt);
+bool do_read_temps;
+
+One_wire one_wire(TEMP_MEAS_PIN);
+rom_address_t address{};
 
 static inline void put_pixel(uint32_t pixel_grb) {
     pio_sm_put_blocking(pio0, 0, pixel_grb << 8u);
@@ -64,8 +74,9 @@ static inline uint32_t urgb_u32(uint8_t r, uint8_t g, uint8_t b) {
  * PIN_TACH_4 = GP17 (pin 22)
  * PIN_TACH_5 = GP18 (pin 24)
  * PIN_TACH_6 = GP19 (pin 25)
- * PIN_FAN_ON = GP20 (pin 26)
- * ESP8266_RST = GP21 (pin 27)
+ * PIN_FAN_ON_1 = GP20 (pin 26)
+ * PIN_FAN_ON_2 = GP21 (pin 27)
+ * ESP8266_RST = GP22 (pin 29)
 */
 
 void put_char(unsigned char ch)
@@ -112,7 +123,7 @@ void setup_serial_comms_uart()
 
     // Set up a RX interrupt
     // We need to set up the handler first
-    // Select correct interrupt for the UART we are using
+    // Select correct interrut for the UART we are using
     int UART_IRQ = SERIAL_COMMS_UART_ID == uart0 ? UART0_IRQ : UART1_IRQ;
 
     // And set up and enable the interrupt handlers
@@ -151,6 +162,7 @@ int main()
 	setup_serial_comms_uart();
 
    repeating_timer_t timer;
+   repeating_timer_t temp_read_timer;
 
     // negative timeout means exact delay (rather than delay between callbacks)
     if (!add_repeating_timer_ms(5000, timer_callback, NULL, &timer)) {
@@ -158,6 +170,15 @@ int main()
         return 1;
     }
 
+    if (!add_repeating_timer_ms(1000, read_temp_callback, NULL, &temp_read_timer)) {
+        printf("Failed to add timer\n");
+        return 1;
+    }
+
+	one_wire.init();
+
+        one_wire.single_device_read_rom(address);
+        printf("Device Address: %02x%02x%02x%02x%02x%02x%02x%02x\n", address.rom[0], address.rom[1], address.rom[2], address.rom[3], address.rom[4], address.rom[5], address.rom[6], address.rom[7]);
 #if 0	
 	while (1)
 	{
@@ -190,18 +211,33 @@ int main()
 			process_message(&double_rx_buf[CMD_LEN * serial_buf_cidx]);
 			serial_buf_cidx = (serial_buf_cidx + 1) % NUM_ENTRIES;
 		}
+
+		if (do_read_temps)
+		{
+		        one_wire.convert_temperature(address, true, false);
+			//printf("Temperature: %3.1foC\n", one_wire.temperature(address));
+			temperatures[0] = (int16_t)(one_wire.temperature(address) * 10.0);
+			do_read_temps = false;
+		}
+
 	        tight_loop_contents();
+
 	}
 }
 
 bool timer_callback(repeating_timer_t *rt)
 {
-	int8_t temperatures[NUM_TEMP_SENSORS] = {0x10, 0x20, 0x30, 0x40, 0x50, 0x60, 0x70};
 	uint16_t fan_speed[NUM_FANS] = {0x100, 0x200, 0x300, 0x400, 0x500, 0x600, 0x700};
 
 	// Code to actually read the temperatures...
 	send_temperature(temperatures);
 	// Code to actually read the fan speed..
 	send_tacho(fan_speed);
+
+}
+
+bool read_temp_callback(repeating_timer_t *rt)
+{
+	do_read_temps = true;
 }
 

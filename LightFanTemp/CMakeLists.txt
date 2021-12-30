@@ -12,9 +12,13 @@ pico_sdk_init()
 
 pico_generate_pio_header(lightfantemp ${CMAKE_CURRENT_LIST_DIR}/ws2812.pio OUTPUT_DIR ${CMAKE_CURRENT_LIST_DIR}/generated)
 
+#add_subdirectory()
+target_include_directories(lightfantemp PRIVATE ../../pico-onewire/api)
+
 target_sources(lightfantemp PRIVATE
-	main.c
+	main.cpp
 	serial_comms.c
+	../../pico-onewire/source/one_wire.cpp
 )
 
 #target_compile_definitions(lightfantemp PRIVATE
