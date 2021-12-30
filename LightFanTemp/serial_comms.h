@@ -113,7 +113,7 @@ void send_wifi_status(bool status);
 
 void send_mqtt_status(bool status);
 
-void send_led_color(uint8_t *msg);
+void send_led_color(uint8_t *msg, uint8_t num_leds);
 
 void send_led_program_steps(uint8_t num_steps);
 

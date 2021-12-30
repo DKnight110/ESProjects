@@ -350,7 +350,7 @@ void send_mqtt_status(bool status)
 	tx_seq++;
 }
 
-void send_led_color(uint8_t *msg)
+void send_led_color(uint8_t *msg, uint8_t num_leds)
 {
 	struct serial_cmd *rsp = (struct serial_cmd *)rsp_buf;
 	uint8_t calc_parity;
@@ -359,10 +359,13 @@ void send_led_color(uint8_t *msg)
 	rsp->cmd_type = SET_LED_COLOR;
 	rsp->parity = calc_parity = 0;
 
-	rsp->cmd_len = NUM_LEDS_IN_STRIP + 2; /* timing and step */
+	rsp->cmd_len = num_leds + 2; /* timing and step */
 	rsp->seq = tx_seq;
 
-	rsp->cmd = msg;
+	for (i =  0; i < len; i++)
+	{
+		rsp->cmd[i] = msg[i];
+	}
 
 	for(i = 0; i < rsp->cmd_len + 4; i++) {
 		calc_parity += rsp_buf[i];
