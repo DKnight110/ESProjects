@@ -434,7 +434,7 @@ void send_fan_pwm(uint8_t fan, uint8_t pwm)
 	rsp->cmd_type = SET_FAN_PWM_PERC;
 	rsp->parity = calc_parity = 0;
 
-	rsp->cmd_len = 1;
+	rsp->cmd_len = 2;
 	rsp->seq = tx_seq;
 
 	rsp->cmd[0] = fan;
