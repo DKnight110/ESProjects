@@ -311,7 +311,7 @@ void send_wifi_status(bool status)
 	uint8_t calc_parity;
 	int i;
 
-	rsp->cmd_type = status == TRUE ? WIFI_CONNECTED : WIFI_DISCONNECTED;
+	rsp->cmd_type = status == true ? WIFI_CONNECTED : WIFI_DISCONNECTED;
 	rsp->parity = calc_parity = 0;
 
 	/* speed can be > 255 => 2 bytes each */
@@ -334,7 +334,7 @@ void send_mqtt_status(bool status)
 	uint8_t calc_parity;
 	int i;
 
-	rsp->cmd_type = status == TRUE ? MQTT_CONNECTED : MQTT_DISCONNECTED;
+	rsp->cmd_type = status == true ? MQTT_CONNECTED : MQTT_DISCONNECTED;
 	rsp->parity = calc_parity = 0;
 
 	rsp->cmd_len = 0;
@@ -350,7 +350,7 @@ void send_mqtt_status(bool status)
 	tx_seq++;
 }
 
-void send_led_color(uint8_t *msg, uint8_t num_leds)
+void send_led_color(uint8_t *msg, uint8_t len)
 {
 	struct serial_cmd *rsp = (struct serial_cmd *)rsp_buf;
 	uint8_t calc_parity;
@@ -359,7 +359,7 @@ void send_led_color(uint8_t *msg, uint8_t num_leds)
 	rsp->cmd_type = SET_LED_COLOR;
 	rsp->parity = calc_parity = 0;
 
-	rsp->cmd_len = num_leds + 2; /* timing and step */
+	rsp->cmd_len = len;
 	rsp->seq = tx_seq;
 
 	for (i =  0; i < len; i++)
