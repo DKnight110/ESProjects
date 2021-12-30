@@ -29,22 +29,16 @@
 #define MQTT_TOPIC_SUB1       "bookcase/control"
 #define MQTT_TOPIC_SUB1_STR1  "RESET"
 
-#define MQTT_TOPIC_SUB2       "bookcase/ledstrip"
-#define MQTT_TOPIC_SUB2_STR1  "SET_COLOR"
-#define MQTT_TOPIC_SUB2_STR2  "SET_COLOR_BULK"
-#define MQTT_TOPIC_SUB2_STR3  "SET_TIME"
-#define MQTT_TOPIC_SUB2_STR4  "SET_TIME_BULK"
-#define MQTT_TOPIC_SUB2_STR5  "SWITCH_PRGS"
-#define MQTT_TOPIC_SUB2_STR6  "RESET_COLOR"
+#define MQTT_TOPIC_SUB2       "bookcase/ledstrip_set_led_color"
+#define MQTT_TOPIC_SUB3       "bookcase/ledstrip_set_prg_steps"
+#define MQTT_TOPIC_SUB4       "bookcase/ledstrip_switch_prgs"
 
-#define MQTT_TOPIC_SUB3       "bookcase/fan"
-#define MQTT_TOPIC_SUB3_STR1  "ON"
-#define MQTT_TOPIC_SUB3_STR2  "OFF"
-#define MQTT_TOPIC_SUB3_STR3  "SET_PWM"
+#define MQTT_TOPIC_SUB5       "bookcase/fan_on"
+#define MQTT_TOPIC_SUB6       "bookcase/fan_off"
+#define MQTT_TOPIC_SUB7       "bookcase/fan_set_pwm"
 
 #define MQTT_TOPIC_PUB1       "bookcase/debug"
 #define MQTT_TOPIC_PUB1_STR1  "RST"
-#define MQTT_TOPIC_PUB1_STR2  "DBGPRINT"
 
 #define MQTT_TOPIC_PUB2       "bookcase/temp"
 #define MQTT_TOPIC_PUB2_STR0  "TEMP"
@@ -53,13 +47,13 @@
 #define MQTT_TOPIC_PUB3_STR0  "SPEED"
 
 #define PUB_QUEUE_DEPTH       4
-#define CHAR_ARRAY_LEN  32
+#define CHAR_ARRAY_LEN        128
 
 #define LED_GREEN             4
 
 #define LOOP_DELAY            200 /* ms */
 
-#define DEBUG_LEVEL   1
+#define DEBUG_LEVEL   0
 
 #ifndef ESP_AS_MODEM
 #if DEBUG_LEVEL == 0
@@ -74,9 +68,15 @@
 #error "You need to define a debug level"
 #endif
 #else
+#if  DEBUG_LEVEL == 1
 #define SERIAL_PRINT(x) send_log("%s", x)
 #define SERIAL_PRINTLN(x) send_log("%s\n", x)
 #define SERIAL_PRINTF(...)  send_log(__VA_ARGS__)
+#else
+#define SERIAL_PRINT(x)
+#define SERIAL_PRINTLN(x)
+#define SERIAL_PRINTF(...)
+#endif
 #endif
 
 struct mqtt_queue {
@@ -189,41 +189,41 @@ void callback(char *topic, byte *payload, unsigned int length) {
 
   if (!strcmp(topic, MQTT_TOPIC_SUB2))
   {
-    if (!strncmp((char *)payload, MQTT_TOPIC_SUB2_STR1, length))
-    {
-      
-    }
-    else if (!strncmp((char *)payload, MQTT_TOPIC_SUB2_STR2, length))
-    {
-    }
-    else if (!strncmp((char *)payload, MQTT_TOPIC_SUB2_STR3, length))
-    {
-    }
-    else if (!strncmp((char *)payload, MQTT_TOPIC_SUB2_STR4, length))
-    {
-    }
-    else if (!strncmp((char *)payload, MQTT_TOPIC_SUB2_STR5, length))
-    {
-    }
-    else if (!strncmp((char *)payload, MQTT_TOPIC_SUB2_STR6, length))
-    {
-    }
-    else
-    {
-      SERIAL_PRINTLN("Got unknown!");
-    }
-
+    send_led_color(payload, length);
+    return;
   } 
-  
-  SERIAL_PRINT("Message arrived in topic: ");
-  SERIAL_PRINTLN(topic);
-  SERIAL_PRINT("Message:");
-  for (int i = 0; i < length; i++) {
-    SERIAL_PRINT((char) payload[i]);
-  }
-  SERIAL_PRINTLN(" ");
-  SERIAL_PRINTLN("-----------------------");
 
+  if (!strcmp(topic, MQTT_TOPIC_SUB3))
+  {
+    send_led_program_steps(payload[0]);
+    return;
+  }
+
+  if (!strcmp(topic, MQTT_TOPIC_SUB4))
+  {
+    send_led_program_switch();
+    return;
+  }
+
+  if (!strcmp(topic, MQTT_TOPIC_SUB5))
+  {
+    send_fan_state(true);
+    return;
+  }
+
+  if (!strcmp(topic, MQTT_TOPIC_SUB6))
+  {
+    send_fan_state(false);
+    return;
+  }
+
+  if (!strcmp(topic, MQTT_TOPIC_SUB7))
+  {
+    send_fan_pwm(payload[0], payload[1]);
+    return;
+  }
+
+  ERROR("Unknown topic %s\n", topic);
 }
 
 void connect_to_wifi()
@@ -252,13 +252,16 @@ void connect_to_wifi()
 
   if (WiFi.status() != WL_CONNECTED) {
     SERIAL_PRINTLN("Failed to connect to network, resetting");
+    send_wifi_status(false);
     delay(500);
     ESP.restart();
   }
   SERIAL_PRINTLN("");
   SERIAL_PRINTLN("WiFi connected");
 
-  SERIAL_PRINT("**** IP = "); SERIAL_PRINT(ip_addr.toString().c_str()); SERIAL_PRINT(" ***\n");  
+  SERIAL_PRINT("**** IP = "); SERIAL_PRINT(ip_addr.toString().c_str()); SERIAL_PRINT(" ***\n");
+
+  send_wifi_status(true);
 }
 
 void connect_to_mqtt()
@@ -289,6 +292,8 @@ void connect_to_mqtt()
       connect_to_wifi();
     }
   }
+
+  send_mqtt_status(true);
 }
 
 void assign_ip_addr()
@@ -346,6 +351,13 @@ void setup() {
   connect_to_mqtt();
 
   client.subscribe(MQTT_TOPIC_SUB1);
+  client.subscribe(MQTT_TOPIC_SUB2);
+  client.subscribe(MQTT_TOPIC_SUB3);
+  client.subscribe(MQTT_TOPIC_SUB4);
+  client.subscribe(MQTT_TOPIC_SUB5);
+  client.subscribe(MQTT_TOPIC_SUB6);
+  client.subscribe(MQTT_TOPIC_SUB7);
+  
   queue_publish(MQTT_TOPIC_PUB1, (const uint8_t*)MQTT_TOPIC_PUB1_STR1, strlen(MQTT_TOPIC_PUB1_STR1), true);
 
   post_passed = true;
@@ -361,7 +373,8 @@ void loop() {
     goto sleep;
   }
 
-  if (!client.connected()) {      
+  if (!client.connected()) {
+      send_mqtt_status(false);
       connect_to_mqtt();
   }
 
