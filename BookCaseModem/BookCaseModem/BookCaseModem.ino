@@ -405,9 +405,9 @@ void publish_mqtt_temp(uint8_t len, uint8_t *cmd)
   char payload[64] = {0}, tmp[4];
   int i;
 
-  for (i = 0; i < len; i++)
+  for (i = 0; i < len; i+=2)
   {
-    sprintf(tmp,"%d,", cmd[i]);
+    sprintf(tmp,"%d,", (cmd[i] << 8) | cmd[i + 1]);
     strcat(payload, tmp);
   }
 
