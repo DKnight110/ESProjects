@@ -75,7 +75,7 @@ struct led_program_entry {
 
 #define NUM_LED_PROGRAMS		2
 
-#define NUM_STEPS_IN_PROGRAM	(2 * NUM_LEDS_IN_STRIP - 1)
+#define NUM_STEPS_IN_PROGRAM	(2 * NUM_LEDS_IN_STRIP)
 
 struct led_programs {
 	uint8_t num_steps;
