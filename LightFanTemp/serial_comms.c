@@ -9,11 +9,11 @@
 #ifndef ESP8266
 #include "led_helpers.h"
 /* Array of LEDs, used to flash status */
-struct led_programs led_programs[NUM_LED_PROGRAMS];
+volatile struct led_programs led_programs[NUM_LED_PROGRAMS];
 
 /* Sane defaults */
-struct led_programs *cur_prg = &led_programs[0];
-struct led_programs *shadow_prg = &led_programs[1];
+volatile struct led_programs *cur_prg = &led_programs[0];
+volatile struct led_programs *shadow_prg = &led_programs[1];
 
 uint8_t current_prg_idx = 0;
 
@@ -471,6 +471,55 @@ void send_led_program_switch()
 	uart_tx(rsp_buf, rsp->cmd_len + 4);
 	tx_seq++;
 }
+
+void send_set_color(uint8_t r, uint8_t g, uint8_t b)
+{
+	struct serial_cmd *rsp = (struct serial_cmd *)rsp_buf;
+	uint8_t calc_parity;
+	int i;
+
+	rsp->cmd_type = SET_COLOR_INTENSITY;
+	rsp->parity = calc_parity = 0;
+
+	rsp->cmd[0] = r;
+	rsp->cmd[1] = g;
+	rsp->cmd[2] = b;
+
+	rsp->cmd_len = 3;
+	rsp->seq = tx_seq;
+
+	for(i = 0; i < rsp->cmd_len + 4; i++) {
+		calc_parity += rsp_buf[i];
+	}
+
+	rsp->parity = calc_parity;
+
+	uart_tx(rsp_buf, rsp->cmd_len + 4);
+	tx_seq++;
+}
+
+void send_resume_animation()
+{
+	struct serial_cmd *rsp = (struct serial_cmd *)rsp_buf;
+	uint8_t calc_parity;
+	int i;
+
+	rsp->cmd_type = RESUME_ANIMATION
+	rsp->parity = calc_parity = 0;
+
+	rsp->cmd_len = 0;
+	rsp->seq = tx_seq;
+
+	for(i = 0; i < rsp->cmd_len + 4; i++) {
+		calc_parity += rsp_buf[i];
+	}
+
+	rsp->parity = calc_parity;
+
+	uart_tx(rsp_buf, rsp->cmd_len + 4);
+	tx_seq++;
+}
+
 #endif
 void process_message(char buf[])
 {
@@ -534,7 +583,7 @@ void process_message(char buf[])
 		case SET_LED_COLOR:
 			prg_step = cmd->cmd[0];
 			shadow_prg->led_program_entry[prg_step].time = (cmd->cmd[1] << 8) | cmd->cmd[2];
-			ERROR("Setting LEDs in step %d (% d ms)\n", cmd->cmd[0], cmd->cmd[1]);
+			ERROR("Setting LEDs in step %d (% d ms)\n", cmd->cmd[0], shadow_prg->led_program_entry[prg_step].time);
 			for (i = 0; i < NUM_LEDS_IN_STRIP * 3; i+=3)
 			{
 				shadow_prg->led_program_entry[prg_step].leds[i/3] = (cmd->cmd[3 + i] << 16) | (cmd->cmd[4 + i] << 8) | cmd->cmd[5 + i];
@@ -549,9 +598,17 @@ void process_message(char buf[])
 						
 		case SWITCH_PROGRAMS:
 			ERROR("Switching programs\n");
-			tmp = cur_prg;
-			cur_prg = shadow_prg;
-			shadow_prg = cur_prg;
+			switch_programs();
+			break;
+
+		case SET_COLOR_INTENSITY:
+			ERROR("Setting led strip color to steps to 0x%02x 0x%2x 0x%02x\n", cmd->cmd[0], cmd->cmd[1], cmd->cmd[2]);
+			set_strip_intensity((cmd->cmd[0] << 16) | (cmd->cmd[1] << 8) | cmd->cmd[2]);
+			break;
+
+		case RESUME_ANIMATION:
+			ERROR("Resuming animation...\n");
+			resume_animation();
 			break;
 
 		case SEND_LOG:
