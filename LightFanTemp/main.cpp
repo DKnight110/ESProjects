@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
+#include "pico/multicore.h"
 #include "hardware/gpio.h"
 #include "ws2812.pio.h"
 #include "serial_comms.h"
@@ -47,9 +48,10 @@
 #define TEMP_MEAS_PIN		3
 
 /* timer intervals defines */
-#define REPORTING_INT_MS	5000
-#define TEMP_READ_INT_MS	1000
-#define FAN_SPEED_UPDATE_INT_MS	10000
+#define REPORTING_INT_MS		5000
+#define TEMP_READ_INT_MS		1000
+#define FAN_SPEED_UPDATE_INT_MS		10000
+#define LED_DISPLAY_UPDATE_INT_MS	10
 
 #define PWM_LOW_THRESHOLD	20
 
@@ -79,14 +81,17 @@ rom_address_t address{};
 repeating_timer_t timer;
 repeating_timer_t temp_read_timer;
 repeating_timer_t fans_adjust_timer;
+repeating_timer_t leds_timer;
 
 /* Timer helpers */
 bool reporting_callback(repeating_timer_t *rt);
 bool read_temp_callback(repeating_timer_t *rt);
 bool set_fan_speeds(repeating_timer_t *rt);
-bool do_read_temps;
+
+volatile bool do_read_temps;
 
 char double_rx_buf[CMD_LEN*NUM_ENTRIES];
+
 int16_t temperatures[NUM_TEMP_SENSORS] = {
 	INVALID_TEMPERATURE,	
 	INVALID_TEMPERATURE,
@@ -131,6 +136,16 @@ struct fans fans = {
 
 /* LEDs PIO */
 PIO pio;
+
+bool do_display;
+
+extern volatile struct led_programs *cur_prg;
+extern volatile struct led_programs *shadow_prg;
+extern volatile struct led_programs led_programs[NUM_LED_PROGRAMS];
+
+absolute_time_t next_display_step_time;
+
+uint8_t cur_step;
 
 static inline void put_pixel(uint32_t pixel_grb) {
     pio_sm_put_blocking(pio0, 0, pixel_grb << 8u);
@@ -235,13 +250,27 @@ void setup_pwm()
 
 void setup_leds()
 {
-   	int sm = 0;
+   	int sm = 0, i;
 	uint offset;
 
 	pio = pio0;
 	offset = pio_add_program(pio, &ws2812_program);
 
     	ws2812_program_init(pio, sm, offset, WS2812_PIN, 800000, IS_RGBW);
+}
+
+void core1_entry()
+{
+	while(1)
+	{
+		if (do_read_temps)
+		{
+		        one_wire.convert_temperature(address, true, false);
+			//printf("Temperature: %3.1foC\n", one_wire.temperature(address));
+			temperatures[0] = (int16_t)(one_wire.temperature(address) * 100.0f);
+			do_read_temps = false;
+		}
+	}
 }
 
 int main()
@@ -261,8 +290,7 @@ int main()
 		data[i] = 0x0000FF;
 	}
 
-
-
+	multicore_launch_core1(core1_entry);
 	setup_serial_comms_uart();
 	setup_timers();
 	setup_onewire();
@@ -292,6 +320,7 @@ int main()
 		}
 	}
 #endif
+	
 	while(1)
 	{
 		if (serial_buf_pidx != serial_buf_cidx)
@@ -299,7 +328,7 @@ int main()
 			process_message(&double_rx_buf[CMD_LEN * serial_buf_cidx]);
 			serial_buf_cidx = (serial_buf_cidx + 1) % NUM_ENTRIES;
 		}
-
+#if 0
 		if (do_read_temps)
 		{
 		        one_wire.convert_temperature(address, true, false);
@@ -307,7 +336,27 @@ int main()
 			temperatures[0] = (int16_t)(one_wire.temperature(address) * 100.0f);
 			do_read_temps = false;
 		}
+#endif
+#if 1
+		if (do_display)
+		{
+			if (get_absolute_time() >= next_display_step_time)
+			{
+				for (i = 0; i < NUM_LEDS_IN_STRIP; i++) 
+				{
+					put_pixel(cur_prg->led_program_entry[cur_step].leds[i]);
+				}
 
+				if (++cur_step == cur_prg->num_steps)
+				{
+					cur_step = 0;
+				}
+
+				next_display_step_time = delayed_by_ms(get_absolute_time(),
+					cur_prg->led_program_entry[cur_step].time);
+			}
+		}
+#endif
 	        tight_loop_contents();
 
 	}
@@ -411,3 +460,51 @@ bool set_fan_speeds(repeating_timer_t *rt)
 	}
 }
 
+void clear_strip()
+{
+	int i;
+	for (i = 0; i < NUM_LEDS_IN_STRIP; i++) 
+	{
+		put_pixel(0);
+		sleep_ms(10);
+	}
+}
+
+void set_strip_intensity(uint32_t color)
+{
+	do_display = false;
+	
+	int i;
+	for (i = 0; i < NUM_LEDS_IN_STRIP; i++) 
+	{
+		put_pixel(color);
+		sleep_ms(10);
+	}
+}
+
+void switch_programs()
+{
+	do_display = false;
+	
+	clear_strip();
+
+	if (cur_prg == &led_programs[0])
+	{
+		cur_prg = &led_programs[1];
+		shadow_prg = &led_programs[0];
+	}
+	else
+	{
+		cur_prg = &led_programs[0];
+		shadow_prg = &led_programs[1];
+	}
+
+	next_display_step_time = 0;
+	cur_step = 0;
+	do_display = true;
+}
+
+void resume_animation()
+{
+	do_display = true;
+}
