@@ -33,9 +33,12 @@
 #define MQTT_TOPIC_SUB3       "bookcase/ledstrip_set_prg_steps"
 #define MQTT_TOPIC_SUB4       "bookcase/ledstrip_switch_prgs"
 
-#define MQTT_TOPIC_SUB5       "bookcase/fan_on"
-#define MQTT_TOPIC_SUB6       "bookcase/fan_off"
-#define MQTT_TOPIC_SUB7       "bookcase/fan_set_pwm"
+#define MQTT_TOPIC_SUB5       "bookcase/ledstrip_set_intensity"
+#define MQTT_TOPIC_SUB6       "bookcase/ledstrip_resume_animation"
+
+#define MQTT_TOPIC_SUB7       "bookcase/fan_on"
+#define MQTT_TOPIC_SUB8       "bookcase/fan_off"
+#define MQTT_TOPIC_SUB9       "bookcase/fan_set_pwm"
 
 #define MQTT_TOPIC_PUB1       "bookcase/debug"
 #define MQTT_TOPIC_PUB1_STR1  "RST"
@@ -207,17 +210,29 @@ void callback(char *topic, byte *payload, unsigned int length) {
 
   if (!strcmp(topic, MQTT_TOPIC_SUB5))
   {
-    send_fan_state(true);
+    send_set_color(payload[0], payload[1], payload[2]);
     return;
   }
 
   if (!strcmp(topic, MQTT_TOPIC_SUB6))
   {
-    send_fan_state(false);
+    send_resume_animation();
     return;
   }
 
   if (!strcmp(topic, MQTT_TOPIC_SUB7))
+  {
+    send_fan_state(true);
+    return;
+  }
+
+  if (!strcmp(topic, MQTT_TOPIC_SUB8))
+  {
+    send_fan_state(false);
+    return;
+  }
+
+  if (!strcmp(topic, MQTT_TOPIC_SUB9))
   {
     send_fan_pwm(payload[0], payload[1]);
     return;
@@ -357,7 +372,9 @@ void setup() {
   client.subscribe(MQTT_TOPIC_SUB5);
   client.subscribe(MQTT_TOPIC_SUB6);
   client.subscribe(MQTT_TOPIC_SUB7);
-  
+  client.subscribe(MQTT_TOPIC_SUB8);
+  client.subscribe(MQTT_TOPIC_SUB9);
+
   queue_publish(MQTT_TOPIC_PUB1, (const uint8_t*)MQTT_TOPIC_PUB1_STR1, strlen(MQTT_TOPIC_PUB1_STR1), true);
 
   post_passed = true;
