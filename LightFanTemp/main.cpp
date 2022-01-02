@@ -478,7 +478,6 @@ void set_strip_intensity(uint32_t color)
 	for (i = 0; i < NUM_LEDS_IN_STRIP; i++) 
 	{
 		put_pixel(color);
-		sleep_ms(10);
 	}
 }
 
