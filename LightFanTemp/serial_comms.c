@@ -504,7 +504,7 @@ void send_resume_animation()
 	uint8_t calc_parity;
 	int i;
 
-	rsp->cmd_type = RESUME_ANIMATION
+	rsp->cmd_type = RESUME_ANIMATION;
 	rsp->parity = calc_parity = 0;
 
 	rsp->cmd_len = 0;
@@ -527,6 +527,7 @@ void process_message(char buf[])
 #ifndef ESP8266
 	struct led_programs *tmp;
 	uint8_t prg_step, led;
+	uint32_t s_color;
 	int i;
 #endif
 
@@ -602,8 +603,9 @@ void process_message(char buf[])
 			break;
 
 		case SET_COLOR_INTENSITY:
-			ERROR("Setting led strip color to steps to 0x%02x 0x%2x 0x%02x\n", cmd->cmd[0], cmd->cmd[1], cmd->cmd[2]);
-			set_strip_intensity((cmd->cmd[0] << 16) | (cmd->cmd[1] << 8) | cmd->cmd[2]);
+			s_color = (cmd->cmd[0] << 16) | (cmd->cmd[1] << 8) | cmd->cmd[2];
+			ERROR("Setting led strip color to 0x%08x\n", s_color);
+			set_strip_intensity(s_color);
 			break;
 
 		case RESUME_ANIMATION:
