@@ -545,7 +545,7 @@ void send_light_drawer(uint8_t drawer, uint8_t r, uint8_t g, uint8_t b)
 
 	uart_tx(rsp_buf, rsp->cmd_len + 4);
 
-	tx_seq++
+	tx_seq++;
 }
 
 #endif
