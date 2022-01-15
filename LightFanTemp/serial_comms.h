@@ -51,6 +51,7 @@ enum cmd_type {
 		SWITCH_PROGRAMS,
 		SET_COLOR_INTENSITY,
 		RESUME_ANIMATION,
+		SET_DRAWER_LIGHT,
 
 		SET_FAN_POWER_STATE = 0x30,
 		SET_FAN_PWM_PERC,
@@ -110,6 +111,8 @@ void resume_animation();
 
 void set_strip_intensity(uint32_t color);
 
+void light_drawer(uint8_t drawer, uint32_t color);
+
 #else
 void publish_mqtt_fan_pwm(uint8_t len, uint8_t *cmd);
 
@@ -134,6 +137,9 @@ void send_led_program_switch();
 void send_set_color(uint8_t r, uint8_t g, uint8_t b);
 
 void send_resume_animation();
+
+void send_light_drawer(uint8_t drawer, uint8_t r, uint8_t g, uint8_t b);
+
 
 #endif
 

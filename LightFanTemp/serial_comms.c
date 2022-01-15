@@ -520,13 +520,41 @@ void send_resume_animation()
 	tx_seq++;
 }
 
+void send_light_drawer(uint8_t drawer, uint8_t r, uint8_t g, uint8_t b)
+{
+	struct serial_cmd *rsp = (struct serial_cmd *)rsp_buf;
+	uint8_t calc_parity;
+	int i;
+
+	rsp->cmd_type = SET_DRAWER_LIGHT;
+	rsp->parity = calc_parity = 0;
+
+	rsp->cmd[0] = drawer;
+	rsp->cmd[1] = r;
+	rsp->cmd[2] = g;
+	rsp->cmd[3] = b;
+
+	rsp->cmd_len = 4;
+	rsp->seq = tx_seq;
+
+	for(i = 0; i < rsp->cmd_len + 4; i++) {
+		calc_parity += rsp_buf[i];
+	}
+
+	rsp->parity = calc_parity;
+
+	uart_tx(rsp_buf, rsp->cmd_len + 4);
+
+	tx_seq++
+}
+
 #endif
 void process_message(char buf[])
 {
 	struct serial_cmd *cmd = (struct serial_cmd *)buf;
 #ifndef ESP8266
 	struct led_programs *tmp;
-	uint8_t prg_step, led;
+	uint8_t prg_step, led, drawer;
 	uint32_t s_color;
 	int i;
 #endif
@@ -607,6 +635,14 @@ void process_message(char buf[])
 			ERROR("Setting led strip color to 0x%08x\n", s_color);
 			set_strip_intensity(s_color);
 			break;
+
+		case SET_DRAWER_LIGHT:
+			drawer = cmd->cmd[0];
+			s_color = (cmd->cmd[1] << 16) | (cmd->cmd[2] << 8) | cmd->cmd[3];
+			ERROR("Setting drawer %d strip color to 0x%08x\n", drawer, s_color);
+			light_drawer(drawer, s_color);
+			break;
+
 
 		case RESUME_ANIMATION:
 			ERROR("Resuming animation...\n");
