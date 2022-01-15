@@ -15,22 +15,31 @@
 /* PIN assignments
  * PIN_LED = GP2 (pin 4)
  * PIN_TMP = GP3 (pin 5)
+
  * PIN_PWM_0 = GP4 (pin 6)
- * PIN_PWM_1 = GP5 (pin 7)
- * PIN_PWM_2 = GP6 (pin 9)
- * PIN_PWM_3 = GP7 (pin 10)
- * PIN_UART1_TX = GP8 (pin 11)
- * PIN_UART1_RX = GP9 (pin 12)
- * PIN_PWM_4 = GP10 (pin 14)
- * PIN_PWM_5 = GP11 (pin 15)
- * PIN_PWM_6 = GP12 (pin 16)
- * PIN_TACH_0 = GP13 (pin 17)
- * PIN_TACH_1 = GP14 (pin 19)
- * PIN_TACH_2 = GP15 (pin 20)
- * PIN_TACH_3 = GP16 (pin 21)
- * PIN_TACH_4 = GP17 (pin 22)
- * PIN_TACH_5 = GP18 (pin 24)
+ * PIN_TACH_0 = GP5 (pin 7)
+
+ * PIN_PWM_1 = GP6 (pin 9)
+ * PIN_TACH_1 = GP7 (pin 10)
+
+ * PIN_PWM_2 = GP8 (pin 11)
+ * PIN_TACH_2 = GP9 (pin 12)
+
+ * PIN_PWM_3 = GP10 (pin 14)
+ * PIN_TACH_3 = GP11 (pin 15) 
+
+ * PIN_MDM_TX = GP12 (pin 16)
+ * PIN_MDM_RX = GP13 (pin 17)
+
+ * PIN_PWM_4 = GP14 (pin 19)
+ * PIN_TACH_4 = GP15 (pin 20)
+
+ * PIN_PWM_5 = GP16 (pin 21)
+ * PIN_TACH_5 = GP17 (pin 22)
+
+ * PIN_PWM_6 = GP18 (pin 24)
  * PIN_TACH_6 = GP19 (pin 25)
+
  * PIN_FAN_ON_1 = GP20 (pin 26)
  * PIN_FAN_ON_2 = GP21 (pin 27)
  * ESP8266_RST = GP22 (pin 29)
