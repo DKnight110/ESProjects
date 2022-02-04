@@ -35,9 +35,12 @@
 
 #define MQTT_TOPIC_SUB5       "bookcase/ledstrip_set_intensity"
 #define MQTT_TOPIC_SUB6       "bookcase/ledstrip_resume_animation"
+#define MQTT_TOPIC_SUB7       "bookcase/ledstrip_light_drawer"
 
-#define MQTT_TOPIC_SUB7       "bookcase/fan_on"
-#define MQTT_TOPIC_SUB8       "bookcase/fan_off"
+#define MQTT_TOPIC_SUB8       "bookcase/fan_state"
+#define MQTT_TOPIC_SUB8_STR1  "ON"
+#define MQTT_TOPIC_SUB8_STR2  "OFF"
+
 #define MQTT_TOPIC_SUB9       "bookcase/fan_set_pwm"
 
 #define MQTT_TOPIC_PUB1       "bookcase/debug"
@@ -222,13 +225,22 @@ void callback(char *topic, byte *payload, unsigned int length) {
 
   if (!strcmp(topic, MQTT_TOPIC_SUB7))
   {
-    send_fan_state(true);
+    send_light_drawer(payload[0], payload[1], payload[2], payload[3]);
     return;
   }
-
+ 
   if (!strcmp(topic, MQTT_TOPIC_SUB8))
   {
-    send_fan_state(false);
+    if (!strncmp((char*)payload, MQTT_TOPIC_SUB8_STR1, strlen(MQTT_TOPIC_SUB8_STR1)))
+    {
+      send_fan_state(true);
+      return;
+    }
+
+    if (!strncmp((const char*)payload, MQTT_TOPIC_SUB8_STR2, strlen(MQTT_TOPIC_SUB8_STR2)))
+    {
+      send_fan_state(false);
+    }
     return;
   }
 
