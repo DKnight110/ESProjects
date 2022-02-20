@@ -1,9 +1,13 @@
+#if 1
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "pico/multicore.h"
 #include "hardware/gpio.h"
+#include "hardware/pwm.h"
+
 #include "ws2812.pio.h"
 #include "serial_comms.h"
+#include "pin_defines.h"
 
 #include "macro_helpers.h"
 
@@ -12,38 +16,6 @@
 
 #include "one_wire.h"
 
-/* PIN assignments
- * PIN_LED = GP2 (pin 4)
- * PIN_TMP = GP3 (pin 5)
-
- * PIN_PWM_0 = GP4 (pin 6)
- * PIN_TACH_0 = GP5 (pin 7)
-
- * PIN_PWM_1 = GP6 (pin 9)
- * PIN_TACH_1 = GP7 (pin 10)
-
- * PIN_PWM_2 = GP8 (pin 11)
- * PIN_TACH_2 = GP9 (pin 12)
-
- * PIN_PWM_3 = GP10 (pin 14)
- * PIN_TACH_3 = GP11 (pin 15) 
-
- * PIN_MDM_TX = GP12 (pin 16)
- * PIN_MDM_RX = GP13 (pin 17)
-
- * PIN_PWM_4 = GP14 (pin 19)
- * PIN_TACH_4 = GP15 (pin 20)
-
- * PIN_PWM_5 = GP16 (pin 21)
- * PIN_TACH_5 = GP17 (pin 22)
-
- * PIN_PWM_6 = GP18 (pin 24)
- * PIN_TACH_6 = GP19 (pin 25)
-
- * PIN_FAN_ON_1 = GP20 (pin 26)
- * PIN_FAN_ON_2 = GP21 (pin 27)
- * ESP8266_RST = GP22 (pin 29)
-*/
 
 #define SERIAL_COMMS_UART_ID	uart1
 #define BAUD_RATE 115200
@@ -51,14 +23,15 @@
 #define STOP_BITS 1
 #define PARITY    UART_PARITY_NONE
 
-/* pins defines */
-#define SERIAL_COMMS_TX_PIN	8
-#define SERIAL_COMMS_RX_PIN	9
-#define TEMP_MEAS_PIN		3
+/* FAN PWM */
+#define PWM_TOP	4999 // 125 MHz / 25 kHz - 1
+#define TACHO_SPEED_MEAS_INTERVAL 5 // s
+
+void fanspeed_callback(uint gpio, uint32_t events);
 
 /* timer intervals defines */
-#define REPORTING_INT_MS		5000
-#define TEMP_READ_INT_MS		1000
+#define REPORTING_INT_MS			5000
+#define TEMP_READ_INT_MS			1000
 #define FAN_SPEED_UPDATE_INT_MS		10000
 #define LED_DISPLAY_UPDATE_INT_MS	10
 
@@ -67,23 +40,10 @@
 #define INVALID_TEMPERATURE	0x0bad
 #define INVALID_SPEED		0xbeef
 
-
-const uint LEDPIN = 25;
-
-#ifdef PICO_DEFAULT_WS2812_PIN
-#define WS2812_PIN PICO_DEFAULT_WS2812_PIN
-#else
-// default to pin 2 if the board doesn't have a default WS2812 pin defined
-#define WS2812_PIN 4
-#endif
-
-#define IS_RGBW 0
-#define NUM_LEDS 49
-
 int chars_rxed;
 
 /* One wire */
-One_wire one_wire(TEMP_MEAS_PIN);
+One_wire one_wire(PIN_TEMP_MEAS);
 rom_address_t address{};
 
 /* Timers */
@@ -117,12 +77,15 @@ extern bool mqtt_connected;
 struct fans {
 	bool auto_speed[NUM_FANS];
 	uint16_t speed[NUM_FANS];
+	uint16_t  fan_count[NUM_FANS];
 	uint8_t pwm[NUM_FANS];
+	uint8_t pins[NUM_FANS];
+
 };
 
 struct fans fans = {
 	/* default all are auto speed */
-	{ 1, 1, 1, 1, 1, 1 },
+	{ 1, 1, 1, 1, 1, 1, 1 },
 	{
 		INVALID_SPEED,
 		INVALID_SPEED,
@@ -140,6 +103,15 @@ struct fans fans = {
 		PWM_LOW_THRESHOLD,
 		PWM_LOW_THRESHOLD,
 		PWM_LOW_THRESHOLD
+	},
+	{
+		PIN_PWM_0,
+		PIN_PWM_1,
+		PIN_PWM_2,
+		PIN_PWM_3,
+		PIN_PWM_4,
+		PIN_PWM_5,
+		PIN_PWM_6
 	}
 };
 
@@ -191,9 +163,9 @@ void setup_serial_comms_uart()
     // Set the TX and RX pins by using the function select on the GPIO
     // Set datasheet for more information on function select
 //    gpio_set_function(UART_TX_PIN, GPIO_FUNC_UART);
-    gpio_set_function(SERIAL_COMMS_TX_PIN, GPIO_FUNC_UART);
+    gpio_set_function(PIN_MDM_TX, GPIO_FUNC_UART);
 //    gpio_set_function(UART_RX_PIN, GPIO_FUNC_UART);
-    gpio_set_function(SERIAL_COMMS_RX_PIN, GPIO_FUNC_UART);
+    gpio_set_function(PIN_MDM_RX, GPIO_FUNC_UART);
 
     // Actually, we want a different speed
     // The call will return the actual baud rate selected, which will be as close as
@@ -246,15 +218,116 @@ void setup_timers()
 void setup_onewire()
 {
 	one_wire.init();
-
+#if 0
         one_wire.single_device_read_rom(address);
         printf("Device Address: %02x%02x%02x%02x%02x%02x%02x%02x\n", address.rom[0], address.rom[1], address.rom[2], address.rom[3], address.rom[4], address.rom[5], address.rom[6], address.rom[7]);
-
+#endif
 }
 
 void setup_pwm()
 {
-// TBD
+	pwm_config cfg = pwm_get_default_config();
+	pwm_config_set_wrap(&cfg, PWM_TOP);
+
+	/* link pins to fans */
+	fans.pins[0] = PIN_PWM_0;
+	fans.pins[1] = PIN_PWM_1;
+	fans.pins[2] = PIN_PWM_2;
+	fans.pins[3] = PIN_PWM_3;
+	fans.pins[4] = PIN_PWM_4;
+	fans.pins[5] = PIN_PWM_5;
+	fans.pins[6] = PIN_PWM_6;
+
+	pwm_init(pwm_gpio_to_slice_num(PIN_PWM_0), &cfg, true);
+	pwm_set_gpio_level(PIN_PWM_0, 0.5f * (PWM_TOP + 1));
+	gpio_set_function(PIN_PWM_0, GPIO_FUNC_PWM);
+
+	pwm_init(pwm_gpio_to_slice_num(PIN_PWM_1), &cfg, true);
+	pwm_set_gpio_level(PIN_PWM_1, 0.5f * (PWM_TOP + 1));
+	gpio_set_function(PIN_PWM_1, GPIO_FUNC_PWM);
+
+	pwm_init(pwm_gpio_to_slice_num(PIN_PWM_2), &cfg, true);
+	pwm_set_gpio_level(PIN_PWM_2, 0.5f * (PWM_TOP + 1));
+	gpio_set_function(PIN_PWM_2, GPIO_FUNC_PWM);
+
+	pwm_init(pwm_gpio_to_slice_num(PIN_PWM_3), &cfg, true);
+	pwm_set_gpio_level(PIN_PWM_3, 0.5f * (PWM_TOP + 1));
+	gpio_set_function(PIN_PWM_3, GPIO_FUNC_PWM);
+
+	pwm_init(pwm_gpio_to_slice_num(PIN_PWM_4), &cfg, true);
+	pwm_set_gpio_level(PIN_PWM_4, 0.5f * (PWM_TOP + 1));
+	gpio_set_function(PIN_PWM_4, GPIO_FUNC_PWM);
+
+	pwm_init(pwm_gpio_to_slice_num(PIN_PWM_5), &cfg, true);
+	pwm_set_gpio_level(PIN_PWM_5, 0.5f * (PWM_TOP + 1));
+	gpio_set_function(PIN_PWM_5, GPIO_FUNC_PWM);
+
+	pwm_init(pwm_gpio_to_slice_num(PIN_PWM_6), &cfg, true);
+	pwm_set_gpio_level(PIN_PWM_6, 0.5f * (PWM_TOP + 1));
+	gpio_set_function(PIN_PWM_6, GPIO_FUNC_PWM);
+}
+
+void setup_gpios()
+{
+	gpio_init(PIN_FAN_ON_1);
+	gpio_set_dir(PIN_FAN_ON_1, GPIO_OUT);
+
+	gpio_init(PIN_FAN_ON_2);
+	gpio_set_dir(PIN_FAN_ON_2, GPIO_OUT);
+
+	gpio_clr_mask(PIN_FANS_MASK);
+
+	gpio_init(ESP8266_RST);
+	gpio_set_dir(ESP8266_RST, GPIO_OUT);
+	gpio_set_pulls(ESP8266_RST, true, false);
+
+	gpio_init(PIN_TACHO_0);
+	gpio_set_dir(PIN_TACHO_0, GPIO_IN);
+	gpio_set_pulls(PIN_TACHO_0, true, false);
+
+	gpio_init(PIN_TACHO_1);
+	gpio_set_dir(PIN_TACHO_1, GPIO_IN);
+	gpio_set_pulls(PIN_TACHO_1, true, false);
+
+	gpio_init(PIN_TACHO_2);
+	gpio_set_dir(PIN_TACHO_2, GPIO_IN);
+	gpio_set_pulls(PIN_TACHO_2, true, false);
+
+	gpio_init(PIN_TACHO_3);
+	gpio_set_dir(PIN_TACHO_3, GPIO_IN);
+	gpio_set_pulls(PIN_TACHO_3, true, false);
+
+	gpio_init(PIN_TACHO_4);
+	gpio_set_dir(PIN_TACHO_4, GPIO_IN);
+	gpio_set_pulls(PIN_TACHO_4, true, false);
+
+	gpio_init(PIN_TACHO_5);
+	gpio_set_dir(PIN_TACHO_5, GPIO_IN);
+	gpio_set_pulls(PIN_TACHO_5, true, false);
+
+	gpio_init(PIN_TACHO_6);
+	gpio_set_dir(PIN_TACHO_6, GPIO_IN);
+	gpio_set_pulls(PIN_TACHO_6, true, false);
+}
+
+/* Done in a separate function, the IRQ handler needs to be
+ * on core1
+ */
+void setup_fan_speed_gpios(bool enabled)
+{
+	gpio_set_irq_enabled_with_callback(PIN_TACHO_0, GPIO_IRQ_EDGE_RISE, enabled, &fanspeed_callback);
+
+	gpio_set_irq_enabled_with_callback(PIN_TACHO_1, GPIO_IRQ_EDGE_RISE, enabled, &fanspeed_callback);
+
+	gpio_set_irq_enabled_with_callback(PIN_TACHO_2, GPIO_IRQ_EDGE_RISE, enabled, &fanspeed_callback);
+
+	gpio_set_irq_enabled_with_callback(PIN_TACHO_3, GPIO_IRQ_EDGE_RISE, enabled, &fanspeed_callback);
+
+	gpio_set_irq_enabled_with_callback(PIN_TACHO_4, GPIO_IRQ_EDGE_RISE, enabled, &fanspeed_callback);
+
+	gpio_set_irq_enabled_with_callback(PIN_TACHO_5, GPIO_IRQ_EDGE_RISE, enabled, &fanspeed_callback);
+
+	gpio_set_irq_enabled_with_callback(PIN_TACHO_6, GPIO_IRQ_EDGE_RISE, enabled, &fanspeed_callback);
 }
 
 void setup_leds()
@@ -262,73 +335,140 @@ void setup_leds()
    	int sm = 0, i;
 	uint offset;
 
+	gpio_init(PIN_LED);
+	gpio_set_dir(PIN_LED, GPIO_OUT);
+
+    // todo get free sm
 	pio = pio0;
 	offset = pio_add_program(pio, &ws2812_program);
 
-    	ws2812_program_init(pio, sm, offset, WS2812_PIN, 800000, IS_RGBW);
+    ws2812_program_init(pio, sm, offset, PIN_LED, 800000, IS_RGBW);
+}
+
+/*
+ * Full MAC addresses for sensors. Will use last byte only
+	{0x28, 0x44, 0xE0, 0xE4, 0x0C, 0x00, 0x00, 0x91},
+	{0x28, 0x58, 0x83, 0xE4, 0x0C, 0x00, 0x00, 0xE8},
+	{0x28, 0x55, 0x96, 0xE4, 0x0C, 0x00, 0x00, 0x0C},
+	{0x28, 0xDE, 0x8D, 0xE5, 0x0C, 0x00, 0x00, 0x9D},
+	{0x28, 0xC7, 0x1B, 0xE5, 0x0C, 0x00, 0x00, 0x7B},
+	{0x28, 0x79, 0xC6, 0xE5, 0x0C, 0x00, 0x00, 0xDD},
+	{0x28, 0x4A, 0xE3, 0xE4, 0x0C, 0x00, 0x00, 0xCC}
+*/
+/* 0xFF means not populated */
+uint8_t sensor_adresses[] = {
+	0x91, 0xE8, 0x0C, 
+	0x9D, 0x7B, 0xDD,
+	0xFF, 0xFF, 0xCC
+};
+
+void fanspeed_callback(uint gpio, uint32_t events)
+{
+	switch (gpio)
+	{
+		case PIN_TACHO_0:
+			fans.fan_count[0]++;
+			break;
+		case PIN_TACHO_1:
+			fans.fan_count[1]++;
+			break;
+
+		case PIN_TACHO_2:
+			fans.fan_count[2]++;
+			break;
+
+		case PIN_TACHO_3:
+			fans.fan_count[3]++;
+			break;
+
+		case PIN_TACHO_4:
+			fans.fan_count[4]++;
+			break;
+
+		case PIN_TACHO_5:
+			fans.fan_count[5]++;
+			break;
+
+		case PIN_TACHO_6:
+			fans.fan_count[6]++;
+			break;
+	}
 }
 
 void core1_entry()
 {
+	absolute_time_t start_meas_time = get_absolute_time(),
+					next_fan_speed_measurement_time =
+						delayed_by_ms(get_absolute_time(), TACHO_SPEED_MEAS_INTERVAL * 1000);
+
+	/* Enable interrupts for TACHO */
+	setup_fan_speed_gpios(true);
+
 	while(1)
 	{
+		if (get_absolute_time() >= next_fan_speed_measurement_time)
+		{
+			setup_fan_speed_gpios(false);
+			for (int i = 0; i < NUM_FANS; i++)
+			{
+				fans.speed[i] = fans.fan_count[i] * 6; // = 60 /  2 / TACHO_SPEED_MEAS_INTERVAL; // 2 ticks per revoluion
+				ERROR("FAN %d count %d\n", i, fans.fan_count[i]);
+				fans.fan_count[i] = 0;
+			}
+			next_fan_speed_measurement_time = delayed_by_ms(get_absolute_time(), TACHO_SPEED_MEAS_INTERVAL * 1000);
+			setup_fan_speed_gpios(true);
+		}
+
 		if (do_read_temps)
 		{
+#if 0
 		        one_wire.convert_temperature(address, true, false);
 			//printf("Temperature: %3.1foC\n", one_wire.temperature(address));
 			temperatures[0] = (int16_t)(one_wire.temperature(address) * 100.0f);
+#endif
+			int count = one_wire.find_and_count_devices_on_bus();
+			rom_address_t null_address{};
+			one_wire.convert_temperature(null_address, true, true);
+			for (int i = 0; i < count; i++) {
+				auto address = One_wire::get_address(i);
+//				printf("Address: %02x%02x%02x%02x%02x%02x%02x%02x\r\n", address.rom[0], address.rom[1], address.rom[2],
+//					   address.rom[3], address.rom[4], address.rom[5], address.rom[6], address.rom[7]);
+				//printf("Temperature: %3.1foC\n", one_wire.temperature(address));
+				for (int j = 0; j < NUM_TEMP_SENSORS; j++)		
+				{
+					if (sensor_adresses[j] == address.rom[7])
+					{
+						temperatures[i] = (int16_t)(one_wire.temperature(address) * 100.0f);
+					}
+				}
+			}
 			do_read_temps = false;
 		}
+
 	}
 }
 
+void reset_modem(void)
+{
+	gpio_clr_mask(1 << ESP8266_RST);
+	sleep_ms(500);
+	gpio_set_mask(1 << ESP8266_RST);
+}
 int main()
 {
 	int i;
 	stdio_init_all();
-	
-	gpio_init(LEDPIN);
-	gpio_set_dir(LEDPIN, GPIO_OUT);
-
-    // todo get free sm
-
-	uint32_t color = 0xFF0000, cur_pixel = 0;
-	uint32_t data[NUM_LEDS];
-	
-	for (i = 0 ; i < NUM_LEDS; i++) {
-		data[i] = 0x0000FF;
-	}
-
-	multicore_launch_core1(core1_entry);
 	setup_serial_comms_uart();
+
+	setup_gpios();
+	
+	reset_modem();
+
 	setup_timers();
 	setup_onewire();
+	setup_pwm();
 	setup_leds();
-#if 0	
-	while (1)
-	{
-		gpio_put(LEDPIN, 1);
-		sleep_ms(500);
-		gpio_put(LEDPIN, 0);
-		puts("Hello, World!\n");
-		sleep_ms(500);
-#if 1
-		data[cur_pixel++] = color;
-
-		if (cur_pixel == NUM_LEDS) {
-			cur_pixel = 0;
-			color >>= 8;
-			
-			if (!color) {
-				color = 0xFF0000;
-			}
-		}
-#endif	
-		for (uint i = 0; i < NUM_LEDS; i++) {
-			put_pixel(data[i]);
-		}
-	}
-#endif
+	multicore_launch_core1(core1_entry);
 	
 	while(1)
 	{
@@ -337,16 +477,7 @@ int main()
 			process_message(&double_rx_buf[CMD_LEN * serial_buf_cidx]);
 			serial_buf_cidx = (serial_buf_cidx + 1) % NUM_ENTRIES;
 		}
-#if 0
-		if (do_read_temps)
-		{
-		        one_wire.convert_temperature(address, true, false);
-			//printf("Temperature: %3.1foC\n", one_wire.temperature(address));
-			temperatures[0] = (int16_t)(one_wire.temperature(address) * 100.0f);
-			do_read_temps = false;
-		}
-#endif
-#if 1
+
 		if (do_display)
 		{
 			if (get_absolute_time() >= next_display_step_time)
@@ -365,9 +496,7 @@ int main()
 					cur_prg->led_program_entry[cur_step].time);
 			}
 		}
-#endif
-	        tight_loop_contents();
-
+	    tight_loop_contents();
 	}
 }
 
@@ -391,21 +520,20 @@ void set_fans_power_state(uint8_t state)
 {
 	if (state)
 	{
-		// set gpios to 1
+		gpio_set_mask(PIN_FANS_MASK);
 	}
 	else
 	{
-		// set gpios to 0
+		gpio_clr_mask(PIN_FANS_MASK);
 	}
 }
-
-
 
 void set_fan_pwm(uint8_t fan, uint8_t pwm)
 {
 	if (pwm > 100)
 	{
 		fans.auto_speed[fan] = true;
+		ERROR("Setting fan %d PWM to auto\n", fan);
 	}
 	else
 	{
@@ -415,7 +543,8 @@ void set_fan_pwm(uint8_t fan, uint8_t pwm)
 			pwm = PWM_LOW_THRESHOLD;
 		}
 		fans.pwm[fan] = pwm;
-		// set pwm for fan
+		ERROR("Setting fan %d PWM to %d\n", fan, pwm);
+		pwm_set_gpio_level(fans.pins[fan], (pwm / 100.f) * (PWM_TOP + 1));
 	}
 }
 
@@ -431,18 +560,19 @@ void set_fan_pwm(uint8_t fan, uint8_t pwm)
  * >= 34 => 100
  * N.B. Should this be user-updatable?
  */
-#define NUM_POINTS_TEMP_VS_PWM	9
-const uint8_t temp_vs_pwm_curve[][3] = {
-	{0, 24, 20},
-	{24, 26, 30},
-	{26, 28, 40},
-	{28, 30, 50},
-	{30, 31, 60},
-	{31, 32, 70},
-	{32, 33, 80},
-	{33, 34, 90},
-	{34, 100, 100},
-	{0, 0, 0}
+#define PWM_CURVE_INVALID	0xdead
+
+const uint16_t temp_vs_pwm_curve[][3] = {
+	{0, 2400, 20},
+	{2400, 2600, 30},
+	{2600, 2800, 40},
+	{2800, 3000, 50},
+	{3000, 3100, 60},
+	{3100, 3200, 70},
+	{3200, 3300, 80},
+	{3300, 3400, 90},
+	{3400, 10000, 100},
+	{PWM_CURVE_INVALID, PWM_CURVE_INVALID, PWM_CURVE_INVALID}
 };
 
 bool set_fan_speeds(repeating_timer_t *rt)
@@ -452,12 +582,11 @@ bool set_fan_speeds(repeating_timer_t *rt)
 	{
 		if (fans.auto_speed[i])
 		{
-			for (row = 0; !(temp_vs_pwm_curve[row][0] | temp_vs_pwm_curve[row][1] | temp_vs_pwm_curve[row][2]); row++)
+			for (row = 0; temp_vs_pwm_curve[row][0] != PWM_CURVE_INVALID; row++)
 			{
 				if ((temp_vs_pwm_curve[row][0] < temperatures[i]) &&
 				    (temperatures[i] <= temp_vs_pwm_curve[row][1]))
 				{
-					ERROR("Setting fan %d PWM to %d\n", temp_vs_pwm_curve[row][2]);
 					set_fan_pwm(i, temp_vs_pwm_curve[row][2]);
 				}
 			}
@@ -516,3 +645,137 @@ void resume_animation()
 {
 	do_display = true;
 }
+
+void light_drawer(uint8_t drawer, uint32_t color)
+{
+	int i;
+	do_display = false;
+	
+	clear_strip();
+
+	for (i = 0; i < NUM_LEDS_IN_STRIP; i++)
+	{
+		if ((i >= LED_START_OFFSET(drawer)) && (i < LED_END_OFFSET(drawer)))
+		{
+			put_pixel(color);
+		}
+		else
+		{
+			put_pixel(0);
+		}
+	}
+}
+
+#else
+#if PWM_BLABLA
+/**
+ * Copyright (c) 2020 Raspberry Pi (Trading) Ltd.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
+#include <stdio.h>
+
+#include "pico/stdlib.h"
+#include "hardware/pwm.h"
+#include "hardware/clocks.h"
+
+// This example drives a PWM output at a range of duty cycles, and uses
+// another PWM slice in input mode to measure the duty cycle. You'll need to
+// connect these two pins with a jumper wire:
+const uint OUTPUT_PIN = 2;
+const uint MEASURE_PIN = 5;
+
+#if 0
+float measure_duty_cycle(uint gpio) {
+    // Only the PWM B pins can be used as inputs.
+    assert(pwm_gpio_to_channel(gpio) == PWM_CHAN_B);
+    uint slice_num = pwm_gpio_to_slice_num(gpio);
+
+    // Count once for every 100 cycles the PWM B input is high
+    pwm_config cfg = pwm_get_default_config();
+    pwm_config_set_clkdiv_mode(&cfg, PWM_DIV_B_HIGH);
+    pwm_config_set_clkdiv(&cfg, 100);
+    pwm_init(slice_num, &cfg, false);
+    gpio_set_function(gpio, GPIO_FUNC_PWM);
+
+    pwm_set_enabled(slice_num, true);
+    sleep_ms(10);
+    pwm_set_enabled(slice_num, false);
+    float counting_rate = clock_get_hz(clk_sys) / 100;
+    float max_possible_count = counting_rate * 0.01;
+    return pwm_get_counter(slice_num) / max_possible_count;
+}
+#endif
+const float test_duty_cycles[] = {
+        0.f,
+        0.1f,
+        0.5f,
+        0.9f,
+        1.f
+};
+
+int main() {
+    stdio_init_all();
+    printf("\nPWM duty cycle measurement example\n");
+
+    // Configure PWM slice and set it running
+    const uint count_top = 1000;
+    pwm_config cfg = pwm_get_default_config();
+    pwm_config_set_wrap(&cfg, count_top);
+    pwm_init(pwm_gpio_to_slice_num(OUTPUT_PIN), &cfg, true);
+
+    // Note we aren't touching the other pin yet -- PWM pins are outputs by
+    // default, but change to inputs once the divider mode is changed from
+    // free-running. It's not wise to connect two outputs directly together!
+    gpio_set_function(OUTPUT_PIN, GPIO_FUNC_PWM);
+
+	gpio_set_pulls(MEASURE_PIN,true, false);
+	while(1) {
+    // For each of our test duty cycles, drive the output pin at that level,
+    // and read back the actual output duty cycle using the other pin. The two
+    // values should be very close!
+    for (int i = 0; i < count_of(test_duty_cycles); ++i) {
+        float output_duty_cycle = test_duty_cycles[i];
+        pwm_set_gpio_level(OUTPUT_PIN, output_duty_cycle * (count_top + 1));
+//        float measured_duty_cycle = measure_duty_cycle(MEASURE_PIN);
+//        printf("Output duty cycle = %.1f%%, measured input duty cycle = %.1f%%\n",
+//               output_duty_cycle * 100.f, measured_duty_cycle * 100.f);
+
+	sleep_ms(5000);
+    }
+	tight_loop_contents();
+	}
+}
+#endif
+#include <cstdio>
+#include "pico/stdlib.h"
+#include "hardware/gpio.h"
+#include "one_wire.h"
+
+#define TEMP_SENSE_GPIO_PIN 2
+//#define EXIT_GPIO_PIN 22
+
+int main() {
+	stdio_init_all();
+	One_wire one_wire(TEMP_SENSE_GPIO_PIN);
+	one_wire.init();
+	//gpio_init(EXIT_GPIO_PIN);
+	//gpio_set_dir(EXIT_GPIO_PIN, GPIO_IN);
+	//gpio_pull_up(EXIT_GPIO_PIN);
+	sleep_ms(1);
+	while (1) {
+		int count = one_wire.find_and_count_devices_on_bus();
+		rom_address_t null_address{};
+		one_wire.convert_temperature(null_address, true, true);
+		for (int i = 0; i < count; i++) {
+			auto address = One_wire::get_address(i);
+			printf("Address: %02x%02x%02x%02x%02x%02x%02x%02x\r\n", address.rom[0], address.rom[1], address.rom[2],
+				   address.rom[3], address.rom[4], address.rom[5], address.rom[6], address.rom[7]);
+			printf("Temperature: %3.1foC\n", one_wire.temperature(address));
+		}
+		sleep_ms(1000);
+	}
+	return 0;
+}
+#endif

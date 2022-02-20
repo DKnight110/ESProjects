@@ -25,7 +25,7 @@ target_sources(lightfantemp PRIVATE
 #        ERR_LEVEL=3
 #)
 
-target_link_libraries(lightfantemp pico_stdlib hardware_pio hardware_uart pico_multicore)
+target_link_libraries(lightfantemp pico_stdlib hardware_pio hardware_uart pico_multicore hardware_pwm)
 
 pico_enable_stdio_usb(lightfantemp 1)
 pico_enable_stdio_uart(lightfantemp 1)

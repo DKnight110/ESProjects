@@ -63,6 +63,11 @@
 		arry[CONCAT_LINE(i)] = 0; \
 	}
 
+#define SET_COLOR_DRAWER_FUNC(set_color_func, x,color)	\
+	for (int CONCAT_LINE(i) =  LED_START_OFFSET(x); CONCAT_LINE(i) < LED_END_OFFSET(x); CONCAT_LINE(i) ++) { \
+		set_color_func(color); \
+	}
+
 /* Defines for led colors */
 #define COLOR_RED	0x0000FF
 #define COLOR_GREEN	0x00FF00
@@ -81,5 +86,8 @@ struct led_programs {
 	uint8_t num_steps;
 	struct led_program_entry led_program_entry[NUM_STEPS_IN_PROGRAM];
 };
+
+#define IS_RGBW 	0
+//#define NUM_LEDS  49
 
 #endif /* LED_STRIP_HELPERS_H */
