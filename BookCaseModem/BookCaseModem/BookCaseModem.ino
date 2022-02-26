@@ -259,6 +259,11 @@ void connect_to_wifi()
 
   assign_ip_addr();
 
+  WiFi.mode(WIFI_OFF);
+
+  WiFi.persistent(false); // Do not use SDK storage of SSID/WPA parameters
+  WiFi.setAutoReconnect(false);
+
   // Bring up the WiFi connection
   WiFi.mode(WIFI_STA);
 
@@ -320,6 +325,18 @@ void connect_to_mqtt()
     }
   }
 
+  client.subscribe(MQTT_TOPIC_SUB1);
+  client.subscribe(MQTT_TOPIC_SUB2);
+  client.subscribe(MQTT_TOPIC_SUB3);
+  client.subscribe(MQTT_TOPIC_SUB4);
+  client.subscribe(MQTT_TOPIC_SUB5);
+  client.subscribe(MQTT_TOPIC_SUB6);
+  client.subscribe(MQTT_TOPIC_SUB7);
+  client.subscribe(MQTT_TOPIC_SUB8);
+  client.subscribe(MQTT_TOPIC_SUB9);
+
+  queue_publish(MQTT_TOPIC_PUB1, (const uint8_t*)MQTT_TOPIC_PUB1_STR1, strlen(MQTT_TOPIC_PUB1_STR1), true);
+
   send_mqtt_status(true);
 }
 
@@ -376,18 +393,6 @@ void setup() {
 
   connect_to_wifi();
   connect_to_mqtt();
-
-  client.subscribe(MQTT_TOPIC_SUB1);
-  client.subscribe(MQTT_TOPIC_SUB2);
-  client.subscribe(MQTT_TOPIC_SUB3);
-  client.subscribe(MQTT_TOPIC_SUB4);
-  client.subscribe(MQTT_TOPIC_SUB5);
-  client.subscribe(MQTT_TOPIC_SUB6);
-  client.subscribe(MQTT_TOPIC_SUB7);
-  client.subscribe(MQTT_TOPIC_SUB8);
-  client.subscribe(MQTT_TOPIC_SUB9);
-
-  queue_publish(MQTT_TOPIC_PUB1, (const uint8_t*)MQTT_TOPIC_PUB1_STR1, strlen(MQTT_TOPIC_PUB1_STR1), true);
 
   post_passed = true;
 }
