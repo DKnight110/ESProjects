@@ -355,11 +355,14 @@ void setup_leds()
 	{0x28, 0x79, 0xC6, 0xE5, 0x0C, 0x00, 0x00, 0xDD},
 	{0x28, 0x4A, 0xE3, 0xE4, 0x0C, 0x00, 0x00, 0xCC}
 */
-/* 0xFF means not populated */
+/* NA means not populated 
+    The placement in the array below
+    is the physical placement 
+ */
 uint8_t sensor_adresses[] = {
-	0x91, 0xE8, 0x0C, 
-	0x9D, 0x7B, 0xDD,
-	0xFF, 0xFF, 0xCC
+	 0x91,   0xE8,   0x0C, 
+	 0x9D,   0x7B,   0xDD,
+	/*NA*/  /*NA*/   0xCC
 };
 
 void fanspeed_callback(uint gpio, uint32_t events)
@@ -421,24 +424,21 @@ void core1_entry()
 
 		if (do_read_temps)
 		{
-#if 0
-		        one_wire.convert_temperature(address, true, false);
-			//printf("Temperature: %3.1foC\n", one_wire.temperature(address));
-			temperatures[0] = (int16_t)(one_wire.temperature(address) * 100.0f);
-#endif
 			int count = one_wire.find_and_count_devices_on_bus();
 			rom_address_t null_address{};
 			one_wire.convert_temperature(null_address, true, true);
 			for (int i = 0; i < count; i++) {
 				auto address = One_wire::get_address(i);
-//				printf("Address: %02x%02x%02x%02x%02x%02x%02x%02x\r\n", address.rom[0], address.rom[1], address.rom[2],
-//					   address.rom[3], address.rom[4], address.rom[5], address.rom[6], address.rom[7]);
-				//printf("Temperature: %3.1foC\n", one_wire.temperature(address));
+#ifdef DEBUG_SENSORS
+				printf("Address: %02x%02x%02x%02x%02x%02x%02x%02x\r\n", address.rom[0], address.rom[1], address.rom[2],
+					   address.rom[3], address.rom[4], address.rom[5], address.rom[6], address.rom[7]);
+				printf("Temperature: %3.1foC\n", one_wire.temperature(address));
+#endif
 				for (int j = 0; j < NUM_TEMP_SENSORS; j++)		
 				{
 					if (sensor_adresses[j] == address.rom[7])
 					{
-						temperatures[i] = (int16_t)(one_wire.temperature(address) * 100.0f);
+						temperatures[j] = (int16_t)(one_wire.temperature(address) * 100.0f);
 					}
 				}
 			}
@@ -509,11 +509,13 @@ bool reporting_callback(repeating_timer_t *rt)
 		// Code to actually read the fan speed..
 		send_tacho(fans.speed);
 	}
+	return true;
 }
 
 bool read_temp_callback(repeating_timer_t *rt)
 {
 	do_read_temps = true;
+	return true;
 }
 
 void set_fans_power_state(uint8_t state)
@@ -578,24 +580,29 @@ const uint16_t temp_vs_pwm_curve[][3] = {
 bool set_fan_speeds(repeating_timer_t *rt)
 {
 	int i, row;
+
 	for (i = 0; i < NUM_FANS; i++)
 	{
 		if (fans.auto_speed[i])
 		{
 			for (row = 0; temp_vs_pwm_curve[row][0] != PWM_CURVE_INVALID; row++)
 			{
+				DEBUG("fan %d row %d temp lo %d temp high %d\n", i, row, temp_vs_pwm_curve[row][0], temp_vs_pwm_curve[row][1]);
 				if ((temp_vs_pwm_curve[row][0] < temperatures[i]) &&
 				    (temperatures[i] <= temp_vs_pwm_curve[row][1]))
 				{
-					set_fan_pwm(i, temp_vs_pwm_curve[row][2]);
+					//set_fan_pwm(i, temp_vs_pwm_curve[row][2]);
+					fans.pwm[i] = temp_vs_pwm_curve[row][2];
+					ERROR("Setting fan %d Auto PWM to %d\n", i, fans.pwm[i]);
+					pwm_set_gpio_level(fans.pins[i], (fans.pwm[i] / 100.f) * (PWM_TOP + 1));
+
+					break;
 				}
 			}
 		}
-		else
-		{
-			set_fan_pwm(i, fans.pwm[i]);
-		}
 	}
+
+	return true;
 }
 
 void clear_strip()
