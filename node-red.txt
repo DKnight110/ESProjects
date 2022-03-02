@@ -28,6 +28,14 @@
         "info": ""
     },
     {
+        "id": "72848a59bc0b894a",
+        "type": "tab",
+        "label": "BookCase",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
         "id": "82610ac1.cd2678",
         "type": "mqtt-broker",
         "name": "local",
@@ -51,8 +59,9 @@
     {
         "id": "fcf4c00a.ddf63",
         "type": "ui_tab",
-        "name": "Home",
+        "name": "Exterior",
         "icon": "dashboard",
+        "order": 1,
         "disabled": false,
         "hidden": false
     },
@@ -169,7 +178,7 @@
         "type": "ui_group",
         "name": "Exterior Lighting Control",
         "tab": "fcf4c00a.ddf63",
-        "order": 3,
+        "order": 2,
         "disp": true,
         "width": "6",
         "collapse": false
@@ -185,8 +194,8 @@
         "id": "c2212685.1b23b8",
         "type": "ui_group",
         "name": "Flood Sensors",
-        "tab": "fcf4c00a.ddf63",
-        "order": 3,
+        "tab": "e20b548612f7b969",
+        "order": 4,
         "disp": true,
         "width": "6",
         "collapse": false
@@ -195,8 +204,8 @@
         "id": "80c1f0d7.b17358",
         "type": "ui_group",
         "name": "Sensors Batteries",
-        "tab": "fcf4c00a.ddf63",
-        "order": 4,
+        "tab": "e20b548612f7b969",
+        "order": 3,
         "disp": true,
         "width": "6",
         "collapse": false
@@ -209,6 +218,88 @@
         "longitude": "26.0538"
     },
     {
+        "id": "e20b548612f7b969",
+        "type": "ui_tab",
+        "name": "Water Sensors",
+        "icon": "dashboard",
+        "order": 2,
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "450ff6eccc65d6ae",
+        "type": "ui_tab",
+        "name": "BookCase Fan Control",
+        "icon": "dashboard",
+        "order": 3,
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "8e6cd1080b369434",
+        "type": "ui_group",
+        "name": "BookCase",
+        "tab": "450ff6eccc65d6ae",
+        "order": 1,
+        "disp": true,
+        "width": 9,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "8b1e3be872886a19",
+        "type": "ui_group",
+        "name": "BookCaseSensorGroup1",
+        "tab": "450ff6eccc65d6ae",
+        "order": 2,
+        "disp": false,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "762cf968c90c4b11",
+        "type": "ui_group",
+        "name": "BookCaseSensorGroup2",
+        "tab": "450ff6eccc65d6ae",
+        "order": 3,
+        "disp": false,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "be359c0f1ce38b5d",
+        "type": "ui_group",
+        "name": "BookCaseSensorGroup3",
+        "tab": "450ff6eccc65d6ae",
+        "order": 4,
+        "disp": false,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "e20115d7913748fd",
+        "type": "ui_tab",
+        "name": "BookCase Light Control",
+        "icon": "dashboard",
+        "order": 4,
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "39a6021322533d2c",
+        "type": "ui_group",
+        "name": "Color Control",
+        "tab": "e20115d7913748fd",
+        "order": 1,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
         "id": "1df2a693.018501",
         "type": "mqtt in",
         "z": "32249e45.f0dfaa",
@@ -217,6 +308,7 @@
         "qos": "2",
         "datatype": "auto",
         "broker": "82610ac1.cd2678",
+        "inputs": 0,
         "x": 130,
         "y": 60,
         "wires": [
@@ -298,6 +390,7 @@
         "qos": "2",
         "datatype": "auto",
         "broker": "82610ac1.cd2678",
+        "inputs": 0,
         "x": 110,
         "y": 200,
         "wires": [
@@ -364,6 +457,7 @@
         "randomLast": "5",
         "randomUnits": "seconds",
         "drop": true,
+        "outputs": 1,
         "x": 580,
         "y": 200,
         "wires": [
@@ -436,6 +530,721 @@
         "wires": []
     },
     {
+        "id": "30f36e8a.49c58a",
+        "type": "switch",
+        "z": "32249e45.f0dfaa",
+        "name": "",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "PUMP_ON",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "PUMP_OFF",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 310,
+        "y": 320,
+        "wires": [
+            [
+                "c7120dcb.ca2828"
+            ],
+            [
+                "83b846cb.9291c8"
+            ]
+        ]
+    },
+    {
+        "id": "be208.674e85f88",
+        "type": "delay",
+        "z": "32249e45.f0dfaa",
+        "name": "",
+        "pauseType": "delay",
+        "timeout": "1",
+        "timeoutUnits": "hours",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "outputs": 1,
+        "x": 660,
+        "y": 320,
+        "wires": [
+            [
+                "3b72d428.5b80d4"
+            ]
+        ]
+    },
+    {
+        "id": "c7120dcb.ca2828",
+        "type": "change",
+        "z": "32249e45.f0dfaa",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "PRESS",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 480,
+        "y": 280,
+        "wires": [
+            [
+                "be208.674e85f88"
+            ]
+        ]
+    },
+    {
+        "id": "83b846cb.9291c8",
+        "type": "change",
+        "z": "32249e45.f0dfaa",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "reset",
+                "pt": "msg",
+                "to": "1",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 480,
+        "y": 380,
+        "wires": [
+            [
+                "be208.674e85f88"
+            ]
+        ]
+    },
+    {
+        "id": "d12d11b9.26b03",
+        "type": "mqtt in",
+        "z": "32249e45.f0dfaa",
+        "name": "Barrel Water Level",
+        "topic": "water/level",
+        "qos": "2",
+        "datatype": "auto",
+        "broker": "82610ac1.cd2678",
+        "inputs": 0,
+        "x": 150,
+        "y": 560,
+        "wires": [
+            [
+                "babe77.5606d188"
+            ]
+        ]
+    },
+    {
+        "id": "1a6ec880.ec95ef",
+        "type": "ui_gauge",
+        "z": "32249e45.f0dfaa",
+        "name": "",
+        "group": "17da0dfd.94274a",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "gtype": "gage",
+        "title": "Water Tank",
+        "label": "liters",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "900",
+        "colors": [
+            "#ff8080",
+            "#00ff00",
+            "#ff8080"
+        ],
+        "seg1": "350",
+        "seg2": "850",
+        "x": 1130,
+        "y": 500,
+        "wires": []
+    },
+    {
+        "id": "ff22172e.3a5fd8",
+        "type": "ui_chart",
+        "z": "32249e45.f0dfaa",
+        "name": "",
+        "group": "93953fd7.9801e",
+        "order": 4,
+        "width": 0,
+        "height": 0,
+        "label": "Barrel Water",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "dd HH:mm",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "0",
+        "ymax": "1000",
+        "removeOlder": "1",
+        "removeOlderPoints": "1000",
+        "removeOlderUnit": "86400",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "x": 1130,
+        "y": 560,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "8ed4e9f.157a398",
+        "type": "range",
+        "z": "32249e45.f0dfaa",
+        "minin": "0",
+        "maxin": "96",
+        "minout": "960",
+        "maxout": "0",
+        "action": "scale",
+        "round": true,
+        "property": "payload",
+        "name": "",
+        "x": 600,
+        "y": 560,
+        "wires": [
+            [
+                "1a6ec880.ec95ef",
+                "e885f6f6.50335"
+            ]
+        ]
+    },
+    {
+        "id": "272c707b.e871d8",
+        "type": "mqtt in",
+        "z": "32249e45.f0dfaa",
+        "name": "Intake Water Valve Status",
+        "topic": "valve/state",
+        "qos": "2",
+        "datatype": "auto",
+        "broker": "82610ac1.cd2678",
+        "inputs": 0,
+        "x": 170,
+        "y": 660,
+        "wires": [
+            [
+                "6713b4ec.ab7854",
+                "55675385.972934"
+            ]
+        ]
+    },
+    {
+        "id": "6713b4ec.ab7854",
+        "type": "ui_switch",
+        "z": "32249e45.f0dfaa",
+        "name": "",
+        "label": "Intake Valve",
+        "tooltip": "",
+        "group": "17da0dfd.94274a",
+        "order": 4,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "decouple": "true",
+        "topic": "",
+        "topicType": "str",
+        "style": "",
+        "onvalue": "WATER_ON",
+        "onvalueType": "str",
+        "onicon": "",
+        "oncolor": "",
+        "offvalue": "WATER_OFF",
+        "offvalueType": "str",
+        "officon": "",
+        "offcolor": "",
+        "animate": true,
+        "x": 450,
+        "y": 660,
+        "wires": [
+            [
+                "632247ba.93aee"
+            ]
+        ]
+    },
+    {
+        "id": "4e027a3.6bc3e04",
+        "type": "switch",
+        "z": "32249e45.f0dfaa",
+        "name": "",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "WATER_ON",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "WATER_OFF",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 880,
+        "y": 660,
+        "wires": [
+            [
+                "3b07e3bc.1124a4"
+            ],
+            [
+                "3d2cd7ac.482848"
+            ]
+        ]
+    },
+    {
+        "id": "3b07e3bc.1124a4",
+        "type": "change",
+        "z": "32249e45.f0dfaa",
+        "name": "Open Intake Valve",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "ON",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1080,
+        "y": 640,
+        "wires": [
+            [
+                "a261caf6.54be5"
+            ]
+        ]
+    },
+    {
+        "id": "3d2cd7ac.482848",
+        "type": "change",
+        "z": "32249e45.f0dfaa",
+        "name": "Close Intake Valve",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "OFF",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1080,
+        "y": 720,
+        "wires": [
+            [
+                "a261caf6.54be5"
+            ]
+        ]
+    },
+    {
+        "id": "a261caf6.54be5",
+        "type": "mqtt out",
+        "z": "32249e45.f0dfaa",
+        "name": "",
+        "topic": "valve/button",
+        "qos": "",
+        "retain": "",
+        "broker": "82610ac1.cd2678",
+        "x": 1280,
+        "y": 680,
+        "wires": []
+    },
+    {
+        "id": "632247ba.93aee",
+        "type": "delay",
+        "z": "32249e45.f0dfaa",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "60",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": true,
+        "outputs": 1,
+        "x": 670,
+        "y": 660,
+        "wires": [
+            [
+                "4e027a3.6bc3e04"
+            ]
+        ]
+    },
+    {
+        "id": "da747dea.28fa3",
+        "type": "ui_button",
+        "z": "32249e45.f0dfaa",
+        "name": "",
+        "group": "93953fd7.9801e",
+        "order": 5,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "label": "Clear Data",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "icon": "",
+        "payload": "[]",
+        "payloadType": "json",
+        "topic": "",
+        "topicType": "str",
+        "x": 890,
+        "y": 600,
+        "wires": [
+            [
+                "ff22172e.3a5fd8"
+            ]
+        ]
+    },
+    {
+        "id": "e885f6f6.50335",
+        "type": "smooth",
+        "z": "32249e45.f0dfaa",
+        "name": "",
+        "property": "payload",
+        "action": "mean",
+        "count": "20",
+        "round": "",
+        "mult": "single",
+        "reduce": false,
+        "x": 760,
+        "y": 560,
+        "wires": [
+            [
+                "c8856d40.79bc18"
+            ]
+        ]
+    },
+    {
+        "id": "c8856d40.79bc18",
+        "type": "rbe",
+        "z": "32249e45.f0dfaa",
+        "name": "",
+        "func": "rbe",
+        "gap": "",
+        "start": "",
+        "inout": "out",
+        "septopics": false,
+        "property": "payload",
+        "x": 910,
+        "y": 560,
+        "wires": [
+            [
+                "ff22172e.3a5fd8"
+            ]
+        ]
+    },
+    {
+        "id": "babe77.5606d188",
+        "type": "function",
+        "z": "32249e45.f0dfaa",
+        "name": "Remove outliers",
+        "func": "if (context.get(\"meas_val\") === undefined) {\n    prev_val = msg.payload\n} else {\n    prev_val = context.get(\"meas_val\");\n}\nmax_delta = 5;\nif (Math.abs(msg.payload - prev_val) > max_delta) {\n    node.warn(\"Outlier found: prev val = \" + prev_val + \", cur val = \" + msg.payload);\n    msg.payload = prev_val;\n} else {\n    prev_val = msg.payload;\n    context.set(\"meas_val\", prev_val);\n}\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 380,
+        "y": 560,
+        "wires": [
+            [
+                "8ed4e9f.157a398",
+                "55675385.972934"
+            ]
+        ]
+    },
+    {
+        "id": "57c7a4ea.121cc4",
+        "type": "mqtt in",
+        "z": "32249e45.f0dfaa",
+        "name": "Solar Watering Valve Status",
+        "topic": "solar-watering/state",
+        "qos": "2",
+        "datatype": "auto",
+        "broker": "82610ac1.cd2678",
+        "inputs": 0,
+        "x": 160,
+        "y": 800,
+        "wires": [
+            [
+                "ee282be7.3db6e8"
+            ]
+        ]
+    },
+    {
+        "id": "ee282be7.3db6e8",
+        "type": "ui_switch",
+        "z": "32249e45.f0dfaa",
+        "name": "",
+        "label": "Solar Watering Valve",
+        "tooltip": "",
+        "group": "17da0dfd.94274a",
+        "order": 5,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "decouple": "true",
+        "topic": "",
+        "topicType": "str",
+        "style": "",
+        "onvalue": "WATER_ON",
+        "onvalueType": "str",
+        "onicon": "",
+        "oncolor": "",
+        "offvalue": "WATER_OFF",
+        "offvalueType": "str",
+        "officon": "",
+        "offcolor": "",
+        "animate": true,
+        "x": 440,
+        "y": 800,
+        "wires": [
+            [
+                "63d07360.72b7cc"
+            ]
+        ]
+    },
+    {
+        "id": "4238d4bb.dc8fbc",
+        "type": "switch",
+        "z": "32249e45.f0dfaa",
+        "name": "",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "WATER_ON",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "WATER_OFF",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 860,
+        "y": 800,
+        "wires": [
+            [
+                "d627a782.b1c818"
+            ],
+            [
+                "75090ffa.39ed1"
+            ]
+        ]
+    },
+    {
+        "id": "d627a782.b1c818",
+        "type": "change",
+        "z": "32249e45.f0dfaa",
+        "name": "Open Solar Valve",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "ON",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1060,
+        "y": 780,
+        "wires": [
+            [
+                "df23017e.31b608"
+            ]
+        ]
+    },
+    {
+        "id": "75090ffa.39ed1",
+        "type": "change",
+        "z": "32249e45.f0dfaa",
+        "name": "Close Solar Valve",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "OFF",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1060,
+        "y": 860,
+        "wires": [
+            [
+                "df23017e.31b608"
+            ]
+        ]
+    },
+    {
+        "id": "df23017e.31b608",
+        "type": "mqtt out",
+        "z": "32249e45.f0dfaa",
+        "name": "",
+        "topic": "solar-watering/button",
+        "qos": "",
+        "retain": "",
+        "broker": "82610ac1.cd2678",
+        "x": 1290,
+        "y": 820,
+        "wires": []
+    },
+    {
+        "id": "63d07360.72b7cc",
+        "type": "delay",
+        "z": "32249e45.f0dfaa",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "60",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": true,
+        "outputs": 1,
+        "x": 650,
+        "y": 800,
+        "wires": [
+            [
+                "4238d4bb.dc8fbc"
+            ]
+        ]
+    },
+    {
+        "id": "761ea4bc.b4643c",
+        "type": "light-scheduler",
+        "z": "32249e45.f0dfaa",
+        "settings": "7dfd2fb6.d1ac5",
+        "events": "[{\"start\":{\"dow\":5,\"mod\":1200},\"end\":{\"dow\":5,\"mod\":1215}},{\"start\":{\"dow\":1,\"mod\":1200},\"end\":{\"dow\":1,\"mod\":1215}}]",
+        "topic": "",
+        "name": "",
+        "onPayload": "WATER_ON",
+        "onPayloadType": "str",
+        "offPayload": "WATER_OFF",
+        "offPayloadType": "str",
+        "onlyWhenDark": false,
+        "scheduleRndMax": 0,
+        "sunElevationThreshold": 6,
+        "sunShowElevationInStatus": false,
+        "outputfreq": "output.statechange",
+        "x": 590,
+        "y": 980,
+        "wires": [
+            [
+                "4238d4bb.dc8fbc"
+            ]
+        ]
+    },
+    {
+        "id": "f930d1c9.fdf718",
+        "type": "debug",
+        "z": "32249e45.f0dfaa",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 800,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "55675385.972934",
+        "type": "function",
+        "z": "32249e45.f0dfaa",
+        "name": "WaterSafety",
+        "func": "if (msg.topic == \"pumpctrl/status\") {\n    if (msg.payload == \"PUMP_ON\") {\n        context.set(\"pump_status\", \"ON\");\n    } else {\n        if (msg.payload == \"PUMP_OFF\") {\n            context.set(\"pump_status\", \"OFF\");\n        }\n    }\n} else {\n    if (msg.topic == \"water/level\") {\n        context.set(\"water_level\", msg.payload);\n    } else {\n        if (msg.topic == \"valve/state\") {\n            if (msg.payload == \"WATER_ON\") {\n                context.set(\"valve_state\", \"ON\");\n            } else {\n                context.set(\"valve_state\", \"OFF\");\n            }\n        }\n    }\n}\n\nif ((context.get(\"pump_status\") == \"ON\") && \n    (context.get(\"water_level\") < 26) &&\n    (context.get(\"valve_state\") == \"ON\")){\n        msg.payload = \"WATER_OFF\";\n        context.set(\"safe_shdn\", \"YES\");\n\n        return msg;\n} else {\n    if ((context.get(\"pump_status\") == \"OFF\") && \n        (context.get(\"water_level\") > 26) &&\n        (context.get(\"valve_state\") == \"OFF\") &&\n        context.get(\"safe_shdn\") == \"YES\") {\n        context.set(\"safe_shdn\", \"NO\");\n        msg.payload = \"WATER_ON\";\n        \n        return msg;\n    }\n}\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "// Code added here will be run once\n// whenever the node is deployed.\ncontext.set(\"pump_status\", \"OFF\");\ncontext.set(\"valve_state\", \"OFF\");\ncontext.set(\"water_level\", 50);\ncontext.set(\"safe_shdn\", \"NO\");",
+        "finalize": "",
+        "libs": [],
+        "x": 570,
+        "y": 460,
+        "wires": [
+            [
+                "4e027a3.6bc3e04",
+                "f930d1c9.fdf718"
+            ]
+        ]
+    },
+    {
         "id": "ffda7819.517bc8",
         "type": "mqtt in",
         "z": "3c6bfb15.be3cc4",
@@ -444,6 +1253,7 @@
         "qos": "2",
         "datatype": "auto",
         "broker": "82610ac1.cd2678",
+        "inputs": 0,
         "x": 480,
         "y": 360,
         "wires": [
@@ -583,6 +1393,7 @@
         "qos": "2",
         "datatype": "auto",
         "broker": "82610ac1.cd2678",
+        "inputs": 0,
         "x": 490,
         "y": 440,
         "wires": [
@@ -722,6 +1533,7 @@
         "qos": "2",
         "datatype": "auto",
         "broker": "82610ac1.cd2678",
+        "inputs": 0,
         "x": 490,
         "y": 500,
         "wires": [
@@ -888,7 +1700,7 @@
         "type": "light-scheduler",
         "z": "3c6bfb15.be3cc4",
         "settings": "d6df61a5.3564c",
-        "events": "[{\"start\":{\"dow\":3,\"mod\":0},\"end\":{\"dow\":3,\"mod\":420}},{\"start\":{\"dow\":2,\"mod\":0},\"end\":{\"dow\":2,\"mod\":420}},{\"start\":{\"dow\":4,\"mod\":0},\"end\":{\"dow\":4,\"mod\":420}},{\"start\":{\"dow\":5,\"mod\":0},\"end\":{\"dow\":5,\"mod\":420}},{\"start\":{\"dow\":6,\"mod\":0},\"end\":{\"dow\":6,\"mod\":420}},{\"start\":{\"dow\":1,\"mod\":0},\"end\":{\"dow\":1,\"mod\":420}},{\"start\":{\"dow\":0,\"mod\":0},\"end\":{\"dow\":0,\"mod\":420}},{\"start\":{\"dow\":1,\"mod\":1035},\"end\":{\"dow\":2,\"mod\":0}},{\"start\":{\"dow\":2,\"mod\":1035},\"end\":{\"dow\":3,\"mod\":0}},{\"start\":{\"dow\":3,\"mod\":1035},\"end\":{\"dow\":4,\"mod\":0}},{\"start\":{\"dow\":4,\"mod\":1035},\"end\":{\"dow\":5,\"mod\":0}},{\"start\":{\"dow\":5,\"mod\":1035},\"end\":{\"dow\":6,\"mod\":0}},{\"start\":{\"dow\":6,\"mod\":1035},\"end\":{\"dow\":0,\"mod\":0}},{\"start\":{\"dow\":0,\"mod\":1035},\"end\":{\"dow\":1,\"mod\":0}}]",
+        "events": "[{\"start\":{\"dow\":3,\"mod\":0},\"end\":{\"dow\":3,\"mod\":480}},{\"start\":{\"dow\":2,\"mod\":0},\"end\":{\"dow\":2,\"mod\":480}},{\"start\":{\"dow\":4,\"mod\":0},\"end\":{\"dow\":4,\"mod\":480}},{\"start\":{\"dow\":1,\"mod\":0},\"end\":{\"dow\":1,\"mod\":480}},{\"start\":{\"dow\":0,\"mod\":0},\"end\":{\"dow\":0,\"mod\":480}},{\"start\":{\"dow\":1,\"mod\":960},\"end\":{\"dow\":2,\"mod\":0}},{\"start\":{\"dow\":2,\"mod\":960},\"end\":{\"dow\":3,\"mod\":0}},{\"start\":{\"dow\":3,\"mod\":960},\"end\":{\"dow\":4,\"mod\":0}},{\"start\":{\"dow\":4,\"mod\":960},\"end\":{\"dow\":5,\"mod\":0}},{\"start\":{\"dow\":5,\"mod\":960},\"end\":{\"dow\":6,\"mod\":0}},{\"start\":{\"dow\":6,\"mod\":960},\"end\":{\"dow\":0,\"mod\":0}},{\"start\":{\"dow\":0,\"mod\":960},\"end\":{\"dow\":1,\"mod\":0}},{\"start\":{\"dow\":5,\"mod\":0},\"end\":{\"dow\":5,\"mod\":480}},{\"start\":{\"dow\":6,\"mod\":0},\"end\":{\"dow\":6,\"mod\":480}}]",
         "topic": "",
         "name": "OutLightSchedule",
         "onPayload": "ON",
@@ -911,116 +1723,6 @@
         ]
     },
     {
-        "id": "30f36e8a.49c58a",
-        "type": "switch",
-        "z": "32249e45.f0dfaa",
-        "name": "",
-        "property": "payload",
-        "propertyType": "msg",
-        "rules": [
-            {
-                "t": "eq",
-                "v": "PUMP_ON",
-                "vt": "str"
-            },
-            {
-                "t": "eq",
-                "v": "PUMP_OFF",
-                "vt": "str"
-            }
-        ],
-        "checkall": "true",
-        "repair": false,
-        "outputs": 2,
-        "x": 310,
-        "y": 320,
-        "wires": [
-            [
-                "c7120dcb.ca2828"
-            ],
-            [
-                "83b846cb.9291c8"
-            ]
-        ]
-    },
-    {
-        "id": "be208.674e85f88",
-        "type": "delay",
-        "z": "32249e45.f0dfaa",
-        "name": "",
-        "pauseType": "delay",
-        "timeout": "1",
-        "timeoutUnits": "hours",
-        "rate": "1",
-        "nbRateUnits": "1",
-        "rateUnits": "second",
-        "randomFirst": "1",
-        "randomLast": "5",
-        "randomUnits": "seconds",
-        "drop": false,
-        "x": 660,
-        "y": 320,
-        "wires": [
-            [
-                "3b72d428.5b80d4"
-            ]
-        ]
-    },
-    {
-        "id": "c7120dcb.ca2828",
-        "type": "change",
-        "z": "32249e45.f0dfaa",
-        "name": "",
-        "rules": [
-            {
-                "t": "set",
-                "p": "payload",
-                "pt": "msg",
-                "to": "PRESS",
-                "tot": "str"
-            }
-        ],
-        "action": "",
-        "property": "",
-        "from": "",
-        "to": "",
-        "reg": false,
-        "x": 480,
-        "y": 280,
-        "wires": [
-            [
-                "be208.674e85f88"
-            ]
-        ]
-    },
-    {
-        "id": "83b846cb.9291c8",
-        "type": "change",
-        "z": "32249e45.f0dfaa",
-        "name": "",
-        "rules": [
-            {
-                "t": "set",
-                "p": "reset",
-                "pt": "msg",
-                "to": "1",
-                "tot": "str"
-            }
-        ],
-        "action": "",
-        "property": "",
-        "from": "",
-        "to": "",
-        "reg": false,
-        "x": 480,
-        "y": 380,
-        "wires": [
-            [
-                "be208.674e85f88"
-            ]
-        ]
-    },
-    {
         "id": "dbcffe01.35ea9",
         "type": "mqtt in",
         "z": "2aec16b8.3a6b5a",
@@ -1029,6 +1731,7 @@
         "qos": "2",
         "datatype": "auto",
         "broker": "82610ac1.cd2678",
+        "inputs": 0,
         "x": 370,
         "y": 280,
         "wires": [
@@ -1108,6 +1811,7 @@
         "qos": "2",
         "datatype": "auto",
         "broker": "82610ac1.cd2678",
+        "inputs": 0,
         "x": 690,
         "y": 220,
         "wires": [
@@ -1144,6 +1848,7 @@
         "randomLast": "5",
         "randomUnits": "seconds",
         "drop": true,
+        "outputs": 1,
         "x": 1150,
         "y": 220,
         "wires": [
@@ -1161,6 +1866,7 @@
         "qos": "2",
         "datatype": "auto",
         "broker": "82610ac1.cd2678",
+        "inputs": 0,
         "x": 370,
         "y": 340,
         "wires": [
@@ -1209,6 +1915,7 @@
         "qos": "2",
         "datatype": "auto",
         "broker": "82610ac1.cd2678",
+        "inputs": 0,
         "x": 370,
         "y": 420,
         "wires": [
@@ -1256,6 +1963,7 @@
         "qos": "2",
         "datatype": "auto",
         "broker": "82610ac1.cd2678",
+        "inputs": 0,
         "x": 370,
         "y": 480,
         "wires": [
@@ -1304,6 +2012,7 @@
         "qos": "2",
         "datatype": "auto",
         "broker": "82610ac1.cd2678",
+        "inputs": 0,
         "x": 400,
         "y": 540,
         "wires": [
@@ -1351,6 +2060,7 @@
         "qos": "2",
         "datatype": "auto",
         "broker": "82610ac1.cd2678",
+        "inputs": 0,
         "x": 410,
         "y": 600,
         "wires": [
@@ -1399,6 +2109,7 @@
         "qos": "2",
         "datatype": "auto",
         "broker": "82610ac1.cd2678",
+        "inputs": 0,
         "x": 380,
         "y": 660,
         "wires": [
@@ -1447,6 +2158,7 @@
         "qos": "2",
         "datatype": "auto",
         "broker": "82610ac1.cd2678",
+        "inputs": 0,
         "x": 400,
         "y": 720,
         "wires": [
@@ -1495,6 +2207,7 @@
         "qos": "2",
         "datatype": "auto",
         "broker": "82610ac1.cd2678",
+        "inputs": 0,
         "x": 360,
         "y": 900,
         "wires": [
@@ -1543,6 +2256,7 @@
         "qos": "2",
         "datatype": "auto",
         "broker": "82610ac1.cd2678",
+        "inputs": 0,
         "x": 370,
         "y": 960,
         "wires": [
@@ -1591,6 +2305,7 @@
         "qos": "2",
         "datatype": "auto",
         "broker": "82610ac1.cd2678",
+        "inputs": 0,
         "x": 370,
         "y": 780,
         "wires": [
@@ -1639,6 +2354,7 @@
         "qos": "2",
         "datatype": "auto",
         "broker": "82610ac1.cd2678",
+        "inputs": 0,
         "x": 400,
         "y": 840,
         "wires": [
@@ -1912,314 +2628,6 @@
         "wires": []
     },
     {
-        "id": "d12d11b9.26b03",
-        "type": "mqtt in",
-        "z": "32249e45.f0dfaa",
-        "name": "Barrel Water Level",
-        "topic": "water/level",
-        "qos": "2",
-        "datatype": "auto",
-        "broker": "82610ac1.cd2678",
-        "x": 150,
-        "y": 560,
-        "wires": [
-            [
-                "babe77.5606d188"
-            ]
-        ]
-    },
-    {
-        "id": "1a6ec880.ec95ef",
-        "type": "ui_gauge",
-        "z": "32249e45.f0dfaa",
-        "name": "",
-        "group": "17da0dfd.94274a",
-        "order": 3,
-        "width": 0,
-        "height": 0,
-        "gtype": "gage",
-        "title": "Water Tank",
-        "label": "liters",
-        "format": "{{value}}",
-        "min": 0,
-        "max": "900",
-        "colors": [
-            "#ff8080",
-            "#00ff00",
-            "#ff8080"
-        ],
-        "seg1": "350",
-        "seg2": "850",
-        "x": 1130,
-        "y": 500,
-        "wires": []
-    },
-    {
-        "id": "ff22172e.3a5fd8",
-        "type": "ui_chart",
-        "z": "32249e45.f0dfaa",
-        "name": "",
-        "group": "17da0dfd.94274a",
-        "order": 5,
-        "width": "0",
-        "height": "0",
-        "label": "Barrel Water",
-        "chartType": "line",
-        "legend": "false",
-        "xformat": "dd HH:mm",
-        "interpolate": "linear",
-        "nodata": "",
-        "dot": false,
-        "ymin": "0",
-        "ymax": "1000",
-        "removeOlder": "1",
-        "removeOlderPoints": "1000",
-        "removeOlderUnit": "86400",
-        "cutout": 0,
-        "useOneColor": false,
-        "useUTC": false,
-        "colors": [
-            "#1f77b4",
-            "#aec7e8",
-            "#ff7f0e",
-            "#2ca02c",
-            "#98df8a",
-            "#d62728",
-            "#ff9896",
-            "#9467bd",
-            "#c5b0d5"
-        ],
-        "outputs": 1,
-        "useDifferentColor": false,
-        "x": 1130,
-        "y": 560,
-        "wires": [
-            []
-        ]
-    },
-    {
-        "id": "8ed4e9f.157a398",
-        "type": "range",
-        "z": "32249e45.f0dfaa",
-        "minin": "0",
-        "maxin": "89",
-        "minout": "890",
-        "maxout": "0",
-        "action": "scale",
-        "round": true,
-        "property": "payload",
-        "name": "",
-        "x": 600,
-        "y": 560,
-        "wires": [
-            [
-                "1a6ec880.ec95ef",
-                "e885f6f6.50335"
-            ]
-        ]
-    },
-    {
-        "id": "272c707b.e871d8",
-        "type": "mqtt in",
-        "z": "32249e45.f0dfaa",
-        "name": "Intake Water Valve Status",
-        "topic": "valve/state",
-        "qos": "2",
-        "datatype": "auto",
-        "broker": "82610ac1.cd2678",
-        "x": 170,
-        "y": 660,
-        "wires": [
-            [
-                "6713b4ec.ab7854",
-                "55675385.972934"
-            ]
-        ]
-    },
-    {
-        "id": "6713b4ec.ab7854",
-        "type": "ui_switch",
-        "z": "32249e45.f0dfaa",
-        "name": "",
-        "label": "Intake Valve",
-        "tooltip": "",
-        "group": "17da0dfd.94274a",
-        "order": 4,
-        "width": 0,
-        "height": 0,
-        "passthru": false,
-        "decouple": "true",
-        "topic": "",
-        "topicType": "str",
-        "style": "",
-        "onvalue": "WATER_ON",
-        "onvalueType": "str",
-        "onicon": "",
-        "oncolor": "",
-        "offvalue": "WATER_OFF",
-        "offvalueType": "str",
-        "officon": "",
-        "offcolor": "",
-        "animate": true,
-        "x": 450,
-        "y": 660,
-        "wires": [
-            [
-                "632247ba.93aee"
-            ]
-        ]
-    },
-    {
-        "id": "4e027a3.6bc3e04",
-        "type": "switch",
-        "z": "32249e45.f0dfaa",
-        "name": "",
-        "property": "payload",
-        "propertyType": "msg",
-        "rules": [
-            {
-                "t": "eq",
-                "v": "WATER_ON",
-                "vt": "str"
-            },
-            {
-                "t": "eq",
-                "v": "WATER_OFF",
-                "vt": "str"
-            }
-        ],
-        "checkall": "true",
-        "repair": false,
-        "outputs": 2,
-        "x": 880,
-        "y": 660,
-        "wires": [
-            [
-                "3b07e3bc.1124a4"
-            ],
-            [
-                "3d2cd7ac.482848"
-            ]
-        ]
-    },
-    {
-        "id": "3b07e3bc.1124a4",
-        "type": "change",
-        "z": "32249e45.f0dfaa",
-        "name": "Open Intake Valve",
-        "rules": [
-            {
-                "t": "set",
-                "p": "payload",
-                "pt": "msg",
-                "to": "ON",
-                "tot": "str"
-            }
-        ],
-        "action": "",
-        "property": "",
-        "from": "",
-        "to": "",
-        "reg": false,
-        "x": 1080,
-        "y": 640,
-        "wires": [
-            [
-                "a261caf6.54be5"
-            ]
-        ]
-    },
-    {
-        "id": "3d2cd7ac.482848",
-        "type": "change",
-        "z": "32249e45.f0dfaa",
-        "name": "Close Intake Valve",
-        "rules": [
-            {
-                "t": "set",
-                "p": "payload",
-                "pt": "msg",
-                "to": "OFF",
-                "tot": "str"
-            }
-        ],
-        "action": "",
-        "property": "",
-        "from": "",
-        "to": "",
-        "reg": false,
-        "x": 1080,
-        "y": 720,
-        "wires": [
-            [
-                "a261caf6.54be5"
-            ]
-        ]
-    },
-    {
-        "id": "a261caf6.54be5",
-        "type": "mqtt out",
-        "z": "32249e45.f0dfaa",
-        "name": "",
-        "topic": "valve/button",
-        "qos": "",
-        "retain": "",
-        "broker": "82610ac1.cd2678",
-        "x": 1280,
-        "y": 680,
-        "wires": []
-    },
-    {
-        "id": "632247ba.93aee",
-        "type": "delay",
-        "z": "32249e45.f0dfaa",
-        "name": "",
-        "pauseType": "rate",
-        "timeout": "5",
-        "timeoutUnits": "seconds",
-        "rate": "1",
-        "nbRateUnits": "60",
-        "rateUnits": "second",
-        "randomFirst": "1",
-        "randomLast": "5",
-        "randomUnits": "seconds",
-        "drop": true,
-        "x": 670,
-        "y": 660,
-        "wires": [
-            [
-                "4e027a3.6bc3e04"
-            ]
-        ]
-    },
-    {
-        "id": "da747dea.28fa3",
-        "type": "ui_button",
-        "z": "32249e45.f0dfaa",
-        "name": "",
-        "group": "17da0dfd.94274a",
-        "order": 6,
-        "width": 0,
-        "height": 0,
-        "passthru": false,
-        "label": "Clear Data",
-        "tooltip": "",
-        "color": "",
-        "bgcolor": "",
-        "icon": "",
-        "payload": "[]",
-        "payloadType": "json",
-        "topic": "",
-        "topicType": "str",
-        "x": 890,
-        "y": 600,
-        "wires": [
-            [
-                "ff22172e.3a5fd8"
-            ]
-        ]
-    },
-    {
         "id": "720f4694.54fa98",
         "type": "debug",
         "z": "c9a5b3d6.a877c",
@@ -2234,261 +2642,6 @@
         "x": 1150,
         "y": 320,
         "wires": []
-    },
-    {
-        "id": "e885f6f6.50335",
-        "type": "smooth",
-        "z": "32249e45.f0dfaa",
-        "name": "",
-        "property": "payload",
-        "action": "mean",
-        "count": "20",
-        "round": "",
-        "mult": "single",
-        "reduce": false,
-        "x": 760,
-        "y": 560,
-        "wires": [
-            [
-                "c8856d40.79bc18"
-            ]
-        ]
-    },
-    {
-        "id": "c8856d40.79bc18",
-        "type": "rbe",
-        "z": "32249e45.f0dfaa",
-        "name": "",
-        "func": "rbe",
-        "gap": "",
-        "start": "",
-        "inout": "out",
-        "septopics": false,
-        "property": "payload",
-        "x": 910,
-        "y": 560,
-        "wires": [
-            [
-                "ff22172e.3a5fd8"
-            ]
-        ]
-    },
-    {
-        "id": "babe77.5606d188",
-        "type": "function",
-        "z": "32249e45.f0dfaa",
-        "name": "Remove outliers",
-        "func": "if (context.get(\"meas_val\") === undefined) {\n    prev_val = msg.payload\n} else {\n    prev_val = context.get(\"meas_val\");\n}\nmax_delta = 5;\nif (Math.abs(msg.payload - prev_val) > max_delta) {\n    node.warn(\"Outlier found: prev val = \" + prev_val + \", cur val = \" + msg.payload);\n    msg.payload = prev_val;\n} else {\n    prev_val = msg.payload;\n    context.set(\"meas_val\", prev_val);\n}\n\nreturn msg;",
-        "outputs": 1,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "x": 380,
-        "y": 560,
-        "wires": [
-            [
-                "8ed4e9f.157a398",
-                "55675385.972934"
-            ]
-        ]
-    },
-    {
-        "id": "57c7a4ea.121cc4",
-        "type": "mqtt in",
-        "z": "32249e45.f0dfaa",
-        "name": "Solar Watering Valve Status",
-        "topic": "solar-watering/state",
-        "qos": "2",
-        "datatype": "auto",
-        "broker": "82610ac1.cd2678",
-        "x": 160,
-        "y": 800,
-        "wires": [
-            [
-                "ee282be7.3db6e8"
-            ]
-        ]
-    },
-    {
-        "id": "ee282be7.3db6e8",
-        "type": "ui_switch",
-        "z": "32249e45.f0dfaa",
-        "name": "",
-        "label": "Solar Watering Valve",
-        "tooltip": "",
-        "group": "17da0dfd.94274a",
-        "order": 4,
-        "width": 0,
-        "height": 0,
-        "passthru": false,
-        "decouple": "true",
-        "topic": "",
-        "topicType": "str",
-        "style": "",
-        "onvalue": "WATER_ON",
-        "onvalueType": "str",
-        "onicon": "",
-        "oncolor": "",
-        "offvalue": "WATER_OFF",
-        "offvalueType": "str",
-        "officon": "",
-        "offcolor": "",
-        "animate": true,
-        "x": 440,
-        "y": 800,
-        "wires": [
-            [
-                "63d07360.72b7cc"
-            ]
-        ]
-    },
-    {
-        "id": "4238d4bb.dc8fbc",
-        "type": "switch",
-        "z": "32249e45.f0dfaa",
-        "name": "",
-        "property": "payload",
-        "propertyType": "msg",
-        "rules": [
-            {
-                "t": "eq",
-                "v": "WATER_ON",
-                "vt": "str"
-            },
-            {
-                "t": "eq",
-                "v": "WATER_OFF",
-                "vt": "str"
-            }
-        ],
-        "checkall": "true",
-        "repair": false,
-        "outputs": 2,
-        "x": 860,
-        "y": 800,
-        "wires": [
-            [
-                "d627a782.b1c818"
-            ],
-            [
-                "75090ffa.39ed1"
-            ]
-        ]
-    },
-    {
-        "id": "d627a782.b1c818",
-        "type": "change",
-        "z": "32249e45.f0dfaa",
-        "name": "Open Solar Valve",
-        "rules": [
-            {
-                "t": "set",
-                "p": "payload",
-                "pt": "msg",
-                "to": "ON",
-                "tot": "str"
-            }
-        ],
-        "action": "",
-        "property": "",
-        "from": "",
-        "to": "",
-        "reg": false,
-        "x": 1060,
-        "y": 780,
-        "wires": [
-            [
-                "df23017e.31b608"
-            ]
-        ]
-    },
-    {
-        "id": "75090ffa.39ed1",
-        "type": "change",
-        "z": "32249e45.f0dfaa",
-        "name": "Close Solar Valve",
-        "rules": [
-            {
-                "t": "set",
-                "p": "payload",
-                "pt": "msg",
-                "to": "OFF",
-                "tot": "str"
-            }
-        ],
-        "action": "",
-        "property": "",
-        "from": "",
-        "to": "",
-        "reg": false,
-        "x": 1060,
-        "y": 860,
-        "wires": [
-            [
-                "df23017e.31b608"
-            ]
-        ]
-    },
-    {
-        "id": "df23017e.31b608",
-        "type": "mqtt out",
-        "z": "32249e45.f0dfaa",
-        "name": "",
-        "topic": "solar-watering/button",
-        "qos": "",
-        "retain": "",
-        "broker": "82610ac1.cd2678",
-        "x": 1290,
-        "y": 820,
-        "wires": []
-    },
-    {
-        "id": "63d07360.72b7cc",
-        "type": "delay",
-        "z": "32249e45.f0dfaa",
-        "name": "",
-        "pauseType": "rate",
-        "timeout": "5",
-        "timeoutUnits": "seconds",
-        "rate": "1",
-        "nbRateUnits": "60",
-        "rateUnits": "second",
-        "randomFirst": "1",
-        "randomLast": "5",
-        "randomUnits": "seconds",
-        "drop": true,
-        "x": 650,
-        "y": 800,
-        "wires": [
-            [
-                "4238d4bb.dc8fbc"
-            ]
-        ]
-    },
-    {
-        "id": "761ea4bc.b4643c",
-        "type": "light-scheduler",
-        "z": "32249e45.f0dfaa",
-        "settings": "7dfd2fb6.d1ac5",
-        "events": "[{\"start\":{\"dow\":5,\"mod\":1200},\"end\":{\"dow\":5,\"mod\":1215}},{\"start\":{\"dow\":1,\"mod\":1200},\"end\":{\"dow\":1,\"mod\":1215}}]",
-        "topic": "",
-        "name": "",
-        "onPayload": "WATER_ON",
-        "onPayloadType": "str",
-        "offPayload": "WATER_OFF",
-        "offPayloadType": "str",
-        "onlyWhenDark": false,
-        "scheduleRndMax": 0,
-        "sunElevationThreshold": 6,
-        "sunShowElevationInStatus": false,
-        "outputfreq": "output.statechange",
-        "x": 590,
-        "y": 980,
-        "wires": [
-            [
-                "4238d4bb.dc8fbc"
-            ]
-        ]
     },
     {
         "id": "c1932c82.81af58",
@@ -2681,22 +2834,6 @@
         ]
     },
     {
-        "id": "f930d1c9.fdf718",
-        "type": "debug",
-        "z": "32249e45.f0dfaa",
-        "name": "",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "false",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 800,
-        "y": 460,
-        "wires": []
-    },
-    {
         "id": "d5b4139a.e58168",
         "type": "function",
         "z": "c9a5b3d6.a877c",
@@ -2715,23 +2852,1997 @@
         ]
     },
     {
-        "id": "55675385.972934",
+        "id": "6b81c60106b98124",
+        "type": "ui_colour_picker",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "label": "",
+        "group": "39a6021322533d2c",
+        "format": "hex",
+        "outformat": "string",
+        "showSwatch": true,
+        "showPicker": true,
+        "showValue": true,
+        "showHue": true,
+        "showAlpha": false,
+        "showLightness": true,
+        "square": "false",
+        "dynOutput": "false",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "topic": "topic",
+        "topicType": "msg",
+        "className": "",
+        "x": 1170,
+        "y": 1000,
+        "wires": [
+            [
+                "52eb70ea864e8b09",
+                "eacf500a341cef21"
+            ]
+        ]
+    },
+    {
+        "id": "79a7e38e9990ef46",
+        "type": "ui_gauge",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "group": "8b1e3be872886a19",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "gtype": "gage",
+        "title": "Fan Speed 0",
+        "label": "rpm",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "1700",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "800",
+        "seg2": "1000",
+        "className": "",
+        "x": 690,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "cb69e61aca186484",
+        "type": "ui_chart",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "group": "8e6cd1080b369434",
+        "order": 4,
+        "width": 0,
+        "height": 0,
+        "label": "Temperature chart",
+        "chartType": "line",
+        "legend": "true",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "20",
+        "ymax": "35",
+        "removeOlder": 1,
+        "removeOlderPoints": "",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 1110,
+        "y": 580,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "85323b8ff9a79663",
+        "type": "ui_switch",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "label": "Fans",
+        "tooltip": "",
+        "group": "8e6cd1080b369434",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "decouple": "true",
+        "topic": "bookcase/fan_state",
+        "topicType": "str",
+        "style": "",
+        "onvalue": "ON",
+        "onvalueType": "str",
+        "onicon": "",
+        "oncolor": "",
+        "offvalue": "OFF",
+        "offvalueType": "str",
+        "officon": "",
+        "offcolor": "",
+        "animate": false,
+        "className": "",
+        "x": 1130,
+        "y": 100,
+        "wires": [
+            [
+                "8993126d030c8d02"
+            ]
+        ]
+    },
+    {
+        "id": "1d151cd51f357852",
+        "type": "mqtt in",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "topic": "bookcase/fan",
+        "qos": "2",
+        "datatype": "auto",
+        "broker": "82610ac1.cd2678",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 160,
+        "y": 240,
+        "wires": [
+            [
+                "7d8f6b87ec0ca152"
+            ]
+        ]
+    },
+    {
+        "id": "7d8f6b87ec0ca152",
+        "type": "split",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "splt": ",",
+        "spltType": "str",
+        "arraySplt": 1,
+        "arraySpltType": "len",
+        "stream": false,
+        "addname": "",
+        "x": 310,
+        "y": 240,
+        "wires": [
+            [
+                "3fc71286a8f61c89"
+            ]
+        ]
+    },
+    {
+        "id": "3fc71286a8f61c89",
+        "type": "switch",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "property": "parts.index",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "0",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "1",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "2",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "3",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "4",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "5",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "6",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 7,
+        "x": 490,
+        "y": 240,
+        "wires": [
+            [
+                "79a7e38e9990ef46",
+                "c518ecba8a8a565f"
+            ],
+            [
+                "a369719e01b946f2"
+            ],
+            [
+                "006018b1bb32b9c7"
+            ],
+            [
+                "6ed2884883c655ad"
+            ],
+            [
+                "f0408129e29aed55"
+            ],
+            [
+                "b91fa622201a476b"
+            ],
+            [
+                "046217996ff85671"
+            ]
+        ]
+    },
+    {
+        "id": "046217996ff85671",
+        "type": "ui_gauge",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "group": "be359c0f1ce38b5d",
+        "order": 10,
+        "width": 0,
+        "height": 0,
+        "gtype": "gage",
+        "title": "Fan Speed 6",
+        "label": "rpm",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "1700",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "800",
+        "seg2": "1200",
+        "className": "",
+        "x": 690,
+        "y": 500,
+        "wires": []
+    },
+    {
+        "id": "a369719e01b946f2",
+        "type": "ui_gauge",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "group": "762cf968c90c4b11",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "gtype": "gage",
+        "title": "Fan Speed 1",
+        "label": "rpm",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "1700",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "800",
+        "seg2": "1200",
+        "className": "",
+        "x": 690,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "006018b1bb32b9c7",
+        "type": "ui_gauge",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "group": "be359c0f1ce38b5d",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "gtype": "gage",
+        "title": "Fan Speed 2",
+        "label": "rpm",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "1700",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "800",
+        "seg2": "1200",
+        "className": "",
+        "x": 690,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "6ed2884883c655ad",
+        "type": "ui_gauge",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "group": "8b1e3be872886a19",
+        "order": 6,
+        "width": 0,
+        "height": 0,
+        "gtype": "gage",
+        "title": "Fan Speed 3",
+        "label": "rpm",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "1700",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "800",
+        "seg2": "1200",
+        "className": "",
+        "x": 690,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "f0408129e29aed55",
+        "type": "ui_gauge",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "group": "762cf968c90c4b11",
+        "order": 6,
+        "width": 0,
+        "height": 0,
+        "gtype": "gage",
+        "title": "Fan Speed 4",
+        "label": "rpm",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "1700",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "800",
+        "seg2": "1200",
+        "className": "",
+        "x": 690,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "b91fa622201a476b",
+        "type": "ui_gauge",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "group": "be359c0f1ce38b5d",
+        "order": 6,
+        "width": 0,
+        "height": 0,
+        "gtype": "gage",
+        "title": "Fan Speed 5",
+        "label": "rpm",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "1700",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "800",
+        "seg2": "1200",
+        "className": "",
+        "x": 690,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "a13f3cc7da5d9dc2",
+        "type": "mqtt in",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "topic": "bookcase/temp",
+        "qos": "2",
+        "datatype": "auto",
+        "broker": "82610ac1.cd2678",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 160,
+        "y": 560,
+        "wires": [
+            [
+                "07dc6539ebbfec8f"
+            ]
+        ]
+    },
+    {
+        "id": "07dc6539ebbfec8f",
+        "type": "split",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "splt": ",",
+        "spltType": "str",
+        "arraySplt": 1,
+        "arraySpltType": "len",
+        "stream": false,
+        "addname": "",
+        "x": 330,
+        "y": 560,
+        "wires": [
+            [
+                "79994651d8a12226"
+            ]
+        ]
+    },
+    {
+        "id": "79994651d8a12226",
+        "type": "switch",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "property": "parts.index",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "0",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "1",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "2",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "3",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "4",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "5",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "6",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 7,
+        "x": 470,
+        "y": 700,
+        "wires": [
+            [
+                "b17b4c1f5f8318bb",
+                "f1af468e8383d4db"
+            ],
+            [
+                "232de51e0fdb740d",
+                "49e8e8826a3cf398"
+            ],
+            [
+                "dd0876663f90cfc3",
+                "7937b1cb1b0d2312"
+            ],
+            [
+                "ea9fd99c64be9b61",
+                "a7863348db9a67d5"
+            ],
+            [
+                "90a4753ae46107b9",
+                "5beb2cadbaabeb99"
+            ],
+            [
+                "5a7c29587b1fdf08",
+                "6bedec0aa9a09080"
+            ],
+            [
+                "f39fe49b17351a2e",
+                "a50f15be1327d47b"
+            ]
+        ]
+    },
+    {
+        "id": "b17b4c1f5f8318bb",
+        "type": "ui_numeric",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "label": "Temperature 0",
+        "tooltip": "",
+        "group": "8b1e3be872886a19",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "wrap": false,
+        "passthru": false,
+        "topic": "temp0",
+        "topicType": "str",
+        "format": "{{value/100}} &deg;",
+        "min": 0,
+        "max": "0",
+        "step": "0",
+        "className": "",
+        "x": 680,
+        "y": 580,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "232de51e0fdb740d",
+        "type": "ui_numeric",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "label": "Temperature 1",
+        "tooltip": "",
+        "group": "762cf968c90c4b11",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "wrap": false,
+        "passthru": false,
+        "topic": "temp1",
+        "topicType": "str",
+        "format": "{{value/100}} &deg;",
+        "min": 0,
+        "max": "0",
+        "step": "0",
+        "className": "",
+        "x": 680,
+        "y": 640,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "dd0876663f90cfc3",
+        "type": "ui_numeric",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "label": "Temperature 2",
+        "tooltip": "",
+        "group": "be359c0f1ce38b5d",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "wrap": false,
+        "passthru": false,
+        "topic": "topic",
+        "topicType": "msg",
+        "format": "{{value/100}} &deg;",
+        "min": 0,
+        "max": "0",
+        "step": "0",
+        "className": "",
+        "x": 680,
+        "y": 680,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "ea9fd99c64be9b61",
+        "type": "ui_numeric",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "label": "Temperature 3",
+        "tooltip": "",
+        "group": "8b1e3be872886a19",
+        "order": 5,
+        "width": 0,
+        "height": 0,
+        "wrap": false,
+        "passthru": false,
+        "topic": "topic",
+        "topicType": "msg",
+        "format": "{{value/100}} &deg;",
+        "min": 0,
+        "max": "0",
+        "step": "0",
+        "className": "",
+        "x": 680,
+        "y": 740,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "90a4753ae46107b9",
+        "type": "ui_numeric",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "label": "Temperature 4",
+        "tooltip": "",
+        "group": "762cf968c90c4b11",
+        "order": 5,
+        "width": 0,
+        "height": 0,
+        "wrap": false,
+        "passthru": false,
+        "topic": "topic",
+        "topicType": "msg",
+        "format": "{{value/100}} &deg;",
+        "min": 0,
+        "max": "0",
+        "step": "0",
+        "className": "",
+        "x": 680,
+        "y": 800,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "5a7c29587b1fdf08",
+        "type": "ui_numeric",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "label": "Temperature 5",
+        "tooltip": "",
+        "group": "be359c0f1ce38b5d",
+        "order": 5,
+        "width": 0,
+        "height": 0,
+        "wrap": false,
+        "passthru": false,
+        "topic": "topic",
+        "topicType": "msg",
+        "format": "{{value/100}} &deg;",
+        "min": 0,
+        "max": "0",
+        "step": "0",
+        "className": "",
+        "x": 680,
+        "y": 860,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "f39fe49b17351a2e",
+        "type": "ui_numeric",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "label": "Temperature 6",
+        "tooltip": "",
+        "group": "be359c0f1ce38b5d",
+        "order": 9,
+        "width": 0,
+        "height": 0,
+        "wrap": false,
+        "passthru": false,
+        "topic": "topic",
+        "topicType": "msg",
+        "format": "{{value/100}} &deg;",
+        "min": 0,
+        "max": "0",
+        "step": "0",
+        "className": "",
+        "x": 680,
+        "y": 920,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "035a19c9b5fbd775",
+        "type": "change",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "ON",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 940,
+        "y": 40,
+        "wires": [
+            [
+                "85323b8ff9a79663"
+            ]
+        ]
+    },
+    {
+        "id": "c518ecba8a8a565f",
+        "type": "switch",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "gt",
+                "v": "0",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "0",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 770,
+        "y": 80,
+        "wires": [
+            [
+                "035a19c9b5fbd775"
+            ],
+            [
+                "954064d37176b2d2"
+            ]
+        ]
+    },
+    {
+        "id": "954064d37176b2d2",
+        "type": "change",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "OFF",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 940,
+        "y": 140,
+        "wires": [
+            [
+                "85323b8ff9a79663"
+            ]
+        ]
+    },
+    {
+        "id": "22fc171e62d06236",
+        "type": "mqtt out",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "topic": "",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "82610ac1.cd2678",
+        "x": 1550,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "8993126d030c8d02",
+        "type": "delay",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "60",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": true,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1320,
+        "y": 100,
+        "wires": [
+            [
+                "22fc171e62d06236"
+            ]
+        ]
+    },
+    {
+        "id": "06af46ec03525fb5",
+        "type": "ui_button",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "group": "8e6cd1080b369434",
+        "order": 5,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "label": "Clear Data",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "payload": "[]",
+        "payloadType": "json",
+        "topic": "",
+        "topicType": "str",
+        "x": 1120,
+        "y": 660,
+        "wires": [
+            [
+                "cb69e61aca186484"
+            ]
+        ]
+    },
+    {
+        "id": "f1af468e8383d4db",
         "type": "function",
-        "z": "32249e45.f0dfaa",
-        "name": "WaterSafety",
-        "func": "if (msg.topic == \"pumpctrl/status\") {\n    if (msg.payload == \"PUMP_ON\") {\n        context.set(\"pump_status\", \"ON\");\n    } else {\n        if (msg.payload == \"PUMP_OFF\") {\n            context.set(\"pump_status\", \"OFF\");\n        }\n    }\n} else {\n    if (msg.topic == \"water/level\") {\n        context.set(\"water_level\", msg.payload);\n    } else {\n        if (msg.topic == \"valve/state\") {\n            if (msg.payload == \"WATER_ON\") {\n                context.set(\"valve_state\", \"ON\");\n            } else {\n                context.set(\"valve_state\", \"OFF\");\n            }\n        }\n    }\n}\n\nif ((context.get(\"pump_status\") == \"ON\") && \n    (context.get(\"water_level\") < 26) &&\n    (context.get(\"valve_state\") == \"ON\")){\n        msg.payload = \"WATER_OFF\";\n        context.set(\"safe_shdn\", \"YES\");\n\n        return msg;\n} else {\n    if ((context.get(\"pump_status\") == \"OFF\") && \n        (context.get(\"water_level\") > 26) &&\n        (context.get(\"valve_state\") == \"OFF\") &&\n        context.get(\"safe_shdn\") == \"YES\") {\n        context.set(\"safe_shdn\", \"NO\");\n        msg.payload = \"WATER_ON\";\n        \n        return msg;\n    }\n}\n\n",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "func": "msg.topic = \"Temperature 0\"\nmsg.payload = String(parseInt(msg.payload)/100);\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
-        "initialize": "// Code added here will be run once\n// whenever the node is deployed.\ncontext.set(\"pump_status\", \"OFF\");\ncontext.set(\"valve_state\", \"OFF\");\ncontext.set(\"water_level\", 50);\ncontext.set(\"safe_shdn\", \"NO\");",
+        "initialize": "",
         "finalize": "",
-        "x": 570,
+        "libs": [],
+        "x": 880,
+        "y": 580,
+        "wires": [
+            [
+                "cb69e61aca186484"
+            ]
+        ]
+    },
+    {
+        "id": "7937b1cb1b0d2312",
+        "type": "function",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "func": "msg.topic = \"Temperature 2\"\nmsg.payload = String(parseInt(msg.payload)/100);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 880,
+        "y": 680,
+        "wires": [
+            [
+                "cb69e61aca186484"
+            ]
+        ]
+    },
+    {
+        "id": "a7863348db9a67d5",
+        "type": "function",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "func": "msg.topic = \"Temperature 3\"\nmsg.payload = String(parseInt(msg.payload)/100);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 880,
+        "y": 740,
+        "wires": [
+            [
+                "cb69e61aca186484"
+            ]
+        ]
+    },
+    {
+        "id": "5beb2cadbaabeb99",
+        "type": "function",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "func": "msg.topic = \"Temperature 4\"\nmsg.payload = String(parseInt(msg.payload)/100);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 880,
+        "y": 800,
+        "wires": [
+            [
+                "cb69e61aca186484"
+            ]
+        ]
+    },
+    {
+        "id": "6bedec0aa9a09080",
+        "type": "function",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "func": "msg.topic = \"Temperature 5\"\nmsg.payload = String(parseInt(msg.payload)/100);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 880,
+        "y": 860,
+        "wires": [
+            [
+                "cb69e61aca186484"
+            ]
+        ]
+    },
+    {
+        "id": "a50f15be1327d47b",
+        "type": "function",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "func": "msg.topic = \"Temperature 6\"\nmsg.payload = String(parseInt(msg.payload)/100);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 880,
+        "y": 920,
+        "wires": [
+            [
+                "cb69e61aca186484"
+            ]
+        ]
+    },
+    {
+        "id": "49e8e8826a3cf398",
+        "type": "function",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "func": "msg.topic = \"Temperature 1\"\nmsg.payload = String(parseInt(msg.payload)/100);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 880,
+        "y": 640,
+        "wires": [
+            [
+                "cb69e61aca186484"
+            ]
+        ]
+    },
+    {
+        "id": "d3eff279354e0683",
+        "type": "function",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "func": "pwm = String(parseInt(msg.payload));\nmsg.payload = new Buffer([0, pwm]);\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1560,
+        "y": 240,
+        "wires": [
+            [
+                "8dcda731c03ac6c7"
+            ]
+        ]
+    },
+    {
+        "id": "8dcda731c03ac6c7",
+        "type": "delay",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "20",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": true,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1800,
+        "y": 240,
+        "wires": [
+            [
+                "2f0cf0ddc5f457af"
+            ]
+        ]
+    },
+    {
+        "id": "2f0cf0ddc5f457af",
+        "type": "mqtt out",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "topic": "",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "82610ac1.cd2678",
+        "x": 1970,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "e8d95a469317c0b0",
+        "type": "ui_slider",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "label": "Fan 0 override",
+        "tooltip": "",
+        "group": "8b1e3be872886a19",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "outs": "end",
+        "topic": "bookcase/fan_set_pwm",
+        "topicType": "str",
+        "min": "20",
+        "max": "110",
+        "step": "10",
+        "className": "",
+        "x": 1400,
+        "y": 240,
+        "wires": [
+            [
+                "d3eff279354e0683"
+            ]
+        ]
+    },
+    {
+        "id": "a7b94e4de773ca02",
+        "type": "function",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "func": "pwm = String(parseInt(msg.payload));\nmsg.payload = new Buffer([3, pwm]);\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1560,
         "y": 460,
         "wires": [
             [
-                "4e027a3.6bc3e04",
-                "f930d1c9.fdf718"
+                "afce7c312be12bf8"
             ]
         ]
+    },
+    {
+        "id": "afce7c312be12bf8",
+        "type": "delay",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "20",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": true,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1800,
+        "y": 460,
+        "wires": [
+            [
+                "e11314c34e909871"
+            ]
+        ]
+    },
+    {
+        "id": "e11314c34e909871",
+        "type": "mqtt out",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "topic": "",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "82610ac1.cd2678",
+        "x": 1970,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "9049b786f15a233b",
+        "type": "ui_slider",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "label": "Fan 3 override",
+        "tooltip": "",
+        "group": "8b1e3be872886a19",
+        "order": 7,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "outs": "end",
+        "topic": "bookcase/fan_set_pwm",
+        "topicType": "str",
+        "min": "20",
+        "max": "110",
+        "step": "10",
+        "className": "",
+        "x": 1400,
+        "y": 460,
+        "wires": [
+            [
+                "a7b94e4de773ca02"
+            ]
+        ]
+    },
+    {
+        "id": "dd57791213cb26d5",
+        "type": "function",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "func": "pwm = String(parseInt(msg.payload));\nmsg.payload = new Buffer([1, pwm]);\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1560,
+        "y": 300,
+        "wires": [
+            [
+                "d77353f20ad0d5bc"
+            ]
+        ]
+    },
+    {
+        "id": "d77353f20ad0d5bc",
+        "type": "delay",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "20",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": true,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1800,
+        "y": 300,
+        "wires": [
+            [
+                "49da408116e2b58b"
+            ]
+        ]
+    },
+    {
+        "id": "49da408116e2b58b",
+        "type": "mqtt out",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "topic": "",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "82610ac1.cd2678",
+        "x": 1970,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "3db9f9b8b92cbfda",
+        "type": "ui_slider",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "label": "Fan 1 override",
+        "tooltip": "",
+        "group": "762cf968c90c4b11",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "outs": "end",
+        "topic": "bookcase/fan_set_pwm",
+        "topicType": "str",
+        "min": "20",
+        "max": "110",
+        "step": "10",
+        "className": "",
+        "x": 1400,
+        "y": 300,
+        "wires": [
+            [
+                "dd57791213cb26d5"
+            ]
+        ]
+    },
+    {
+        "id": "8059133c47a71255",
+        "type": "function",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "func": "pwm = String(parseInt(msg.payload));\nmsg.payload = new Buffer([2, pwm]);\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1560,
+        "y": 380,
+        "wires": [
+            [
+                "d0b217f22e42c615"
+            ]
+        ]
+    },
+    {
+        "id": "d0b217f22e42c615",
+        "type": "delay",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "20",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": true,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1800,
+        "y": 380,
+        "wires": [
+            [
+                "138eff3180ab9e88"
+            ]
+        ]
+    },
+    {
+        "id": "138eff3180ab9e88",
+        "type": "mqtt out",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "topic": "",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "82610ac1.cd2678",
+        "x": 1970,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "f6b246934ec00745",
+        "type": "ui_slider",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "label": "Fan 2 override",
+        "tooltip": "",
+        "group": "be359c0f1ce38b5d",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "outs": "end",
+        "topic": "bookcase/fan_set_pwm",
+        "topicType": "str",
+        "min": "20",
+        "max": "110",
+        "step": "10",
+        "className": "",
+        "x": 1400,
+        "y": 380,
+        "wires": [
+            [
+                "8059133c47a71255"
+            ]
+        ]
+    },
+    {
+        "id": "5573948b78e5d70d",
+        "type": "function",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "func": "pwm = String(parseInt(msg.payload));\nmsg.payload = new Buffer([4, pwm]);\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1560,
+        "y": 540,
+        "wires": [
+            [
+                "73e2cedf05ba7661"
+            ]
+        ]
+    },
+    {
+        "id": "73e2cedf05ba7661",
+        "type": "delay",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "20",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": true,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1800,
+        "y": 540,
+        "wires": [
+            [
+                "129018cefa1f3b89"
+            ]
+        ]
+    },
+    {
+        "id": "129018cefa1f3b89",
+        "type": "mqtt out",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "topic": "",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "82610ac1.cd2678",
+        "x": 1970,
+        "y": 540,
+        "wires": []
+    },
+    {
+        "id": "f7e509fd303b0c1a",
+        "type": "ui_slider",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "label": "Fan 4 override",
+        "tooltip": "",
+        "group": "762cf968c90c4b11",
+        "order": 7,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "outs": "end",
+        "topic": "bookcase/fan_set_pwm",
+        "topicType": "str",
+        "min": "20",
+        "max": "110",
+        "step": "10",
+        "className": "",
+        "x": 1400,
+        "y": 540,
+        "wires": [
+            [
+                "5573948b78e5d70d"
+            ]
+        ]
+    },
+    {
+        "id": "86f6f4309ac03f0e",
+        "type": "function",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "func": "pwm = String(parseInt(msg.payload));\nmsg.payload = new Buffer([5, pwm]);\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1560,
+        "y": 620,
+        "wires": [
+            [
+                "91405bea6f68b3dc"
+            ]
+        ]
+    },
+    {
+        "id": "91405bea6f68b3dc",
+        "type": "delay",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "20",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": true,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1800,
+        "y": 620,
+        "wires": [
+            [
+                "a3c27d961cdce641"
+            ]
+        ]
+    },
+    {
+        "id": "a3c27d961cdce641",
+        "type": "mqtt out",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "topic": "",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "82610ac1.cd2678",
+        "x": 1970,
+        "y": 620,
+        "wires": []
+    },
+    {
+        "id": "e5ba25a4d163847e",
+        "type": "ui_slider",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "label": "Fan 5 override",
+        "tooltip": "",
+        "group": "be359c0f1ce38b5d",
+        "order": 7,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "outs": "end",
+        "topic": "bookcase/fan_set_pwm",
+        "topicType": "str",
+        "min": "20",
+        "max": "110",
+        "step": "10",
+        "className": "",
+        "x": 1400,
+        "y": 620,
+        "wires": [
+            [
+                "86f6f4309ac03f0e"
+            ]
+        ]
+    },
+    {
+        "id": "83498057119c596e",
+        "type": "function",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "func": "pwm = String(parseInt(msg.payload));\nmsg.payload = new Buffer([6, pwm]);\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1560,
+        "y": 700,
+        "wires": [
+            [
+                "da788657c4d0ace3"
+            ]
+        ]
+    },
+    {
+        "id": "da788657c4d0ace3",
+        "type": "delay",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "20",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": true,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1800,
+        "y": 700,
+        "wires": [
+            [
+                "88dfeaa8794d4f6a"
+            ]
+        ]
+    },
+    {
+        "id": "88dfeaa8794d4f6a",
+        "type": "mqtt out",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "topic": "",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "82610ac1.cd2678",
+        "x": 1970,
+        "y": 700,
+        "wires": []
+    },
+    {
+        "id": "5919e22526422de8",
+        "type": "ui_slider",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "label": "Fan 6 override",
+        "tooltip": "",
+        "group": "be359c0f1ce38b5d",
+        "order": 11,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "outs": "end",
+        "topic": "bookcase/fan_set_pwm",
+        "topicType": "str",
+        "min": "20",
+        "max": "110",
+        "step": "10",
+        "className": "",
+        "x": 1400,
+        "y": 700,
+        "wires": [
+            [
+                "83498057119c596e"
+            ]
+        ]
+    },
+    {
+        "id": "0a8885ead0f2905e",
+        "type": "debug",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1610,
+        "y": 1000,
+        "wires": []
+    },
+    {
+        "id": "52eb70ea864e8b09",
+        "type": "function",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "func": "color = parseInt(msg.payload, 16)\nmsg.topic = \"bookcase/ledstrip_set_intensity\"\nmsg.payload = new Buffer([color & 0xFF, (color >> 16) & 0xFF, (color >> 8) & 0xFF  ]);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1400,
+        "y": 1000,
+        "wires": [
+            [
+                "0a8885ead0f2905e",
+                "c9c130139fcd6e50"
+            ]
+        ]
+    },
+    {
+        "id": "eacf500a341cef21",
+        "type": "debug",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1390,
+        "y": 1080,
+        "wires": []
+    },
+    {
+        "id": "c9c130139fcd6e50",
+        "type": "delay",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "10",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": true,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1630,
+        "y": 920,
+        "wires": [
+            [
+                "b4315fb240d5d6fe"
+            ]
+        ]
+    },
+    {
+        "id": "b4315fb240d5d6fe",
+        "type": "mqtt out",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "topic": "",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "82610ac1.cd2678",
+        "x": 1800,
+        "y": 920,
+        "wires": []
+    },
+    {
+        "id": "468e548397c25564",
+        "type": "ui_button",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "group": "39a6021322533d2c",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "label": "Strip OFF",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "payload": "[0,0,0]",
+        "payloadType": "bin",
+        "topic": "bookcase/ledstrip_set_intensity",
+        "topicType": "str",
+        "x": 1380,
+        "y": 860,
+        "wires": [
+            [
+                "c9c130139fcd6e50"
+            ]
+        ]
+    },
+    {
+        "id": "e7848526e15d12d5",
+        "type": "ui_button",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "group": "39a6021322533d2c",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "label": "Turn Light On 0",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "payload": "[0, 255,255,255]",
+        "payloadType": "bin",
+        "topic": "bookcase/ledstrip_light_drawer",
+        "topicType": "str",
+        "x": 1480,
+        "y": 1180,
+        "wires": [
+            [
+                "9e70779559a37c02"
+            ]
+        ]
+    },
+    {
+        "id": "ab54b38d467dddcb",
+        "type": "ui_button",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "group": "39a6021322533d2c",
+        "order": 4,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "label": "Turn Light On 1",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "payload": "[1,255,255,255]",
+        "payloadType": "bin",
+        "topic": "bookcase/ledstrip_light_drawer",
+        "topicType": "str",
+        "x": 1480,
+        "y": 1240,
+        "wires": [
+            [
+                "9e70779559a37c02"
+            ]
+        ]
+    },
+    {
+        "id": "cabe22bc7fb76455",
+        "type": "ui_button",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "group": "39a6021322533d2c",
+        "order": 5,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "label": "Turn Light On 2",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "payload": "[2,255,255,255]",
+        "payloadType": "bin",
+        "topic": "bookcase/ledstrip_light_drawer",
+        "topicType": "str",
+        "x": 1480,
+        "y": 1300,
+        "wires": [
+            [
+                "9e70779559a37c02"
+            ]
+        ]
+    },
+    {
+        "id": "d03c20d0b309597b",
+        "type": "ui_button",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "group": "39a6021322533d2c",
+        "order": 6,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "label": "Turn Light On 3",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "payload": "[3,255,255,255]",
+        "payloadType": "bin",
+        "topic": "bookcase/ledstrip_light_drawer",
+        "topicType": "str",
+        "x": 1480,
+        "y": 1360,
+        "wires": [
+            [
+                "9e70779559a37c02"
+            ]
+        ]
+    },
+    {
+        "id": "ca3015ca9451bcc4",
+        "type": "ui_button",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "group": "39a6021322533d2c",
+        "order": 7,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "label": "Turn Light On 4",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "payload": "[4,255,255,255]",
+        "payloadType": "bin",
+        "topic": "bookcase/ledstrip_light_drawer",
+        "topicType": "str",
+        "x": 1480,
+        "y": 1420,
+        "wires": [
+            [
+                "9e70779559a37c02"
+            ]
+        ]
+    },
+    {
+        "id": "807810355de7692e",
+        "type": "ui_button",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "group": "39a6021322533d2c",
+        "order": 8,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "label": "Turn Light On 5",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "payload": "[5,255,255,255]",
+        "payloadType": "bin",
+        "topic": "bookcase/ledstrip_light_drawer",
+        "topicType": "str",
+        "x": 1480,
+        "y": 1480,
+        "wires": [
+            [
+                "9e70779559a37c02"
+            ]
+        ]
+    },
+    {
+        "id": "a3f0e1c91cf56289",
+        "type": "ui_button",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "group": "39a6021322533d2c",
+        "order": 9,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "label": "Turn Light On 6",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "payload": "[6,255,255,255]",
+        "payloadType": "bin",
+        "topic": "bookcase/ledstrip_light_drawer",
+        "topicType": "str",
+        "x": 1480,
+        "y": 1540,
+        "wires": [
+            [
+                "9e70779559a37c02"
+            ]
+        ]
+    },
+    {
+        "id": "9e70779559a37c02",
+        "type": "delay",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "10",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": true,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1720,
+        "y": 1240,
+        "wires": [
+            [
+                "329bbca682ece5cc"
+            ]
+        ]
+    },
+    {
+        "id": "329bbca682ece5cc",
+        "type": "mqtt out",
+        "z": "72848a59bc0b894a",
+        "name": "",
+        "topic": "",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "82610ac1.cd2678",
+        "x": 1890,
+        "y": 1240,
+        "wires": []
     }
 ]
-
