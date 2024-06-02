@@ -25,9 +25,10 @@ SendOnlySoftwareSerial Serial(SERIAL_TX);
 //#define WARN_BATT_LEVEL           4500 /* mV */
 #define WAKEUP_BATT_LEVEL_INT     (24 * 60 * 60UL) /* seconds */
 //#define WAKEUP_BATT_LEVEL_INT     (16) /* seconds */
-#define MEASUREMENT_INT           (1 * 60 * 60UL) /* seconds */
+//#define MEASUREMENT_INT           (1 * 60 * 60UL) /* seconds */
+#define MEASUREMENT_INT           (1 * 54 * 60UL) /* seconds */
 //#define MEASUREMENT_INT           (120) /* seconds */
-#define ESP_ON_CYCLES             2 /* x AT_TINY_SLEEP_TIME = how long the ESP will be on*/
+#define ESP_ON_CYCLES             3 /* x AT_TINY_SLEEP_TIME = how long the ESP will be on*/
 
 #if (AT_TINY_SLEEP_TIME == 8)
 #define TIMER_PRESCALER_SETTING 9
