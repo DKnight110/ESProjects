@@ -14,6 +14,7 @@
 #define MAX_WIFI_CONNECT_RETRY    20
 
 #define CFG_FILE_NAME     "/net_config.txt"
+#define CALIB_FILE_NAME   "/calib"
 
 #define GW_ADDR           169,254,1,1
 #define SUBNET_ADDR       255,255,0,0
@@ -45,8 +46,8 @@
 #endif
 static char good_to_go = 0;
 
-const int AirValue = 781;   // indication from sensor when placed in air
-const int WaterValue = 441;  // indication from sensor when placed in water
+int AirValue = 781;   // indication from sensor when placed in air
+int WaterValue = 441;  // indication from sensor when placed in water
 
 // Setup a oneWire instance to communicate with any OneWire devices (not just Maxim/Dallas temperature ICs)
 OneWire oneWire(ONE_WIRE_BUS);
@@ -54,12 +55,29 @@ OneWire oneWire(ONE_WIRE_BUS);
 // Pass our oneWire reference to Dallas Temperature. 
 DallasTemperature sensors(&oneWire);
 
+void read_file_line(File *file, char *line)
+{
+    char pos = 0, c;
+
+    line[0] = '\0';
+
+    while(file->position() < file->size()) {
+      c = file->read();
+      if (c != '\n') {
+        line[pos++] = c;
+      } else {
+        line[pos] = '\0';
+        break;
+      }
+    }
+}
+
 void setup() {
     char ssid[CHAR_ARRAY_LEN], password[CHAR_ARRAY_LEN],
-       str[CHAR_ARRAY_LEN], file_name[CHAR_ARRAY_LEN],
-       c, pos = 0, line = 0;
+       str[CHAR_ARRAY_LEN], calib_file_name[CHAR_ARRAY_LEN];
   IPAddress ip_addr, gw(GW_ADDR), subnet(SUBNET_ADDR);
-  File config_file;
+  File config_file, calib_file;
+  byte MAC_Addr[6] = {0, 0, 0, 0, 0, 0};
  
   Serial.begin(115200);
 
@@ -69,31 +87,32 @@ void setup() {
 
   config_file = SPIFFS.open(CFG_FILE_NAME, "r");
   if (!config_file) {
-    SERIAL_PRINTF("Failed to open file %s\n", file_name);
+    SERIAL_PRINTF("Failed to open file %s\n", CFG_FILE_NAME);
     return;
   }
-  
-  while(config_file.position() < config_file.size()) {
-    c = config_file.read();
-    if (c != '\n') {
-      str[pos++] = c;
-    } else {
-      str[pos] = '\0';
-      switch (line) {
-        case 0:
-          strcpy(ssid, str);
-          break;
-        case 1:
-          strcpy(password, str);
-          break;
-        default:
-          break;
-      }
-      pos = 0;
-      line++;
-    }
-  }
+  read_file_line(&config_file, ssid);
+  read_file_line(&config_file, password);
   config_file.close();
+
+  WiFi.macAddress(MAC_Addr);
+  snprintf(calib_file_name, CHAR_ARRAY_LEN, "%s_%02x_%02x_%02x", CALIB_FILE_NAME, MAC_Addr[3], MAC_Addr[4], MAC_Addr[5]);
+  calib_file = SPIFFS.open(calib_file_name, "r");
+  if (!calib_file) {
+    SERIAL_PRINTF("Failed to open calibration file %s\n", calib_file_name);
+    SERIAL_PRINTF("Using default values: water adc %d, air adc %d\n", WaterValue, AirValue);
+  }
+  else
+  {
+    read_file_line(&calib_file, str);
+    WaterValue = atoi(str);
+    read_file_line(&calib_file, str);
+    AirValue = atoi(str);
+
+    SERIAL_PRINTF("Using calibrated values: water adc %d, air adc %d\n", WaterValue, AirValue);
+
+    calib_file.close();
+  }
+
   SPIFFS.end();
 
   // Start up the library
