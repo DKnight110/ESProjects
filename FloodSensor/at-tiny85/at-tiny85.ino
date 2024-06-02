@@ -24,7 +24,7 @@ SendOnlySoftwareSerial Serial(SERIAL_TX);
 #define ESP_RESET_PIN             PB3
 
 #define AT_TINY_SLEEP_TIME        8UL   /* seconds */
-#define WARN_BATT_LEVEL           2870 /* mV */
+#define WARN_BATT_LEVEL           3000 /* mV */
 //#define WARN_BATT_LEVEL           4500 /* mV */
 #define WAKEUP_BATT_LEVEL_INT     (24 * 60 * 60UL) /* seconds */
 //#define WAKEUP_BATT_LEVEL_INT     (16) /* seconds */
